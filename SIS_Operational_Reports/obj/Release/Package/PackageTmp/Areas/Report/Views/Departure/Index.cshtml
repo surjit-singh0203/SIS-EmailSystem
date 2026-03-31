@@ -1,7 +1,7 @@
 ﻿@model DataBuildingLayer.DepartureReport
 @{
     ViewBag.Title = "Index";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 @*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -10,6 +10,7 @@
 
 <link href="~/css/flatpickr.min.css" rel="stylesheet" />
 <script src="~/css/flatpickr.js"></script>
+@*<link href="~/css/all.min.css" rel="stylesheet" />*@
 
 <style>
 
@@ -72,14 +73,10 @@
     .tab-content .row .col-md .GeneratedTable {
         margin: 15px 4.8px;
     }
-
-    textarea#Remarks {
-        border: none;
-    }
 	input.datetimePickerEdit.flatpickr-input {
-	
-	border:none;
-	}
+    border: none;
+	width:80%;
+}
 </style>
 
 <style>
@@ -132,26 +129,33 @@
         -webkit-animation: spin .8s linear infinite;
         animation: spin .8s linear infinite;
     }
-	td.datetime-wrapper{
-	width:230px!important;
+	select{
+	width:100%!important;
 	}
-	
-	
-	div#chamge1 input {
-    border:1px solid #aaa!important;
-	border-radius: 3px;
+	td.datetime-wrapper1 {
+    width: 100%;
 }
 .row.long-table {
-    max-width: 2800px;
+overflow-x: scroll;
 }
- table#tblFuelC td {
-        text-align: center;
-        min-width: 100px;
-    }
-table#tblFuelC {
-    overflow-x: scroll;
-    display: block;
-    padding: 0px !important;
+table#tblFuelC{
+    width: 2100px;
+
+    table-layout: fixed;
+
+}
+tr.small-titles {
+    font-size: 12px!important;
+}
+tr.small-titles td {
+    width: 209px!important;
+    white-space: normal;
+    word-wrap: break-word;
+    min-width: 234px!important;
+    display: table-cell;
+}
+td.datetime-wrapper {
+    width: 100%!important;
 }
 </style>
 <div id="cover-spin"></div>
@@ -162,6 +166,7 @@ table#tblFuelC {
             <h2>
                 @{
                     var idcheck = Model.Id.ToString();
+                    var vslname = Model.VesselName;
                     var addEdit = "";
                     if (idcheck == "0")
                     {
@@ -174,7 +179,7 @@ table#tblFuelC {
                 }
 
 
-                @addEdit Departure Report
+                Departure Report (@vslname)
             </h2>
 
         </div>
@@ -185,7 +190,7 @@ table#tblFuelC {
     </div>
 </div>
 @Html.HiddenFor(e => e.Id)
-<div class="row top1" style="margin-top: 10px;">
+<div class="row" style="margin-top: 10px;">
 
 
     <div class="col-md">
@@ -194,7 +199,7 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this);", @required = "true", })
+                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this);", @disabled = true, @required = "true", })
                 <span id="messageVoyid" style="color:red"></span>
             </div>
 
@@ -204,26 +209,22 @@ table#tblFuelC {
                     <span id="msgLegPortId" style="color:red"></span>*@
 
 
-                @Html.DropDownListFor(model => model.NextLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input  select2", @required = "true", @onchange = "bindport1(this)", })
+                @Html.DropDownListFor(model => model.NextLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input  select2", @required = "true", @disabled = true, @onchange = "bindport1(this)", })
                 <span id="msgNextLegPortId" style="color:red"></span>
 
 
 
             </div>
 
+
+
+
+
+
+
             <label for="inputPassword" class="col-sm-4 col-form-label">Report Date</label>
             <div class="col-sm-8">
-                @*@Html.EditorFor(model => model.ReportDate, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                @Html.EditorFor(model => model.ReportDate, new
-                {
-                    htmlAttributes = new
-                    {
-                        @autocomplete = "off",
-                        @class = "form-control bottom-border-input ",
-                        @maxlength = 20,
-                        @placeholder = "yyyy-MM-dd",
-                        @max = DateTime.Today.ToString("yyyy-MM-dd"),@*@readonly = "true"*@}
-})
+                @Html.EditorFor(model => model.ReportDate, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
                 <span id="msgReportDate" style="color:red"></span>
             </div>
 
@@ -235,11 +236,15 @@ table#tblFuelC {
 
         <div class="mb-3 row">
 
+
+
+
+
             <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
             <div class="col-sm-8">
 
 
-                @Html.DropDownListFor(model => model.DepLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "bindport(this);GetDRCargo()", })
+                @Html.DropDownListFor(model => model.DepLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @disabled = true, @onchange = "bindport(this);GetDRCargo()", })
                 <span id="msgDepLegPortId" style="color:red"></span>
 
 
@@ -248,7 +253,7 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Next Port</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.NextPort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                @Html.DropDownListFor(model => model.NextPort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", })
                 <span id="msgNextPort" style="color:red"></span>
             </div>
 
@@ -262,29 +267,18 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Dep. Port</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.DeparturePort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                @Html.DropDownListFor(model => model.DeparturePort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", })
                 <span id="msgDeparturePort" style="color:red"></span>
             </div>
 
 
             <label for="inputPassword" class="col-sm-4 col-form-label">ETA</label>
-            <div class="col-sm-8 datetime-wrapper"id ="chamge1">
-                @*@Html.EditorFor(model => model.ETA, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                @*Html.EditorFor(model => model.ETA, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
+            <div class="col-sm-8 datetime-wrapper">
 
-                @if (Model.Id != 0)
-                {
-                    @Html.EditorFor(model => model.ETA, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                }
-                else
-                {
-                    @Html.EditorFor(model => model.ETA, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _", } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                }
-
+                @* @Html.EditorFor(model => model.ETA, new { htmlAttributes = new { @autocomplete = "off", @required = "true", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
+                @Html.EditorFor(model => model.ETA, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                <span class="datetime-icon" style="font-size: 15px; margin-right:50px">&#128197;</span>
                 <span id="msgETA" style="color:red"></span>
             </div>
 
@@ -320,12 +314,13 @@ table#tblFuelC {
         <div class="col-md">
 
             <div class="row report-actions">
-                <div class="col">
-                    <button id="btnSave" class="function-button submit-button">
-                        Submit
+
+                <div style="display:none" class="col">
+                    <button onClick="window.location.reload();" class="function-button reset-button">
+                        Reset
                     </button>
                 </div>
-                <div id="SDraft" class="col">
+                <div style="display:none" id="SDraft" class="col">
                     <button onclick="SaveDraftFunction()" class="function-button draft-button">
                         Save Draft
                     </button>
@@ -334,11 +329,12 @@ table#tblFuelC {
                     </div>
 
                 </div>
-                @if (Model.SaveDraft != true)
+
+                @if (StaticHelper.UserRole == "Administrator")
                 {
-                    <div class="col">
-                        <button onClick="window.location.reload();" class="function-button reset-button">
-                            Reset
+                    <div style="margin-left:250px" class="col">
+                        <button id="btnSave" class="function-button submit-button">
+                            Submit
                         </button>
                     </div>
                 }
@@ -473,7 +469,7 @@ table#tblFuelC {
                             <tbody>
                                 <tr>
                                     <td>Departure Report<br>Remarks</td>
-                                    <td> @Html.TextAreaFor(model => model.Remarks, new { @style = "width:370px", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", } })  <span id="msgRemarks" style="color:red"></span> </td>
+                                    <td> @Html.TextAreaFor(model => model.Remarks, new { @style = "width:100%", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", } })  <span id="msgRemarks" style="color:red"></span> </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -724,7 +720,7 @@ table#tblFuelC {
                                             <td class="datetime-wrapper1">
                                                 @*@Html.EditorFor(model => model.SBE_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
                                                 @*@Html.EditorFor(model => model.SBE_DateT, new { htmlAttributes = new { @autocomplete = "off", @required = "true", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
-                                                @Html.EditorFor(model => model.SBE_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  -- : -- : --" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
+                                                @Html.EditorFor(model => model.SBE_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  -- : -- : --" } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
 
                                                 <span id="msgSBE_DateT" style="color:red"></span>
 
@@ -736,7 +732,8 @@ table#tblFuelC {
                                             <td class="datetime-wrapper1">
                                                 @*@Html.EditorFor(model => model.RFA_DateT, new { htmlAttributes = new { @autocomplete = "off", @required = "true", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
                                                 @*@Html.EditorFor(model => model.RFA_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                                                @Html.EditorFor(model => model.RFA_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  -- : -- : --" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
+                                                @Html.EditorFor(model => model.RFA_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  -- : -- : --" } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
+
                                                 <span id="msgRFA_DateT" style="color:red"></span>
                                             </td>
 
@@ -999,51 +996,50 @@ table#tblFuelC {
                                 </table>
                                 <!-- table-end -->
                             </div>
-                            <div class="row">
+                            <!--<div class="row">
                                 <!-- Speed - Distance - Time Table -->
-                                <table id="tblbunkerRec" class="GeneratedTable">
-                                    <thead>
-                                        <tr>
-                                            <th colspan="2">Bunker Received in MT</th>
+                            <!--<table id="tblbunkerRec" class="GeneratedTable">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2">Bunker Received in MT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    <tr>
+                                        <td></td>
+                                        <td>Received</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>VLSFO</td>
+                                        <td>
+
+                                          @*  @Html.EditorFor(model => model.BunkerReceipt, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 8, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue5(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>MDO</td>
+                                        <td>
+
+                                            @Html.EditorFor(model => model.BunkerReceipt, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 8, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue5(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                        </td>
+                                    </tr>-->
+                                    @*<tr>
+                                            <td>HFO</td>
+                                            <td> </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-
                                         <tr>
-                                            <td></td>
-                                            <td>Received</td>
+                                            <td>MGO</td>
+                                            <td> </td>
+                                        </tr>*@
 
-                                        </tr>
-                                        <tr>
-                                            <td>VLSFO</td>
-                                            <td>
-
-                                                @Html.EditorFor(model => model.BunkerReceipt, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 8, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue5(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
-
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>MDO</td>
-                                            <td>
-
-                                                @Html.EditorFor(model => model.BunkerReceipt, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 8, @required = "true", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
-
-                                            </td>
-                                        </tr>
-                                        @*<tr>
-                                                <td>HFO</td>
-                                                <td> </td>
-                                            </tr>
-                                            <tr>
-                                                <td>MGO</td>
-                                                <td> </td>
-                                            </tr>*@
-
-                                    </tbody>
-                                </table>
-                                <!-- table-end -->
-                            </div>
-
+                                </tbody>
+                            </table>-->
+                            <!-- table-end -->
+                            <!--</div>-->
                             @*<div class="row">
 
                                     <table class="GeneratedTable">
@@ -1343,7 +1339,7 @@ table#tblFuelC {
                                     <td> B/L QTY(MT)</td>
                                     <td> Load Portal Actual(MT)</td>
                                     <td>Cargo Temp.(Deg centigrade)</td>
-                                    <td >Completion Date &amp; Time</td>
+                                    <td width="220px">Completion Date &amp; Time</td>
                                     <td>Rate(m3/hr)</td>
                                     <td hidden></td>
 
@@ -1352,17 +1348,17 @@ table#tblFuelC {
                                     <td></td>
 
 
-                                    <td>@Html.EditorFor(model => model.BL_Qty, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @onpaste = "return false;", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    <td>@Html.EditorFor(model => model.LoadPortalActual, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @onpaste = "return false;", @type = "number", @min = "0", @onKeyUp = "requiredValue2(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    <td>@Html.EditorFor(model => model.Cargo_Temp, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @onpaste = "return false;", @type = "number", @min = "0", @onKeyUp = "requiredValue2(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    @*<td>@Html.EditorFor(model => model.Completion_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 6, @required = "true", @onpaste = "return false;", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
+                                    <td>@Html.EditorFor(model => model.BL_Qty, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                    <td>@Html.EditorFor(model => model.LoadPortalActual, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue2(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                    <td>@Html.EditorFor(model => model.Cargo_Temp, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue2(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                    @*<td>@Html.EditorFor(model => model.Completion_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
                                     @*<td>  @Html.EditorFor(model => model.Completion_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })</td>*@
 
                                     @*<td> @Html.EditorFor(model => model.Completion_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @step = "any" } })</td>*@
-                                <td class="datetime-wrapper">@Html.EditorFor(model => model.Completion_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span></td>
+                                    <td class="datetime-wrapper">@Html.EditorFor(model => model.Completion_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
 
-                                    <td>@Html.EditorFor(model => model.Rate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 7, @required = "true", @onpaste = "return false;", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    <td hidden>@Html.EditorFor(model => model.Id, new { })</td>
+                                    <td>@Html.EditorFor(model => model.Rate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 7, @required = "true", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                    <td hidden>@Html.EditorFor(model => model.Id, new { })  </td>
                                 </tr>
 
                             </tbody>
@@ -1379,8 +1375,8 @@ table#tblFuelC {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>ROB (MT)</td>
-                                    <td> @Html.EditorFor(model => model.Ballast_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @onKeyUp = "requiredValue1_1(this)", @type = "number", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
+                                    <td> ROB</td>
+                                    <td> @Html.EditorFor(model => model.Ballast_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @onKeyUp = "requiredValue1_1(this)", @type = "number", @class = "table-inputs check-decimal", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1431,184 +1427,31 @@ table#tblFuelC {
     </div>
 </div>
 
-<script type="text/javascript">
-    function requiredValueDFT(arg) {
-        // debugger;
-        var id = arg.getAttribute('id');
-        var value = arg.value;
-
-        var dec = document.getElementById(id).value;
-        if (dec.includes(".")) {
-            var res = dec.substring(dec.indexOf(".") + 1);
-            var kl = res.split("");
-            if (kl.length > 3) {
-                document.getElementById(id).value = (parseInt(dec * 1000) /
-                    1000).toFixed(3);
-            }
-        }
-        if (value > 30) {
-
-            $("#" + id + "").val('');
-        }
-
-    }
-</script>
-
-
 <script>
 
-        document.addEventListener("DOMContentLoaded", function () {
-            flatpickr(".datetimePicker", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                time_24hr: true,
-               // defaultDate: new Date()
-            });
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePicker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            defaultDate: new Date()
+        });
     });
 
-        document.addEventListener("DOMContentLoaded", function () {
-            flatpickr(".datetimePickerEdit", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                time_24hr: true,
-                //defaultDate: new Date()
-            });
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePickerEdit", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            //defaultDate: new Date()
+        });
     });
 
 
 </script>
 
-
-<script>
-    function TotalSlops(arg) {
-var id = arg.getAttribute('id');
-    var value = $("#SlopsDisposed_Oil").val();
-    var ttlDis = $("#SlopsDisposed_Water").val();
-    var ttl = parseFloat(ttlDis) + parseFloat(value);
-    $("#SlopsDisposed_Total").val(ttl);
-
-    var value1 = $("#SlopsROB_Oil").val();
-    var ttlDis1 = $("#SlopsROB_Water").val();
-    var ttl1 = parseFloat(ttlDis1) + parseFloat(value1);
-    $("#SlopsROB_Total").val(ttl1);
-
-    var value2 = $("#BilgesDisposed_Oil").val();
-    var ttlDis2 = $("#BilgesDisposed_Water").val();
-    var ttl2 = parseFloat(ttlDis2) + parseFloat(value2);
-    $("#BilgesDisposed_Total").val(ttl2);
-
-    var value3 = $("#BilgesROB_Oil").val();
-    var ttlDis3 = $("#BilgesROB_Water").val();
-    var ttl3 = parseFloat(ttlDis3) + parseFloat(value3);
-    $("#BilgesROB_Total").val(ttl3);
-
-}
-</script>
-<script>
-    var chkk = 0;
-    function AddinSubTotal(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-    //var ttlDis = $("#ME_Subtotal").val();
-    var id1 = $("#Id1").val();
-    var id2 = $("#Id2").val();
-    var id3 = $("#Id3").val();
-    var id4 = $("#Id4").val();
-    if (id1 == "") {id1 = 0; }
-    if (id2 == "") {id2 = 0; }
-    if (id3 == "") {id3 = 0; }
-    if (id4 == "") {id4 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4);
-    ttl = ttl.toFixed(3);
-    $("#ME_Subtotal").val(ttl);
-}
-
-    function AddinSubTotal1(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-    //var ttlDis = $("#ME_Subtotal").val();
-    var id5 = $("#Id5").val();
-    var id6 = $("#Id6").val();
-    var id7 = $("#Id7").val();
-    var id8 = $("#Id8").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#AE_Subtotal").val(ttl);
-}
-
-    function AddinSubTotal2(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-    //var ttlDis = $("#ME_Subtotal").val();
-    var id5 = $("#Id25").val();
-    var id6 = $("#Id26").val();
-    var id7 = $("#Id27").val();
-    var id8 = $("#Id28").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#MDOME_Subtotal").val(ttl);
-}
-
-    function AddinSubTotal3(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-    //var ttlDis = $("#ME_Subtotal").val();
-    var id5 = $("#Id29").val();
-    var id6 = $("#Id30").val();
-    var id7 = $("#Id31").val();
-    var id8 = $("#Id32").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#MDOAE_Subtotal").val(ttl);
-}
-
-</script>
-
-
 <script type="text/javascript">
-    function requiredValue11(arg) {
 
-var id = arg.getAttribute('id');
-    var value = arg.value;
-
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 2) {
-        document.getElementById(id).value = (parseInt(dec * 100) /
-            100).toFixed(2);
-    }
-}
-if (value > 999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
-</script>
-
-<script type="text/javascript">
     function requiredValue1_1(arg) {
 
         var id = arg.getAttribute('id');
@@ -1629,106 +1472,10 @@ if (value > 999.99) {
         }
 
     }
+
 </script>
 
-<script type="text/javascript">
-    function requiredValue1(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
-    }
-}
-if (value > 999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
-</script>
-
-<script type="text/javascript">
-    function requiredValue4(arg) {
-debugger;
-    // alert(555);
-    var id = arg.getAttribute('id');
-    var value = arg.value;
-
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
-    }
-}
-if (value > 9999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
-</script>
-<script type="text/javascript">
-    function requiredValueMCR(arg) {
-// debugger;
-var id = arg.getAttribute('id');
-    var value = arg.value;
-
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
-    }
-}
-    $("#" + id + "").css('color', 'black');
-if (value > 100) {
-
-        $("#" + id + "").val('0.000');
-    $("#msgMCR").text("MCR not more than 100%");
-}
-    else {
-        $("#msgMCR").text('');
-}
-
-}
-</script>
-<script type="text/javascript">
-    function requiredValue2(arg) {
-
-var id = arg.getAttribute('id');
-    var value = arg.value;
-
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
-    }
-}
-if (value > 999999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
-</script>
-
-<script type="text/javascript">
-
+<script>
 
     $(".check-decimal").on("keypress", function (event) {
         var charCode = (event.which) ? event.which : event.keyCode;
@@ -1758,114 +1505,364 @@ if (value > 999999.99) {
 </script>
 
 <script type="text/javascript">
+    function requiredValueDFT(arg) {
+        // debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 30) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+<script>
+    function TotalSlops(arg) {
+        var id = arg.getAttribute('id');
+        var value = $("#SlopsDisposed_Oil").val();
+        var ttlDis = $("#SlopsDisposed_Water").val();
+        var ttl = parseFloat(ttlDis) + parseFloat(value);
+        $("#SlopsDisposed_Total").val(ttl);
+
+        var value1 = $("#SlopsROB_Oil").val();
+        var ttlDis1 = $("#SlopsROB_Water").val();
+        var ttl1 = parseFloat(ttlDis1) + parseFloat(value1);
+        $("#SlopsROB_Total").val(ttl1);
+
+        var value2 = $("#BilgesDisposed_Oil").val();
+        var ttlDis2 = $("#BilgesDisposed_Water").val();
+        var ttl2 = parseFloat(ttlDis2) + parseFloat(value2);
+        $("#BilgesDisposed_Total").val(ttl2);
+
+        var value3 = $("#BilgesROB_Oil").val();
+        var ttlDis3 = $("#BilgesROB_Water").val();
+        var ttl3 = parseFloat(ttlDis3) + parseFloat(value3);
+        $("#BilgesROB_Total").val(ttl3);
+
+    }
+</script>
+<script>
+    var chkk = 0;
+    function AddinSubTotal(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+        //var ttlDis = $("#ME_Subtotal").val();
+        var id1 = $("#Id1").val();
+        var id2 = $("#Id2").val();
+        var id3 = $("#Id3").val();
+        var id4 = $("#Id4").val();
+        if (id1 == "") { id1 = 0; }
+        if (id2 == "") { id2 = 0; }
+        if (id3 == "") { id3 = 0; }
+        if (id4 == "") { id4 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4);
+        ttl = ttl.toFixed(3);
+        $("#ME_Subtotal").val(ttl);
+    }
+
+    function AddinSubTotal1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+        //var ttlDis = $("#ME_Subtotal").val();
+        var id5 = $("#Id5").val();
+        var id6 = $("#Id6").val();
+        var id7 = $("#Id7").val();
+        var id8 = $("#Id8").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#AE_Subtotal").val(ttl);
+    }
+
+    function AddinSubTotal2(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+        //var ttlDis = $("#ME_Subtotal").val();
+        var id5 = $("#Id25").val();
+        var id6 = $("#Id26").val();
+        var id7 = $("#Id27").val();
+        var id8 = $("#Id28").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#MDOME_Subtotal").val(ttl);
+    }
+
+    function AddinSubTotal3(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+        //var ttlDis = $("#ME_Subtotal").val();
+        var id5 = $("#Id29").val();
+        var id6 = $("#Id30").val();
+        var id7 = $("#Id31").val();
+        var id8 = $("#Id32").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#MDOAE_Subtotal").val(ttl);
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    function requiredValue1(arg) {
+
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    function requiredValue11(arg) {
+
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+
+</script>
+
+<script type="text/javascript">
+    function requiredValue4(arg) {
+        debugger;
+        // alert(555);
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 9999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+<script type="text/javascript">
+    function requiredValueMCR(arg) {
+        // debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        $("#" + id + "").css('color', 'black');
+        if (value > 100) {
+
+            $("#" + id + "").val('0.00');
+            $("#msgMCR").text("MCR not more than 100%");
+        }
+        else {
+            $("#msgMCR").text('');
+        }
+
+    }
+</script>
+<script type="text/javascript">
+    function requiredValue2(arg) {
+
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 999999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
     function requiredValue5(arg) {
 
-var id = arg.getAttribute('id');
-    var value = arg.value;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
 
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 99999.99) {
+
+            $("#" + id + "").val('');
+        }
+
     }
-}
-if (value > 99999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
 </script>
 <script type="text/javascript">
     function requiredValue7(arg) {
 
-var id = arg.getAttribute('id');
-    var value = arg.value;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
 
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 9999999.99) {
+
+            $("#" + id + "").val('');
+        }
+
     }
-}
-if (value > 9999999.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
 </script>
 <script type="text/javascript">
     function requiredValue3(arg) {
 
-var id = arg.getAttribute('id');
-    var value = arg.value;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
 
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 3) {
-        document.getElementById(id).value = (parseInt(dec * 1000) /
-            1000).toFixed(3);
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
     }
-}
-if (value > 99.99) {
-
-        $("#" + id + "").val('');
-}
-
-}
 </script>
 
 <script type="text/javascript">
     function isNumberKey(evt) {
-var charCode = (evt.which) ? evt.which : event.keyCode;
-if (charCode != 46 && charCode > 31
-    && (charCode < 48 || charCode > 57))
-    return false;
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
 
-    return true;
-}
+        return true;
+    }
 </script>
 
 
 
 <script type="text/javascript">
-            // $('.datepicker').datepicker();
-            //$("#ReportDate").datepicker({
-                //    //endDate: 'today',
-                //    format: 'yyyy-MM-dd',
-                //    autoHide: true
-                //});
+    // $('.datepicker').datepicker();
+    $("#ReportDate").datepicker({
+        //endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
 
-                //$("#ETA").datepicker({
-                //    startDate: 'today',
-                //    format: 'yyyy-MM-dd',
-                //    autoHide: true
-                //});
-                //$("#SBE_DateT").datepicker({
-                //    endDate: 'today',
-                //    format: 'yyyy-MM-dd',
-                //    autoHide: true
-                //});
-                //$("#RFA_DateT").datepicker({
-                //    endDate: 'today',
-                //    format: 'yyyy-MM-dd',
-                //    autoHide: true
-                //});
+    //$("#ETA").datepicker({
+    //    startDate: 'today',
+    //    format: 'yyyy-MM-dd',
+    //    autoHide: true
+    //});
+    //$("#SBE_DateT").datepicker({
+    //    endDate: 'today',
+    //    format: 'yyyy-MM-dd',
+    //    autoHide: true
+    //});
+    //$("#RFA_DateT").datepicker({
+    //    endDate: 'today',
+    //    format: 'yyyy-MM-dd',
+    //    autoHide: true
+    //});
 
-                //$("#Completion_DateT").datepicker({
-                //    endDate: 'today',
-                //    format: 'yyyy-MM-dd',
-                //    autoHide: true
-                //});
+    //$("#Completion_DateT").datepicker({
+    //    endDate: 'today',
+    //    format: 'yyyy-MM-dd',
+    //    autoHide: true
+    //});
 </script>
 
 <script>
@@ -1942,79 +1939,79 @@ if (charCode != 46 && charCode > 31
 
     }
 
-function AddMainTotalInFC1() {
-var id1 = $("#Id25").val();
-var id2 = $("#Id26").val();
-var id3 = $("#Id27").val();
-var id4 = $("#Id28").val();
-var id5 = $("#Id29").val();
-var id6 = $("#Id30").val();
-var id7 = $("#Id31").val();
-var id8 = $("#Id32").val();
-var id9 = $("#Id33").val();
-var id10 = $("#Id34").val();
-var id11 = $("#Id35").val();
-var id12 = $("#Id36").val();
+    function AddMainTotalInFC1() {
+        var id1 = $("#Id25").val();
+        var id2 = $("#Id26").val();
+        var id3 = $("#Id27").val();
+        var id4 = $("#Id28").val();
+        var id5 = $("#Id29").val();
+        var id6 = $("#Id30").val();
+        var id7 = $("#Id31").val();
+        var id8 = $("#Id32").val();
+        var id9 = $("#Id33").val();
+        var id10 = $("#Id34").val();
+        var id11 = $("#Id35").val();
+        var id12 = $("#Id36").val();
 
-var id13 = $("#FRAMO_ACT_SEA_VLSFO").val();
-var id14 = $("#FRAMO_ACT_MAN_VLSFO").val();
-var id15 = $("#FRAMO_ACT_WAIT_VLSFO").val();
-var id16 = $("#FRAMO_ACT_BERTH_VLSFO").val();
+        var id13 = $("#FRAMO_ACT_SEA_VLSFO").val();
+        var id14 = $("#FRAMO_ACT_MAN_VLSFO").val();
+        var id15 = $("#FRAMO_ACT_WAIT_VLSFO").val();
+        var id16 = $("#FRAMO_ACT_BERTH_VLSFO").val();
 
-    var idIGG = $("#IdIGG").val();
-    var idIncinerator = $("#IdIncinerator").val();
-var idStopageAtSea = $("#StopageAtSea1").val();
-var idDeviation = $("#Deviation1").val();
-var idSlowSteaming = $("#SlowSteaming1").val();
-var idBadWeather = $("#BadWeather1").val();
-var idCOTPrep = $("#COTPrep1").val();
-var idCargoHeating = $("#CargoHeating1").val();
-var idBWExchange = $("#BWExchange1").val();
-var idOthers = $("#Others1").val();
+        var idIGG = $("#IdIGG").val();
+        var idIncinerator = $("#IdIncinerator").val();
+        var idStopageAtSea = $("#StopageAtSea1").val();
+        var idDeviation = $("#Deviation1").val();
+        var idSlowSteaming = $("#SlowSteaming1").val();
+        var idBadWeather = $("#BadWeather1").val();
+        var idCOTPrep = $("#COTPrep1").val();
+        var idCargoHeating = $("#CargoHeating1").val();
+        var idBWExchange = $("#BWExchange1").val();
+        var idOthers = $("#Others1").val();
 
-if (id1 == "") {id1 = 0; }
-if (id2 == "") {id2 = 0; }
-if (id3 == "") {id3 = 0; }
-if (id4 == "") {id4 = 0; }
+        if (id1 == "") { id1 = 0; }
+        if (id2 == "") { id2 = 0; }
+        if (id3 == "") { id3 = 0; }
+        if (id4 == "") { id4 = 0; }
 
-if (id5 == "") {id5 = 0; }
-if (id6 == "") {id6 = 0; }
-if (id7 == "") {id7 = 0; }
-if (id8 == "") {id8 = 0; }
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
 
-if (id9 == "") {id9 = 0; }
-if (id10 == "") {id10 = 0; }
-if (id11 == "") {id11 = 0; }
-if (id12 == "") {id12 = 0; }
-if (id13 == "") {id13 = 0; }
-if (id14 == "") {id14 = 0; }
-if (id15 == "") {id15 = 0; }
-if (id16 == "") {id16 = 0; }
+        if (id9 == "") { id9 = 0; }
+        if (id10 == "") { id10 = 0; }
+        if (id11 == "") { id11 = 0; }
+        if (id12 == "") { id12 = 0; }
+        if (id13 == "") { id13 = 0; }
+        if (id14 == "") { id14 = 0; }
+        if (id15 == "") { id15 = 0; }
+        if (id16 == "") { id16 = 0; }
 
-    if (idIGG == "") { idIGG = 0; }
-    if (idIncinerator == "") { idIncinerator = 0; }
-if (idStopageAtSea == "") {idStopageAtSea = 0; }
-if (idDeviation == "") {idDeviation = 0; }
-if (idSlowSteaming == "") {idSlowSteaming = 0; }
-if (idBadWeather == "") {idBadWeather = 0; }
-if (idCOTPrep == "") {idCOTPrep = 0; }
-if (idCargoHeating == "") {idCargoHeating = 0; }
-if (idBWExchange == "") {idBWExchange = 0; }
-if (idOthers == "") {idOthers = 0; }
+        if (idIGG == "") { idIGG = 0; }
+        if (idIncinerator == "") { idIncinerator = 0; }
+        if (idStopageAtSea == "") { idStopageAtSea = 0; }
+        if (idDeviation == "") { idDeviation = 0; }
+        if (idSlowSteaming == "") { idSlowSteaming = 0; }
+        if (idBadWeather == "") { idBadWeather = 0; }
+        if (idCOTPrep == "") { idCOTPrep = 0; }
+        if (idCargoHeating == "") { idCargoHeating = 0; }
+        if (idBWExchange == "") { idBWExchange = 0; }
+        if (idOthers == "") { idOthers = 0; }
 
-var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4)
-+ parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8) +
-parseFloat(id9) + parseFloat(id10) + parseFloat(id11) + parseFloat(id12) +
-parseFloat(id13) + parseFloat(id14) + parseFloat(id15) + parseFloat(id16) +
-    parseFloat(idIGG) + parseFloat(idIncinerator) + parseFloat(idStopageAtSea) + parseFloat(idDeviation) + parseFloat(idSlowSteaming) +
-parseFloat(idBadWeather) + parseFloat(idCOTPrep) + parseFloat(idCargoHeating) + parseFloat(idBWExchange) + parseFloat(idOthers);
+        var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4)
+            + parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8) +
+            parseFloat(id9) + parseFloat(id10) + parseFloat(id11) + parseFloat(id12) +
+            parseFloat(id13) + parseFloat(id14) + parseFloat(id15) + parseFloat(id16) +
+            parseFloat(idIGG) + parseFloat(idIncinerator) + parseFloat(idStopageAtSea) + parseFloat(idDeviation) + parseFloat(idSlowSteaming) +
+            parseFloat(idBadWeather) + parseFloat(idCOTPrep) + parseFloat(idCargoHeating) + parseFloat(idBWExchange) + parseFloat(idOthers);
 
-// alert(ttl);
-ttl = ttl.toFixed(3);
-$("#idmdototal").html(ttl);
+        // alert(ttl);
+        ttl = ttl.toFixed(3);
+        $("#idmdototal").html(ttl);
 
 
-}
+    }
 </script>
 
 <script>
@@ -2131,6 +2128,7 @@ $("#idmdototal").html(ttl);
                     var k = 2;
                     $.each(FtypeList, function (index, value) {
                         ss1 = value;
+                        ss1 = ss1.toFixed(3);
                         table1.rows[k].cells[0].innerHTML = ss1;
                         k++;
                     });
@@ -2254,55 +2252,58 @@ $("#idmdototal").html(ttl);
 <script>
 
     function myFunction1() {
-var x = document.getElementById("IdFirst");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.first').prop("disabled", true)
+        var x = document.getElementById("IdFirst");
+
+        //alert(x.value);
+        //x.value = x.value.toUpperCase();
+        /*if (x.value != '') {*/
+        $('.first').prop("disabled", false);
+        //}
     }
-}
     function myFunction2() {
-var x = document.getElementById("IdSecond");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.second').prop("disabled", true)
+        var x = document.getElementById("IdSecond");
+        //x.value = x.value.toUpperCase();
+        /* if (x.value != '') {*/
+        $('.second').prop("disabled", false);
+        //}
     }
-}
     function myFunction3() {
-var x = document.getElementById("IdThird");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.third').prop("disabled", true)
+        var x = document.getElementById("IdThird");
+        //x.value = x.value.toUpperCase();
+        /*  if (x.value != '') {*/
+        $('.third').prop("disabled", false);
+        // }
     }
-}
     function myFunction4() {
-var x = document.getElementById("IdFourth");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.fourth').prop("disabled", true)
+        var x = document.getElementById("IdFourth");
+        //alert(x.value);
+        //x.value = x.value.toUpperCase();
+        /* if (x.value != '') {*/
+        $('.fourth').prop("disabled", false);
+        //}
     }
-}
     function myFunction5() {
-var x = document.getElementById("IdFifth");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.fifth').prop("disabled", true)
+        var x = document.getElementById("IdFifth");
+        //x.value = x.value.toUpperCase();
+        /* if (x.value != '') {*/
+        $('.fifth').prop("disabled", false);
+        //}
     }
-}
     function myFunction6() {
-var x = document.getElementById("IdSixth");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.sixth').prop("disabled", true)
+        var x = document.getElementById("IdSixth");
+        //x.value = x.value.toUpperCase();
+        /*  if (x.value != '') {*/
+        $('.sixth').prop("disabled", false);
+        //}
     }
-}
 
     function myFunction7() {
-var x = document.getElementById("IdSeventh");
-    //x.value = x.value.toUpperCase();
-    if (x.value == '') {
-        $('.seventh').prop("disabled", true)
+        var x = document.getElementById("IdSeventh");
+        //x.value = x.value.toUpperCase();
+        /*   if (x.value != '') {*/
+        $('.seventh').prop("disabled", false);
+        // }
     }
-}
 
 
     function firstFunc() {
@@ -2330,52 +2331,21 @@ var x = document.getElementById("IdSeventh");
 </script>
 <script>
     function CheckValidation1(arg) {
-var id = arg.getAttribute('id');
-    var value = arg.value;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
 
-    if (value == "") {
-        $("#" + id + "").val('0.000');
-}
-}
+        if (value == "") {
+            $("#" + id + "").val('0.00');
+        }
+    }
 </script>
 
 <script>
     function SaveDraftFunction() {
         $("#SaveDraft").prop("checked", true);
+        SaveDepartureReportDraft();
 
-    var VoyageId = $("#VoyageId option:selected").val();
-
-    if (VoyageId == "") {
-        $("#messageVoyid").text("Please Choose Voyage Number.");
-    return;
-}
-    else {
-        $("#messageVoyid").text("");
-}
-
-
-    var LegId = $("#DepLegPortId option:selected").val();
-
-    if (LegId == "") {
-        $("#msgDepLegPortId").text("Please Choose Departure Leg.");
-    return;
-}
-    else {
-        $("#msgDepLegPortId").text("");
-}
-
-    var ReportDate = $("#ReportDate").val();
-    if (ReportDate == "") {
-        $("#msgReportDate").text("Please Choose Report Date.");
-    return;
-}
-    else
-    {
-        $("#msgReportDate").text("");
-    SaveDepartureReportDraft();
-}
-
-}
+    }
 </script>
 <script>
     function SaveDepartureReportDraft() {
@@ -2709,11 +2679,11 @@ var id = arg.getAttribute('id');
 
 
 
-       // _departure.Ballast_ROB = $("#Ballast_ROB").val();
-       // if (_departure.Ballast_ROB == "") {
+        _departure.Ballast_ROB = $("#Ballast_ROB").val();
+        if (_departure.Ballast_ROB == "") {
             //$("#msgBallast_ROB").text("Ballast ROB can not be empty.");
             //return;
-       // }
+        }
         //else {
         //    $("#msgBallast_ROB").text('');
         //}
@@ -2777,7 +2747,7 @@ var id = arg.getAttribute('id');
                 sleep(1000);
                 FuelROBInsertion();
                 sleep(1000);
-                BunkerRecInsertion();
+                //BunkerRecInsertion();
                 sleep(1000);
                 DRCargoInsertion();
                 sleep(1000);
@@ -2797,28 +2767,28 @@ var id = arg.getAttribute('id');
 </script>
 <script type="text/javascript">
     function charCount() {
-var textEntered = document.getElementById('Remarks').value;
-    var msg = document.getElementById('remaining');
-    var counter = (500 - (textEntered.length));
-    if (counter == 0) {
-        $('#remaining').css('color', 'red');
-}
-    else {
-        $('#remaining').css('color', 'gray');
-}
-    msg.textContent = counter + "/500";
-}
+        var textEntered = document.getElementById('Remarks').value;
+        var msg = document.getElementById('remaining');
+        var counter = (500 - (textEntered.length));
+        if (counter == 0) {
+            $('#remaining').css('color', 'red');
+        }
+        else {
+            $('#remaining').css('color', 'gray');
+        }
+        msg.textContent = counter + "/500";
+    }
     var el = document.getElementById('Remarks');
     el.addEventListener('keyup', charCount, false);
 </script>
 <script>
     function sleep(milliseconds) {
-const date = Date.now();
-    let currentDate = null;
-    do {
-        currentDate = Date.now();
-} while (currentDate - date < milliseconds);
-}
+        const date = Date.now();
+        let currentDate = null;
+        do {
+            currentDate = Date.now();
+        } while (currentDate - date < milliseconds);
+    }
 </script>
 <script>
     function SaveDepartureReport() {
@@ -3724,7 +3694,7 @@ const date = Date.now();
             }
         }
 
-        debugger;
+
         _departure.Ballast_ROB = $("#Ballast_ROB").val();
         if (_departure.Ballast_ROB == "") {
 
@@ -3809,7 +3779,7 @@ const date = Date.now();
                 sleep(1000);
                 FuelROBInsertion();
                 sleep(1000);
-                BunkerRecInsertion();
+               // BunkerRecInsertion();
                 sleep(1000);
                 DRCargoInsertion();
                 sleep(1000);
@@ -3830,121 +3800,121 @@ const date = Date.now();
     }
 </script>
 
-<script>
+@*<script>
 
-         var loginUser = '@StaticHelper.LoginUser';
-    if (loginUser == "cheng") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', false);
-        $("#v-pills-messages :input").prop('disabled', true);
-
-
-
-        $("#SlopsDisposed_Total").prop('disabled', true);
-        $("#SlopsROB_Total").prop('disabled', true);
-        $("#BilgesDisposed_Total").prop('disabled', true);
-        $("#BilgesROB_Total").prop('disabled', true);
-
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
-
-    }
-    if (loginUser == "choff") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#v-pills-messages :input").prop('disabled', false);
-
-        $("#SlopsDisposed_Total").prop('disabled', true);
-        $("#SlopsROB_Total").prop('disabled', true);
-        $("#BilgesDisposed_Total").prop('disabled', true);
-        $("#BilgesROB_Total").prop('disabled', true);
-
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
-    }
-    if (loginUser == "2off") {
-        $("#v-pills-home :input").prop('disabled', false);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#v-pills-messages :input").prop('disabled', true);
-
-        $("#SlopsDisposed_Total").prop('disabled', true);
-        $("#SlopsROB_Total").prop('disabled', true);
-        $("#BilgesDisposed_Total").prop('disabled', true);
-        $("#BilgesROB_Total").prop('disabled', true);
-
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
-    }
+             var loginUser = '@StaticHelper.LoginUser';
+        if (loginUser == "cheng") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', false);
+            $("#v-pills-messages :input").prop('disabled', true);
 
 
-    window.onload = function () {
 
-        var loadingid = '@TempData["departureReportId"]';
+            $("#SlopsDisposed_Total").prop('disabled', true);
+            $("#SlopsROB_Total").prop('disabled', true);
+            $("#BilgesDisposed_Total").prop('disabled', true);
+            $("#BilgesROB_Total").prop('disabled', true);
 
-
-        if (loadingid == "") {
-            $('#SDraft').show();
-            $('#Id').val(0);
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
 
         }
-        else {
-            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
-                $('#SDraft').hide();
+        if (loginUser == "choff") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#v-pills-messages :input").prop('disabled', false);
+
+            $("#SlopsDisposed_Total").prop('disabled', true);
+            $("#SlopsROB_Total").prop('disabled', true);
+            $("#BilgesDisposed_Total").prop('disabled', true);
+            $("#BilgesROB_Total").prop('disabled', true);
+
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
+        }
+        if (loginUser == "2off") {
+            $("#v-pills-home :input").prop('disabled', false);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#v-pills-messages :input").prop('disabled', true);
+
+            $("#SlopsDisposed_Total").prop('disabled', true);
+            $("#SlopsROB_Total").prop('disabled', true);
+            $("#BilgesDisposed_Total").prop('disabled', true);
+            $("#BilgesROB_Total").prop('disabled', true);
+
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
+        }
+
+
+        window.onload = function () {
+
+            var loadingid = '@TempData["departureReportId"]';
+
+
+            if (loadingid == "") {
+                $('#SDraft').show();
+                $('#Id').val(0);
+
             }
+            else {
+                if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                    $('#SDraft').hide();
+                }
 
-            $('#Id').val(loadingid);
-        }
-        //'@TempData["departureReportId"]' = loadingid;
-    };
-</script>
+                $('#Id').val(loadingid);
+            }
+            //'@TempData["departureReportId"]' = loadingid;
+        };
+    </script>*@
 
 <script type="text/javascript">
 
@@ -3952,147 +3922,128 @@ const date = Date.now();
     $("body").on("click", "#btnSave", function () {
 
         $("#SaveDraft").prop("checked", false);
-    SaveDepartureReport();
+        SaveDepartureReport();
 
-});
+    });
 </script>
 
 <script>
     function GetSlipValue() {
 
-var dist = $('#EngineDist').val();
-    var dist1 = $('#NoonToNoonDMG_Dist').val();
+        var dist = $('#EngineDist').val();
+        var dist1 = $('#NoonToNoonDMG_Dist').val();
 
-    var dist2 = dist - dist1;
-    var dist3 = dist2 / dist;
-    var dist4 = dist3 * 100;
-    if (dist4 != "Infinity") {
-        $('#Slip').val(dist4.toFixed(3));
+        var dist2 = dist - dist1;
+        var dist3 = dist2 / dist;
+        var dist4 = dist3 * 100;
+        if (dist4 != "Infinity") {
+            $('#Slip').val(dist4.toFixed(3));
 
-}
-}
+        }
+    }
 </script>
 
 <script>
     function GetLeg(t) {
 
-var Id = t.value;
-    var Voyid = $("#VoyageId option:selected").val();
-    //alert(portName);
-
-    if ($("#Id").val() == 0) {
-
-        $("#ReportDate").val('');
-    $("#ReportDate").prop("disabled", true);
-}
+        var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
 
 
-    $.ajax({
-        type: 'GET',
-    url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
-        $('#NextLegPortId').empty();
-    $('#DepLegPortId').empty();
+                if (response.Result === true) {
+                    $('#NextLegPortId').empty();
+                    $('#DepLegPortId').empty();
 
-    $('#NextLegPortId').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
+                    $('#NextLegPortId').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
 
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
 
+                    }
+
+                    $('#DepLegPortId').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-
-    $('#DepLegPortId').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
-
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
-
-            }
-        }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
+        });
 
 
-};
-</script>
-
-<script>
-
-    $(document).ready(function () {
-        $("#ReportDate").prop("disabled", true);
-});
-
+    };
 </script>
 
 <script>
     function bindport(t) {
 
-var Id = t.value;
-   // var Legid = $("#DepLegPortId option:selected").val();
+        var Id = t.value;
+        /*var Legid = $("#DepLegPortId option:selected").val();*/
         var Voyid = $("#VoyageId option:selected").val();
-    //alert(portName);
-
-    if ($("#Id").val() == 0) {
-        $("#ReportDate").val('');
-    $("#ReportDate").prop("disabled", false);
-}
+        //alert(portName);
 
 
-    $.ajax({
-        type: 'GET',
-        /*url: '/Report/Departure/BindPort?Legid=' + Legid,*/
-        url: '/Report/Departure/Bind_Port?Voyid=' + Voyid,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            /*url: '/Report/Departure/BindPort?Legid=' + Legid,*/
+            url: '/Report/Departure/Bind_Port?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
-        $('#DeparturePort').empty();
+                if (response.Result === true) {
+                    $('#DeparturePort').empty();
 
 
-    $('#DeparturePort').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
+                    $('#DeparturePort').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
 
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#DeparturePort').append('<option value="' + txt + '">' + txt + '</option>');
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DeparturePort').append('<option value="' + txt + '">' + txt + '</option>');
 
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-        }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
+        });
 
 
-};
+    };
 </script>
 
 <script>
     /*function BindPrtEdit(deplegportid) {*/
-    function BindPrtEdit(Voyid) {
+    function BindPrtEdit(Voyid) {debugger
 
         $.ajax({
             type: 'GET',
@@ -4130,7 +4081,8 @@ var Id = t.value;
         });
 
 
-};
+    };
+
 </script>
 
 
@@ -4138,49 +4090,48 @@ var Id = t.value;
 <script>
     function bindport1(t) {
 
-var Id = t.value;
-    var Legid = $("#NextLegPortId option:selected").val();
-    //alert(portName);
+        var Id = t.value;
+        var Legid = $("#NextLegPortId option:selected").val();
+        //alert(portName);
 
 
-    $.ajax({
-        type: 'GET',
-    url: '/Report/Departure/BindPort?Legid=' + Legid,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindPort?Legid=' + Legid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
-        $('#NextPort').empty();
+                if (response.Result === true) {
+                    $('#NextPort').empty();
 
 
-    $('#NextPort').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
+                    $('#NextPort').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
 
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#NextPort').append('<option value="' + txt + '">' + txt + '</option>');
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextPort').append('<option value="' + txt + '">' + txt + '</option>');
 
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-        }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
+        });
 
 
-};
+    };
 </script>
 
 <script>
-    function BindPrtEdit1(nextlegportid) {
-
+   function BindPrtEdit1(nextlegportid) {
 
 
         $.ajax({
@@ -4218,29 +4169,31 @@ var Id = t.value;
         });
 
 
-};
+    };
 </script>
 <script type="text/javascript">
+
     function requiredValueHours(arg) {
 
-var id = arg.getAttribute('id');
-    var value = arg.value;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
 
-    var dec = document.getElementById(id).value;
-    if (dec.includes(".")) {
-    var res = dec.substring(dec.indexOf(".") + 1);
-    var kl = res.split("");
-    if (kl.length > 2) {
-        document.getElementById(id).value = (parseInt(dec * 100) /
-            100).toFixed(2);
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 2) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 24) {
+
+            $("#" + id + "").val('');
+        }
+
     }
-}
-if (value > 24) {
 
-        $("#" + id + "").val('');
-}
-
-}
 </script>
 <script type="text/javascript">
       function FConsumptionInsertion() {
@@ -4334,70 +4287,70 @@ if (value > 24) {
 
 <script>
     function AddinSubTotalEdit() {
-debugger;
+        debugger;
 
-    var id1 = $("#Id1").val();
-    var id2 = $("#Id2").val();
-    var id3 = $("#Id3").val();
-    var id4 = $("#Id4").val();
-    if (id1 == "") {id1 = 0; }
-    if (id2 == "") {id2 = 0; }
-    if (id3 == "") {id3 = 0; }
-    if (id4 == "") {id4 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4);
-    ttl = ttl.toFixed(3);
-    $("#ME_Subtotal").val(ttl);
-}
+        var id1 = $("#Id1").val();
+        var id2 = $("#Id2").val();
+        var id3 = $("#Id3").val();
+        var id4 = $("#Id4").val();
+        if (id1 == "") { id1 = 0; }
+        if (id2 == "") { id2 = 0; }
+        if (id3 == "") { id3 = 0; }
+        if (id4 == "") { id4 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id1) + parseFloat(id2) + parseFloat(id3) + parseFloat(id4);
+        ttl = ttl.toFixed(3);
+        $("#ME_Subtotal").val(ttl);
+    }
 
 
     function AddinSubTotalEdit1(arg) {
 
-var id5 = $("#Id5").val();
-    var id6 = $("#Id6").val();
-    var id7 = $("#Id7").val();
-    var id8 = $("#Id8").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#AE_Subtotal").val(ttl);
-}
+        var id5 = $("#Id5").val();
+        var id6 = $("#Id6").val();
+        var id7 = $("#Id7").val();
+        var id8 = $("#Id8").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#AE_Subtotal").val(ttl);
+    }
 
     function AddinSubTotalEdit2(arg) {
 
-var id5 = $("#Id25").val();
-    var id6 = $("#Id26").val();
-    var id7 = $("#Id27").val();
-    var id8 = $("#Id28").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#MDOME_Subtotal").val(ttl);
-}
+        var id5 = $("#Id25").val();
+        var id6 = $("#Id26").val();
+        var id7 = $("#Id27").val();
+        var id8 = $("#Id28").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#MDOME_Subtotal").val(ttl);
+    }
 
     function AddinSubTotalEdit3(arg) {
 
-var id5 = $("#Id29").val();
-    var id6 = $("#Id30").val();
-    var id7 = $("#Id31").val();
-    var id8 = $("#Id32").val();
-    if (id5 == "") {id5 = 0; }
-    if (id6 == "") {id6 = 0; }
-    if (id7 == "") {id7 = 0; }
-    if (id8 == "") {id8 = 0; }
-    /*var ttl = parseInt(ttlDis) + parseInt(value);*/
-    var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
-    ttl = ttl.toFixed(3);
-    $("#MDOAE_Subtotal").val(ttl);
-}
+        var id5 = $("#Id29").val();
+        var id6 = $("#Id30").val();
+        var id7 = $("#Id31").val();
+        var id8 = $("#Id32").val();
+        if (id5 == "") { id5 = 0; }
+        if (id6 == "") { id6 = 0; }
+        if (id7 == "") { id7 = 0; }
+        if (id8 == "") { id8 = 0; }
+        /*var ttl = parseInt(ttlDis) + parseInt(value);*/
+        var ttl = parseFloat(id5) + parseFloat(id6) + parseFloat(id7) + parseFloat(id8);
+        ttl = ttl.toFixed(3);
+        $("#MDOAE_Subtotal").val(ttl);
+    }
 
 
 </script>
@@ -4426,7 +4379,7 @@ var id5 = $("#Id29").val();
                     var FCList = response.fc;
                     var FROBList = response.frob;
                     var FROBList1 = response.frob1;
-                    var BunkerReceipt = response.bnkerrec;
+                    // var BunkerReceipt = response.bnkerrec;
                     // alert(BunkerReceipt);
                     var rowCount = FtypeList.length;
                     let len = rowCount - 1;
@@ -4464,16 +4417,18 @@ var id5 = $("#Id29").val();
                                 k++;
                             }
 
+                            ss1 = ss1.toFixed(3);
+
                             if (k == 20) {
-                               inc = k;
-                             
-                               dt = FCList[51];
-                             
-                               if (j == 5 && k == 20 ) {
-                                   table.rows[j].cells[inc].children[0].value = dt;
-                               }
-                             
-                               k++;
+                                inc = k;
+
+                                dt = FCList[51];
+
+                                if (j == 5 && k == 20) {
+                                    table.rows[j].cells[inc].children[0].value = dt;
+                                }
+
+                                k++;
                             }
 
                             if (index == 25) {
@@ -4490,7 +4445,6 @@ var id5 = $("#Id29").val();
                                 k = 1;
                                 j++;
                             }
-
                             //table.rows[j].cells[k].children[0].value = ss1;
                             //k++;
                             //if (k >= 28) {
@@ -4503,39 +4457,39 @@ var id5 = $("#Id29").val();
 
 
 
-                    try {
-                        var table1 = document.getElementById('tblFuelRob');
-                        var j = 2; var k = 1;
-                        $.each(FROBList, function (index, value) {
-                            ss = value;
-                            //alert(ss);
-                            debugger;
-                            table1.rows[j].cells[k].children[0].value = ss;
-                            j++;
-                        });
-                    } catch { }
 
-                    try {
-                        var j = 2; var k = 2;
-                        $.each(FROBList1, function (index, value) {
-                            ss2 = value;
-                            //alert(ss);
-                            debugger;
-                            table1.rows[j].cells[k].children[0].value = ss2;
-                            j++;
-                        });
-                    } catch { }
-
-
-                    var table2 = document.getElementById('tblbunkerRec');
-                    var p = 2; var m = 1;
-                    $.each(BunkerReceipt, function (index, value) {
-                        ss3 = value;
+                    var table1 = document.getElementById('tblFuelRob');
+                    var j = 2; var k = 1;
+                    $.each(FROBList, function (index, value) {
+                        ss = value;
                         //alert(ss);
                         debugger;
-                        table2.rows[p].cells[m].children[0].value = ss3;
-                        p++;
+                        ss = ss.toFixed(3);
+                        table1.rows[j].cells[k].children[0].value = ss;
+                        j++;
                     });
+
+                    var j = 2; var k = 2;
+                    $.each(FROBList1, function (index, value) {
+                        ss2 = value;
+                        //alert(ss);
+                        debugger;
+                        ss2 = ss2.toFixed(3);
+                        table1.rows[j].cells[k].children[0].value = ss2;
+                        j++;
+                    });
+
+
+                    //var table2 = document.getElementById('tblbunkerRec');
+                    //var p = 2; var m = 1;
+                    //$.each(BunkerReceipt, function (index, value) {
+                    //    ss3 = value;
+                    //    //alert(ss);
+                    //    debugger;
+                    //    table2.rows[p].cells[m].children[0].value = ss3;
+                    //    p++;
+                    //});
+
 
 
                     AddinSubTotalEdit();
@@ -4545,7 +4499,6 @@ var id5 = $("#Id29").val();
 
                     AddMainTotalInFC();
                     AddMainTotalInFC1();
-
 
                     //var j = 4;
                     //$.each(CPList, function (index, value) {
@@ -4572,7 +4525,7 @@ var id5 = $("#Id29").val();
                 toastr["error"](response.Message);
             }
         });
-}
+    }
 
 
 
@@ -4717,6 +4670,7 @@ var id5 = $("#Id29").val();
                     var k = 2;
                     $.each(FtypeList, function (index, value) {
                         ss1 = value;
+                        ss1 = ss1.toFixed(3);
                         table1.rows[k].cells[0].innerHTML = ss1;
                         k++;
                     });
@@ -4730,34 +4684,34 @@ var id5 = $("#Id29").val();
 
                  // For Bunker Receipt
 
-                    for (let i = 1; i <= len - 1; i++) {
+                    //for (let i = 1; i <= len - 1; i++) {
 
-                        var $tableBody = $('#tblbunkerRec').find("tbody"),
-                            $trLast = $tableBody.find("tr:last"),
-                            $trNew = $trLast.clone();
+                    //    var $tableBody = $('#tblbunkerRec').find("tbody"),
+                    //        $trLast = $tableBody.find("tr:last"),
+                    //        $trNew = $trLast.clone();
 
-                        $trLast.after($trNew);
-                    }
+                    //    $trLast.after($trNew);
+                    //}
 
-                    try {
-                        for (var i = rowCount - 3; i > 0; i--) {
-                            tblbunkerRec.deleteRow(i);
-                        }
-                    } catch{ }
+                    //try {
+                    //    for (var i = rowCount - 3; i > 0; i--) {
+                    //        tblbunkerRec.deleteRow(i);
+                    //    }
+                    //} catch{ }
 
-                    var table11 = document.getElementById('tblbunkerRec');
-                    var m = 2;
-                    $.each(FtypeList, function (index, value) {
-                        ss2 = value;
-                        table11.rows[m].cells[0].innerHTML = ss2;
-                        m++;
-                    });
+                    //var table11 = document.getElementById('tblbunkerRec');
+                    //var m = 2;
+                    //$.each(FtypeList, function (index, value) {
+                    //    ss2 = value;
+                    //    table11.rows[m].cells[0].innerHTML = ss2;
+                    //    m++;
+                    //});
 
-                    try {
-                        for (var t = rowCount1 + 2; t > 0; t++) {
-                            tblbunkerRec.deleteRow(t);
-                        }
-                    } catch{ }
+                    //try {
+                    //    for (var t = rowCount1 + 2; t > 0; t++) {
+                    //        tblbunkerRec.deleteRow(t);
+                    //    }
+                    //} catch{ }
 
                 }
                 else {
@@ -4810,7 +4764,8 @@ var id5 = $("#Id29").val();
                     if (second == "") {
                         second = 0;
                     }
-
+                   // first = first.toFixed(3);
+                   // second = second.toFixed(3);
                     FuelROB.SBE_ROB = first;
                     FuelROB.RFA_ROB = second;
 
@@ -4906,53 +4861,53 @@ var id5 = $("#Id29").val();
     function GetLegEdit(deplegportid) {
 
 
-//var Id = t.value;
-var Voyid = $("#VoyageId option:selected").val();
-    //alert(portName);
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
 
 
 
-    $.ajax({
-        type: 'GET',
-    url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
-        $('#DepLegPortId').empty();
-
-
-    $('#cpid').val(response.CPID);
-    // alert(ddd);
+                if (response.Result === true) {
+                    $('#DepLegPortId').empty();
 
 
-    $('#DepLegPortId').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
 
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
 
+                    $('#DepLegPortId').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#DepLegPortId option[value=" + deplegportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-            // $('#RankId').append('<option value="">Other</option>');
-    $("#DepLegPortId option[value=" + deplegportid + "]").attr('selected', 'selected');
-        }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
+        });
 
 
 
 
-};
+    };
 </script>
 <script type="text/javascript">
       function NonRoutineInsertion() {
@@ -5074,7 +5029,7 @@ var Voyid = $("#VoyageId option:selected").val();
                 toastr["error"](response.Message);
             }
         });
-}
+    }
 </script>
 
 
@@ -5082,53 +5037,53 @@ var Voyid = $("#VoyageId option:selected").val();
     function GetLegEditNext(nextlegportid) {
 
 
-//var Id = t.value;
-var Voyid = $("#VoyageId option:selected").val();
-    //alert(portName);
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
 
 
 
-    $.ajax({
-        type: 'GET',
-    url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
-        $('#NextLegPortId').empty();
-
-
-    $('#cpid').val(response.CPID);
-    // alert(ddd);
+                if (response.Result === true) {
+                    $('#NextLegPortId').empty();
 
 
-    $('#NextLegPortId').append('<option value=""></option>');
-    for (var i = 0; i < response.Data.length; i++) {
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
 
-                var txt = response.Data[i].Text;
-    var valu = response.Data[i].Value;
-    // alert(txt);
-    $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
 
+                    $('#NextLegPortId').append('<option value=""></option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#NextLegPortId option[value=" + nextlegportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-            // $('#RankId').append('<option value="">Other</option>');
-    $("#NextLegPortId option[value=" + nextlegportid + "]").attr('selected', 'selected');
-        }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
+        });
 
 
 
 
-};
+    };
 </script>
 
 <script>
@@ -5136,155 +5091,154 @@ var Voyid = $("#VoyageId option:selected").val();
 
     function GetDRCargo() {
 
-var LegId = $("#DepLegPortId option:selected").val();
-    var VoyageId = $("#VoyageId option:selected").val();
+        var LegId = $("#DepLegPortId option:selected").val();
+        var VoyageId = $("#VoyageId option:selected").val();
 
-    $.ajax({
-        type: 'GET',
-        /*url: '/Report/Departure/GetDRCargo?LegId=' + LegId + '&VoyageId=' + VoyageId,*/
-        url: '/Report/Departure/GetDR_Cargo?LegId=' + LegId + '&VoyageId=' + VoyageId,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
+        $.ajax({
+            type: 'GET',
+            //url: '/Report/Departure/GetDRCargo?LegId=' + LegId + '&VoyageId=' + VoyageId,
+            url: '/Report/Departure/GetDR_Cargo?LegId=' + LegId + '&VoyageId=' + VoyageId,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
 
-        if (response.Result === true) {
+                if (response.Result === true) {
 
-            var CNameList = response.cn;
+                    var CNameList = response.cn;
 
-    var rowCount = CNameList.length;
-
-
-    var table = document.getElementById('tblCargo');
+                    var rowCount = CNameList.length;
 
 
-    if (rowCount == 0) {
-
-        $("#tblCargo").find("tr:gt(" + rowCount + 2 + ")").remove();
-    //return;
+                    var table = document.getElementById('tblCargo');
 
 
+                    if (rowCount == 0) {
 
-    //ss = value;
-    table.rows[2].cells[0].innerHTML = "";
-    table.rows[2].cells[1].children[0].value = '0.000';
-    table.rows[2].cells[2].children[0].value = '0.000';
-    table.rows[2].cells[3].children[0].value = '0.000';
-    table.rows[2].cells[4].children[0].value = "";
-        table.rows[2].cells[5].children[0].value = '0.000';
-        table.rows[2].cells[6].innerHTML = "";
-
-
-            }
-
-            //for (var i = rowCount - 2; i > 0; i--) {
-            //    tblCargo.deleteRow(i);
-            //}
-
-
-            //alert(rowCount);
-
-            if (rowCount > 0) {
-
-                var rows = table.getElementsByTagName('tr');
-                if (rows.length > 2) {
-                    rows.length = -2;
-                }
-
-                for (var i = rows.length - 1; i > 2; i--) {
-                    table.deleteRow(i);
-                }
-
-        $('#tblCargo').css('display', 'table');
-
-    let len = rowCount;
-
-                //alert(len);
-                //for (let i = 2; i <= len; i++) {
-
-                //    var $tableBody = $('#tblCargo').find("tbody"),
-                //        $trLast = $tableBody.find("tr:last"),
-                //        $trNew = $trLast.clone();
-                //         $trLast.after($trNew);
-                //            }
+                        $("#tblCargo").find("tr:gt(" + rowCount + 2 + ")").remove();
+                        //return;
 
 
 
-                for (let i = 1; i <= len - 1; i++) {
+                        //ss = value;
+                        table.rows[2].cells[0].innerHTML = "";
+                        table.rows[2].cells[1].children[0].value = '0.00';
+                        table.rows[2].cells[2].children[0].value = '0.00';
+                        table.rows[2].cells[3].children[0].value = '0.00';
+                        table.rows[2].cells[4].children[0].value = "";
+                        table.rows[2].cells[5].children[0].value = '0.00';
+                        table.rows[2].cells[6].innerHTML = "";
 
-                    var $tableBody = $('#tblCargo').find("tbody"),
-    $trLast = $tableBody.find("tr:last"),
-    $trNew = $trLast.clone();
 
-	    $trNew.find(".datetimePickerEdit").flatpickr({
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        time_24hr: true,
-                        // You can set defaultDate here if needed
+                    }
+
+                    //for (var i = rowCount - 2; i > 0; i--) {
+                    //    tblCargo.deleteRow(i);
+                    //}
+
+
+                    //alert(rowCount);
+
+                    if (rowCount > 0) {
+
+                        var rows = table.getElementsByTagName('tr');
+                        if (rows.length > 2) {
+                            rows.length = -2;
+                        }
+
+                        for (var i = rows.length - 1; i > 2; i--) {
+                            table.deleteRow(i);
+                        }
+
+                        $('#tblCargo').css('display', 'table');
+
+                        let len = rowCount;
+
+                        //alert(len);
+                        //for (let i = 2; i <= len; i++) {
+
+                        //    var $tableBody = $('#tblCargo').find("tbody"),
+                        //        $trLast = $tableBody.find("tr:last"),
+                        //        $trNew = $trLast.clone();
+                        //         $trLast.after($trNew);
+                        //            }
+
+
+
+                        for (let i = 1; i <= len - 1; i++) {
+
+                            var $tableBody = $('#tblCargo').find("tbody"),
+                                $trLast = $tableBody.find("tr:last"),
+                                $trNew = $trLast.clone();
+
+                            $trNew.find(".datetimePickerEdit").flatpickr({
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                // You can set defaultDate here if needed
+                            });
+
+                            $trLast.after($trNew);
+
+                            $trNew.find(".check-decimal").on("keypress", function (event) {
+                                var charCode = (event.which) ? event.which : event.keyCode;
+                                var value = $(this).val();
+
+                                if (charCode == 46 && value.indexOf('.') != -1) {
+                                    return false;
+                                }
+
+                                if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+                                    return false;
+                                }
+
+                                var finalValue = value + String.fromCharCode(charCode);
+                                var validDecimal = /^\d*\.?\d{0,3}$/;
+
+                                if (!validDecimal.test(finalValue)) {
+                                    return false;
+                                }
+
+                                return true;
+                            });
+
+                        }
+
+                    } else {
+                        $('#tblCargo').css('display', 'none');
+                    }
+
+                    var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+
+
+                    var j = 2;
+                    $.each(CNameList, function (index, value) {
+
+                        ss = value;
+                        table.rows[j].cells[0].innerHTML = ss;
+                        j++;
                     });
 
 
-    $trLast.after($trNew);
+                    //try {
+                    //    for (var i = rowCount + 3; i > 0; i++) {
+                    //        tblCargo.deleteRow(i);
+                    //    }
+                    //} catch { }
 
-	                    $trNew.find(".check-decimal").on("keypress", function (event) {
-                        var charCode = (event.which) ? event.which : event.keyCode;
-                        var value = $(this).val();
 
-                        if (charCode == 46 && value.indexOf('.') != -1) {
-                            return false;
-                        }
-
-                        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
-                            return false;
-                        }
-
-                        var finalValue = value + String.fromCharCode(charCode);
-                        var validDecimal = /^\d*\.?\d{0,3}$/;
-
-                        if (!validDecimal.test(finalValue)) {
-                            return false;
-                        }
-
-                        return true;
-                    });
+                    /*   $("#tblCargo").find("tr:gt(" + rowCount-1 + ")").remove();*/
 
                 }
-
-            } else {
-        $('#tblCargo').css('display', 'none');
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
             }
-
-    var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
-
-
-    var j = 2;
-    $.each(CNameList, function (index, value) {
-
-        ss = value;
-    table.rows[j].cells[0].innerHTML = ss;
-    j++;
-            });
-
-
-            //try {
-        //    for (var i = rowCount + 3; i > 0; i++) {
-        //        tblCargo.deleteRow(i);
-        //    }
-        //} catch { }
-
-
-        /*   $("#tblCargo").find("tr:gt(" + rowCount-1 + ")").remove();*/
-
+        });
     }
-    else {
-        toastr["error"](response.Message);
-        }
-    },
-    failure: function (response) {
-        toastr["error"](response.Message);
-    }
-});
-}
 </script>
 
 <script>
@@ -5320,6 +5274,9 @@ var LegId = $("#DepLegPortId option:selected").val();
                             $trNew = $trLast.clone();
 
                         $trLast.after($trNew);
+
+
+
                     }
 
 
@@ -5350,6 +5307,8 @@ var LegId = $("#DepLegPortId option:selected").val();
                         }
                         else if (k == 4) {
 
+
+
                             //table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
                             //var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
                             //x.setAttribute("type", "datetime-local");
@@ -5377,7 +5336,7 @@ var LegId = $("#DepLegPortId option:selected").val();
 
                             table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
                             var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
-                           // x.setAttribute("type", "datetime-local");
+                            // x.setAttribute("type", "datetime-local");
                             x.classList.add("datetimePickerEdit");
 
                             var calendarIcon = document.createElement("SPAN");
@@ -5412,9 +5371,11 @@ var LegId = $("#DepLegPortId option:selected").val();
                             k++;
 
                         }
+
                         else {
                             table.rows[j].cells[k].children[0].value = ss1;
-							   var inputField = table.rows[j].cells[k].children[0];
+
+                            var inputField = table.rows[j].cells[k].children[0];
                             inputField.classList.add("check-decimal");
 
                             $(inputField).on("keypress", function (event) {
@@ -5442,6 +5403,7 @@ var LegId = $("#DepLegPortId option:selected").val();
 
                             k++;
                         }
+
                     });
 
 
@@ -5456,7 +5418,7 @@ var LegId = $("#DepLegPortId option:selected").val();
                 toastr["error"](response.Message);
             }
         });
-}
+    }
 
 
 
@@ -5510,7 +5472,7 @@ var LegId = $("#DepLegPortId option:selected").val();
 <script>
     function goBack() {
         window.history.back();
-}
+    }
 </script>
 <script>
 
@@ -5521,7 +5483,5 @@ var LegId = $("#DepLegPortId option:selected").val();
     $('#Menu5').removeClass('active');
     $('#Menu6').removeClass('active');
     $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 </script>

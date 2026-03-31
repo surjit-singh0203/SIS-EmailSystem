@@ -33,13 +33,13 @@
             <div class="mb-lg-1 row">
                 <div style="margin-left:550px" class="col-sm-3">
 
-                    <input id="idFirst" class="form-control" type="text" />
+                    <input id="idFirst" placeholder="search by : vessel name" autocomplete="off" class="form-control" type="text" />
                     <span id="messageLat" style="color:red"></span>
                 </div>
 
                 <div class="col-sm-3">
 
-                    <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
+                    <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
                     <span id="messageLat" style="color:red"></span>
                 </div>
 
@@ -168,10 +168,6 @@
     $('#Menu3').removeClass('active');
     $('#Menu4').removeClass('active');
     $('#Menu5').addClass('active');
-    $('#Menu6').removeClass('active');
-    $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 
 </script>
@@ -217,23 +213,32 @@
         //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
         //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
 
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        else {
 
 
+            $.ajax({
+                type: 'GET',
+                url: '/VesselParticulars/Pump/pumpandtank?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+                    $("#idpump").html('');
+                    $("#idpump").html(data);
+                },
 
-
-        $.ajax({
-            type: 'GET',
-            url: '/VesselParticulars/Pump/pumpandtank?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
-            datatype: 'json',
-            cache: false,
-            contentType: 'application/json; charset=utf-8',
-            processData: false,
-            success: function (data) {
-                $("#idpump").html('');
-                $("#idpump").html(data);
-            },
-
-        });
+            });
+        }
 
     });
 

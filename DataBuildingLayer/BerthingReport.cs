@@ -15,15 +15,15 @@ namespace DataBuildingLayer
         public int Id { get; set; }
         public int VoyageId { get; set; }
         public int LegPortId { get; set; }
-
+        public string VesselName { get; set; }
         public string FacilityName { get; set; }
         public string PortName { get; set; }
         public string BerthName { get; set; }
 
         public int PortStatus { get; set; }
 
-        [DataType(DataType.Date, ErrorMessage = "Date only")]
-        //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy/MM/dd}")]
+       
+       // [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy/MM/dd}")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? ReportDate { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -43,8 +43,8 @@ namespace DataBuildingLayer
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? SlopsROB_Total { get; set; }
 
-
-        //[DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        
+      
         public decimal? Manoeuvring_Hrs { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Manoeuvring_Distance { get; set; }
@@ -193,10 +193,8 @@ namespace DataBuildingLayer
         public decimal FRAMO_ACT_BERTH_MGO { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal IGG { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Incinerator { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal StopageAtSea { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -215,6 +213,13 @@ namespace DataBuildingLayer
 
         public string Remarks { get; set; }
 
+
+        //---------------- New Column Add in V2 -- Date 25 May 2022 --------///////////////       
+
+     
+
+        //-------------------------------------------------------------------/////////
+
         public string voyagenumber { get; set; }
 
 
@@ -225,7 +230,6 @@ namespace DataBuildingLayer
         public int VesselId { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Qty_Grade1 { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Qty_Grade2 { get; set; }
 
         public bool SaveDraft { get; set; }

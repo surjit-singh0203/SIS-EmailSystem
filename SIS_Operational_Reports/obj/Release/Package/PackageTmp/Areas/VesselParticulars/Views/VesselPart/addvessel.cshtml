@@ -111,35 +111,47 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(e => e.Id)
-    <div class="row" style="margin-top: 10px;">
+<div>
 
-        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
-            <div class="col-md">
-                <h2>Add Vessel Detail</h2>
-            </div>
 
-            <div class="col-md button-row-top">
-                <div class="row">
-                    <div class="col">
+    @if (TempData["Error"] != null)
+    {
+        <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+    }
 
-                        <button name="Submit" type="submit" class="function-button submit-button"><i class="uil uil-check mr-2"></i>Submit</button>
-                    </div>
-                    <div class="col">
 
-                        <button name="Reset" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
-                    </div>
-                    <div class="col">
+    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
+        <div class="col-md">
+            <h2>Add Vessel Detail</h2>
+        </div>
 
-                        <button name="back" type="button" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
-                        @*<a name="back" id="btnBack" onclick="goBack()" class="function-button go-back"> << Go Back</a>*@
-                    </div>
+
+        <div class="col-md button-row-top">
+            <div class="row">
+                <div class="col">
+
+                    <button name="Submit" type="submit" class="function-button submit-button"><i class="uil uil-check mr-2"></i>Submit</button>
+                </div>
+                <div class="col">
+
+                    <button name="Reset" onClick="window.location.reload();" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
+                </div>
+                <div class="col">
+
+                    <button name="back" type="button" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+                    @*<a name="back" id="btnBack" onclick="goBack()" class="function-button go-back"> << Go Back</a>*@
                 </div>
             </div>
-
         </div>
 
     </div>
-    <div class="container">
+
+</div>
+    <div class="container" style= "max-width: 500px;">
         <div class="row">
             <div class="col-md">
                 <div class="mb-3 row">
@@ -152,7 +164,7 @@
 
                     <label for="inputPassword" class="col-sm-4 col-form-label">IMO No*</label>
                     <div class="col-sm-8">
-                        @Html.EditorFor(model => model.ImoNo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @min = "0", @max = "9999999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+                        @Html.EditorFor(model => model.ImoNo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @min = "0", @max = "9999999", @onkeypress = "return isNumberKey(event)", @required = "true", @onKeyUp = "requiredValue(this)" } })
                         <span id="messageImo"></span>
                     </div>
 
@@ -175,9 +187,9 @@
                     </div>
 
 
-                    <label for="inputPassword" class="col-sm-4 col-form-label">Displacement*</label>
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Displacement(MT)*</label>
                     <div class="col-sm-8">
-                        @Html.EditorFor(model => model.Displacement, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @type = "number", @min = "0", @step = "any" } })
+                        @Html.EditorFor(model => model.Displacement, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 6, @required = "true", @*@onKeyUp = "requiredValue1(this)",*@ @onkeypress = "return isNumberKey(event)", @type = "number", @step = "any" } })
                         <span id="messageDis"></span>
                     </div>
                 </div>
@@ -188,9 +200,72 @@
 }
 
 <script>
+    var ID = '@Model.Id'
+    if (ID == 0) {
+       // $('#ImoNo').removeProp('disabled');
+    } else {
+        $("#ImoNo").attr("readonly", "readonly");
+        //$('#ImoNo').prop('disabled', 'disabled');
+    }
+</script>
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+<script>
     function goBack() {
         window.history.back();
     }
+</script>
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        // Check for '.' and ensure there's only one
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        // Allow only backspace, delete, and numeric values
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        return true;
+    });
+
+
+    $(".check-AlphaNumeric").on("input", function () {
+        this.value = this.value.replace(/[^a-zA-Z0-9!@@#$%^&*(),.?":{}|<>]/g, '');
+    });
+
 </script>
 
 <script type="text/javascript">
@@ -288,7 +363,7 @@
 
 
         //if (value > 600000) {
-        if (value > 999999) {
+        if (value > 999999.99) {
             var message = "";
             if (id == "Displacement") {
                 message = document.getElementById('messageDis');
@@ -298,7 +373,7 @@
             var badColor = "#FF0000";
 
             message.style.color = badColor;
-            message.innerHTML = "Value can not greater than 6 digits !"
+            message.innerHTML = "Value can not greater than 999999 digits !"
             $("#" + id + "").val('');
         }
         else {
@@ -358,10 +433,6 @@
     $('#Menu3').removeClass('active');
     $('#Menu4').removeClass('active');
     $('#Menu5').removeClass('active');
-    $('#Menu6').removeClass('active');
-    $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 
 </script>

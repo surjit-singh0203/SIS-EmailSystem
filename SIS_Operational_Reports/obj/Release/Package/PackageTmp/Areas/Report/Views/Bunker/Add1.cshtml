@@ -1,7 +1,7 @@
 ﻿@model DataBuildingLayer.BunkerReport
 @{
     ViewBag.Title = "Add";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 
@@ -11,6 +11,7 @@
 
 <link href="~/css/flatpickr.min.css" rel="stylesheet" />
 <script src="~/css/flatpickr.js"></script>
+@*<link href="~/css/all.min.css" rel="stylesheet" />*@
 
 
 <style>
@@ -105,35 +106,71 @@
 
     .right-aligned {
         float: right;
-        margin-left: 10px; /* Adds space between the elements when aligned to the right */
+        margin-left: 10px; 
     }
-	.datetime-icon {
-    position: absolute;
-    right: 30px;
-    top: 24%;
-	}
-	a#FormatforPrint{
-	display:none;
-	}
+
+</style>
+
+<style>
+
+    #cover-spin {
+        position: fixed;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.7);
+        z-index: 9999;
+        display: none;
+    }
+
+    @@-webkit-keyframes spin {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+
+        to {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    #cover-spin::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 48%;
+        top: 40%;
+        width: 40px;
+        height: 40px;
+        border-style: solid;
+        border-color: black;
+        border-top-color: transparent;
+        border-width: 4px;
+        border-radius: 50%;
+        -webkit-animation: spin .8s linear infinite;
+        animation: spin .8s linear infinite;
+    }
+
 </style>
 
 <div id="cover-spin"></div>
 
 <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
     <div>
-        @if (Model.Id == 0)
-        {
-            <h2>
-                Add Bunker Report
-            </h2>
-        }
-        else
-        {
-            <h2>
-                Edit Bunker Report
-            </h2>
-        }
-
+        <h2>
+            Bunker Report
+        </h2>
 
     </div>
     <div class="button-row-top">
@@ -143,7 +180,9 @@
 </div>
 @*@using (Html.BeginForm("InsertBunkerReport", "Bunker", FormMethod.Post, new { onsubmit = "ValidateBunkerReport();", area = "Report", enctype = "multipart/form-data" }))
     {*@
+
 @Html.HiddenFor(x => x.Id)
+@Html.HiddenFor(x => x.VesselId)
 @Html.HiddenFor(x => x.LabAnalysisReport_Name)
 
 <div class="inner-report">
@@ -195,18 +234,16 @@
                     </div>
                     <div class="col-md-8 datetime-wrapper">
                         @*@{
-            var cD = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
-        }*@
+                                var cD = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                            }*@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgBargeAlongside" style="color:red"></span>
@@ -227,13 +264,11 @@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgBunkerHoseConnected" style="color:red"></span>
@@ -253,13 +288,11 @@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgCommencedBunkering" style="color:red"></span>
@@ -277,14 +310,12 @@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                            @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgBunkeringCompleted" style="color:red"></span>
                     </div>
@@ -301,14 +332,12 @@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                            @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgBunkerHosedisconnected" style="color:red"></span>
                     </div>
@@ -327,27 +356,28 @@
                         @if (Model.Id != 0)
                         {
                             @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         else
                         {
-                            @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
-                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                            @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
+                             <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                         }
                         <span id="msgBargeCastOff" style="color:red"></span>
                     </div>
                 </div>
-            </div>
 
+
+
+            </div>
             <div class="col-md-3">
+
                 <div class="row">
                     <div class="col-md-4">
                         <label for="inputPassword" class="col-form-label">Barge Name</label>
                     </div>
                     <div class="col-md-8">
-                        @Html.TextAreaFor(model => model.BargeName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })
+                        @Html.TextAreaFor(model => model.BargeName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", } })
                         <span id="msgBargeName" style="color:red"></span>
                     </div>
                 </div>
@@ -360,7 +390,7 @@
                     </div>
                     <div class="col-md-8">
                         @Html.TextBoxFor(model => model.FirstName, new { @placeholder = "Master Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
-                        <span id="msgMasterName" style="color:red"></span>
+                        <span id="msgBargeName" style="color:red"></span>
                     </div>
                 </div>
             </div>
@@ -371,29 +401,27 @@
                     </div>
                     <div class="col-md-8">
                         @Html.TextBoxFor(model => model.LastName, new { @placeholder = "Chief Engineer", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
-                        <span id="msgChiefEngineer" style="color:red"></span>
+                        <span id="msgBargeName" style="color:red"></span>
                     </div>
                 </div>
             </div>
-            <!--<div class="col-md-3">
+
+            @*<div class="col-md-6" style="display: flex;">
                 <div class="row">
                     <div class="col-md-2">	<label for="inputPassword" class="col-form-label p-0">Master Name</label></div>
 
-                    <div class="col-md-5">-->
-                        @*@Html.EditorFor(model => model.FirstName, new { @placeholder = "First Name", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })*@
-                        <!--@Html.TextBoxFor(model => model.FirstName, new { @placeholder = "First Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                    <div class="col-md-5">
+                        @Html.TextBoxFor(model => model.FirstName, new { @placeholder = "First Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
                         <span id="msgFirstName" style="color:red"></span>
                     </div>
 
-                    <div class="col-md-2">	<label for="inputPassword" class="col-form-label p-0">Chief Engineer</label></div>
-                    <div class="col-md-5">-->
-                        @*@Html.EditorFor(model => model.LastName, new { @placeholder = "Last Name", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })*@
-                        <!--@Html.TextBoxFor(model => model.LastName, new { @placeholder = "Last Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                    <div class="col-md-5">
+                        @Html.TextBoxFor(model => model.LastName, new { @placeholder = "Last Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
                         <span id="msgLastName" style="color:red"></span>
                     </div>
 
                 </div>
-            </div>-->
+            </div>*@
 
         </div>
         <div class="row">
@@ -423,15 +451,14 @@
                             <tr>
                                 <td hidden>@item.Id</td>
                                 <td>@Html.DropDownListFor(model => item.Fuel_type_Id, new SelectList(Model.BunkerFuelTypeList, "Value", "Text", item.Fuel_type_Id), htmlAttributes: new { @class = "mdb-select bottom-border-input", @required = "true" })</td>
-                                <td>@Html.EditorFor(model => item.BDN, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
-                                <td>@Html.EditorFor(model => item.BDN_Number, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-AlphaNumeric", @maxlength = 50, } })</td>
-                                <td>@Html.EditorFor(model => item.Fuel_Density, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
-                                <td>@Html.EditorFor(model => item.Sulphur_content, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
-                                <td><input class="btn btn-danger btn-width" type="button" value="Remove" onclick="RemoveBFT(this)" /></td>
+                                <td> @Html.EditorFor(model => item.BDN, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                <td> @Html.EditorFor(model => item.BDN_Number, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-AlphaNumeric", @maxlength = 50, } })</td>
+                                <td> @Html.EditorFor(model => item.Fuel_Density, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                <td> @Html.EditorFor(model => item.Sulphur_content, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                @*<td><input class="btn btn-danger btn-width" type="button" value="Remove" onclick="RemoveBFT(this)" /></td>*@
                             </tr>
                         }
                     }
-
 
                 </tbody>
 
@@ -443,11 +470,11 @@
                         <td>@Html.EditorFor(model => model.BDN_Number, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input ", @maxlength = 50, } })</td>
                         <td>@Html.EditorFor(model => model.Fuel_Density, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 15, @onpaste = "return false;" } })</td>
                         <td>@Html.EditorFor(model => model.Sulphur_content, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 15, @onpaste = "return false;" } })</td>
-                        <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+                        @*<td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>*@
                     </tr>
                 </tfoot>
-
             </table>
+
 
         </div>
 
@@ -456,23 +483,19 @@
                 <div class="col-md-6">
                     <div class="remarks">
                         <label style="color: #676969;"><b>Remarks</b></label>
-                        @Html.TextAreaFor(model => model.Remarks, new { @placeholder = "Remarks Here", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", } })
+                        @Html.TextAreaFor(model => model.Remarks, new { @placeholder = "Remarks Here", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 500, } })
                         <span id="msgRemarks" style="color:red"></span>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="row">
                         <label for="inputPassword" class="col-sm-4 col-form-label">BDN Report</label>
-                        @* <input type="file" name="LabAnalysisReport" accept="application/pdf" onchange="checkFileSize(this)" />*@
                         <input type="file" name="LabAnalysisReport" accept=".pdf, .doc, .docx, .xls, .xlsx, .csv, .jpg, .jpeg, .png" onchange="checkFileSize(this)" />
-
                         @if (Model.Id != 0)
                         {
-                            <a href="@Url.Action("OpenPDF", "Bunker" , new { fileName = Model.LabAnalysisReport_Name, fileExtension = Model.fileExtension   })" target="_blank" id="uploadedFileName"><b>@Model.LabAnalysisReport_Name</b></a>
-                            @*<span id="uploadedFileName"></span>*@
+                            <a href="@Url.Action("OpenPDF", "Bunker" , new { fileName = Model.LabAnalysisReport_Name, fileExtension = Model.fileExtension    })" target="_blank" id="uploadedFileName"><b>@Model.LabAnalysisReport_Name</b></a>
                         }
                         <span id="msgPDFfile" style="color:red"></span>
-
                     </div>
                 </div>
             </div>
@@ -504,7 +527,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 
@@ -617,6 +639,7 @@
     });
 
 
+
     //  Edit
 
     $(".check-decimal").on("keypress", function (event) {
@@ -664,6 +687,7 @@
     $('#Menu7').addClass('active');
     $('#Menu8').removeClass('active');
     $('#Menu9').removeClass('active');
+    $('#Menu10').removeClass('active');
 
 </script>
 
@@ -751,7 +775,6 @@
                 input.value = "";
                 return;
             }
-
         }
     }
 
@@ -788,7 +811,7 @@
         var Fuel_type = $("#Fuel_type_Id option:selected").text();
         var Fuel_typeV = $("#Fuel_type_Id");
         //var Fuel_type = $("#Fuel_type_Id");
-        if (Fuel_type == '----Select----') {
+        if (Fuel_type == '') {
             alert("Please Select Fuel Type");
             return;
         }
@@ -845,7 +868,7 @@
         btnRemove.val("Remove");
         cell.append(btnRemove);
 
-        //Id.val("");
+        Id.val("");
         Fuel_typeV.val("");
         BDN.val("");
         BDN_Number.val("");
@@ -882,6 +905,7 @@
 <script type="text/javascript">
 
     function SaveBunkerReport() {
+        debugger;
 
         var formData = new FormData();
 
@@ -889,8 +913,6 @@
         _BunkerR.Id = $('#Id').val();
         var voy = document.getElementById("VoyageId");
         var voyid = voy.options[voy.selectedIndex].value;
-
-        debugger;
 
         _BunkerR.VoyageId = voyid;
         if (_BunkerR.VoyageId == "") {
@@ -984,20 +1006,20 @@
 
         _BunkerR.FirstName = $("#FirstName").val();
         if (_BunkerR.FirstName == "") {
-            $("#msgMasterName").text("Master Name can not be empty.");
+            $("#msgFirstName").text("First Name can not be empty.");
             return;
         }
         else {
-            $("#msgMasterName").text('');
+            $("#msgFirstName").text('');
         }
 
         _BunkerR.LastName = $("#LastName").val();
         if (_BunkerR.LastName == "") {
-            $("#msgChiefEngineer").text("Chief Engineer can not be empty.");
+            $("#msgLastName").text("Last Name can not be empty.");
             return;
         }
         else {
-            $("#msgChiefEngineer").text('');
+            $("#msgLastName").text('');
         }
 
 
@@ -1008,7 +1030,7 @@
             var fileInput = $('input[name="LabAnalysisReport"]');
             var filePath = fileInput.val();;
 
-            if (filePath) {
+             if (filePath) {
                 $("#msgPDFfile").text('');
                 var fileInput = document.querySelector('input[name="LabAnalysisReport"]');
                 if (fileInput.files.length > 0) {
@@ -1018,7 +1040,7 @@
 
                 }
 
-            }
+             }
             else {
 
                 if (_BunkerR.Id == "0") {
@@ -1027,7 +1049,9 @@
                 }
 
             }
-       // }
+      //  }
+
+        _BunkerR.VesselId = $("#VesselId").val();
 
         formData.append("Id", _BunkerR.Id);
         formData.append("VoyageId", _BunkerR.VoyageId);
@@ -1043,8 +1067,9 @@
         formData.append("FirstName", _BunkerR.FirstName);
         formData.append("LastName", _BunkerR.LastName);
         formData.append("Remarks", _BunkerR.Remarks);
+        formData.append("VesselId", _BunkerR.VesselId);
 
-        @* debugger;
+       @* debugger;
 
         try {
 
@@ -1067,11 +1092,6 @@
                   var row = tBody.insertRow(-1);
 
                     var cell = $(row.insertCell(-1));
-                   // cell.html(Fuel_type);
-                    cell.html("0");
-                    cell.css("display", "none");
-
-                    cell = $(row.insertCell(-1));
                     cell.html(Fuel_type);
 
                     cell = $(row.insertCell(-1));
@@ -1088,11 +1108,12 @@
 
                     var cont = true;
                     var data = [];
+
                     var table = document.getElementById('tblfuelbunkerReport'),
                     rows = table.getElementsByTagName('tr'),
                     i, j, cells;
 
-                    for (i = 1, j = rows.length ; i < j; ++i) {
+                    for (i = 1, j = rows.length; i < j; ++i) {
                         cells = rows[i].getElementsByTagName('td');
                         if (!cells.length) {
                             continue;
@@ -1133,13 +1154,13 @@
                             List.Sulphur_content = cells[5].children[0].value;
 
                         } catch { List.Sulphur_content = cells[5].innerHTML; }
-						
-						  if (i == 1) {
+
+                        if (i == 1) {
 
                             if (List.Fuel_type == "" || List.BDN == "" || List.BDN_Number == "" || List.Fuel_Density == "" || List.Sulphur_content == "") {
                                 result = false;
                             }
-                          }
+                        }
 
                         if (List.Fuel_type != "" || List.BDN != "" || List.BDN_Number != "" || List.Fuel_Density != "" || List.Sulphur_content != "") {
                             result = false;
@@ -1176,7 +1197,6 @@
                             }
                         }
 
-
                         if (result == true) {
 
                             data.push(List);
@@ -1186,18 +1206,21 @@
                         }
 
                     }
-        //        }
+           // }
 
 
-        //    }
-        //} catch { }
+          //}
+       // } catch { }
 
        // BunkerFuelInsertion();
+
+        debugger;
+
         if (data.length > 0 && cont == true) {
 
-            debugger;
-
             var newUrl = '@Url.Action("BunkerReportList", "Bunker")';
+
+            $('#cover-spin').show();
 
             $.ajax({
                 type: "POST",
@@ -1219,8 +1242,9 @@
 
                 }
             });
-
         }
+
+
     }
 
 </script>
@@ -1324,6 +1348,7 @@
                     cont = result;
                 }
 
+
             }
         }
         if (Id != "0") {
@@ -1334,8 +1359,8 @@
                 if (!cells.length) {
                     continue;
                 }
-
                 var result = true;
+
                 var List = {};
 
                 try {
@@ -1372,6 +1397,16 @@
                     List.MaxR_Id = Id;
 
                 } catch { List.MaxR_Id = Id }
+
+                try {
+                    var Vessel_Id = $("#VesselId").val();
+                    List.VesselId = Vessel_Id;
+                }
+                catch
+                {
+                    var Vessel_Id = $("#VesselId").val();
+                    List.VesselId = Vessel_Id;
+                }
 
                 if (List.Fuel_type != "") {
 
@@ -1415,7 +1450,6 @@
             }
         }
 
-
         if (array.length > 0 && cont == true) {
 
             array = JSON.stringify(array);
@@ -1437,7 +1471,9 @@
             });
         }
     }
+
 </script>
+
 
 
 

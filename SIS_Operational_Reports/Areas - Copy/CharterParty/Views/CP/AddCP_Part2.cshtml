@@ -1,0 +1,399 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.CharterPartyClass
+
+@{
+    ViewBag.Title = "AddCP_Part2";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div class="row mt-2" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div class="col-md">
+            <h2>
+                Charter Party Main-Consumption
+            </h2>
+            
+			</div>
+                <div class="col-md button-row-top">
+			<input type="button" id="btnSave" value="Save All" class="btn btn-info m-1"/>
+            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width m-1"> &lt;&lt; Go Back</a>
+
+        </div>
+    </div>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+	<div class= "container">
+    <table id="tblMainCONSUMPTION" class="table" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+                <th style="width:100px">Speed</th>
+                <th style="width:100px">LADEN</th>
+                <th style="width:100px">BALLAST</th>
+                <th style="width:100px">VLSFO</th>
+                <th style="width:100px">DO</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CPMainCONSUMPTIONClass customer2 in Model.MainCONSUMPTION)
+            {
+                <tr>
+                    <td>@customer2.Speed</td>
+                    <td>@customer2.ME_LADEN</td>
+                    <td>@customer2.ME_BALLAST</td>
+                    <td>@customer2.AE_VLSFO</td>
+                    <td>@customer2.AE_DO</td>
+                    <td><input type="button" id="button2" value="Remove" onclick="Remove2(this)" class="btn btn-primary btn-width"/></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><input type="text" id="txtSpeed" onkeyup="requiredValue1(this)" onkeypress="return isNumberKey(event)" /></td>
+                <td><input type="text" id="txtME_LADEN" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                <td><input type="text" id="txtME_BALLAST" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                <td><input type="text" id="txtAE_VLSFO" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                <td><input type="text" id="txtAE_DO" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                <td><input type="button" id="btnAdd2" value="Add" class="btn btn-info"/></td>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    </div>
+    
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+
+
+    <script>
+        // 2nd Grid
+        $("body").on("click", "#btnAdd2", function () {
+            //Reference the Name and Country TextBoxes.
+            var txtSpeed = $("#txtSpeed");
+            var txtME_LADEN = $("#txtME_LADEN");
+            var txtME_BALLAST = $("#txtME_BALLAST");
+            var txtAE_VLSFO = $("#txtAE_VLSFO");
+            var txtAE_DO = $("#txtAE_DO");
+
+            //alert(txtSpeed.val());
+
+            if (txtSpeed.val() == "") {
+                alert("Please Enter Speed");
+                return;
+            }
+            if (txtME_LADEN.val() == "") {
+                alert("Please Enter Laden");
+                return;
+            }
+            if (txtME_BALLAST.val() == "") {
+                alert("Please Enter Ballast");
+                return;
+            }
+            if (txtAE_VLSFO.val() == "") {
+                alert("Please Enter VLSFO");
+                return;
+            }
+            if (txtAE_DO.val() == "") {
+                alert("Please Enter DO");
+                return;
+            }
+
+
+            //Get the reference of the Table's TBODY element.
+            var tBody2 = $("#tblMainCONSUMPTION > TBODY")[0];
+
+            //Add Row.
+            var row2 = tBody2.insertRow(-1);
+
+            //Add Speed cell.
+            var cell2 = $(row2.insertCell(-1));
+            cell2.html(txtSpeed.val());
+
+            //Add ME_LADEN cell.
+            cell2 = $(row2.insertCell(-1));
+            cell2.html(txtME_LADEN.val());
+
+            //Add ME_BALLAST cell.
+            cell2 = $(row2.insertCell(-1));
+            cell2.html(txtME_BALLAST.val());
+
+            //Add AE_VLSFO cell.
+            cell2 = $(row2.insertCell(-1));
+            cell2.html(txtAE_VLSFO.val());
+
+            //Add AE_DO cell.
+            cell2 = $(row2.insertCell(-1));
+            cell2.html(txtAE_DO.val());
+
+            //Add Button cell.
+            cell2 = $(row2.insertCell(-1));
+            var btnRemove = $("<input />");
+            btnRemove.attr("id", "button2");
+            btnRemove.attr("type", "button");
+            btnRemove.attr("onclick", "Remove2(this);");
+            btnRemove.val("Remove");
+            cell2.append(btnRemove);
+
+            //Clear the TextBoxes.
+            txtSpeed.val("");
+            txtME_LADEN.val("");
+            txtME_BALLAST.val("");
+            txtAE_VLSFO.val("");
+            txtAE_DO.val("");
+        });
+
+        function Remove2(button) {
+            //Determine the reference of the Row using the Button.
+            var row2 = $(button).closest("TR");
+            var name = $("TD", row2).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                //Get the reference of the Table.
+                var table2 = $("#tblMainCONSUMPTION")[0];
+
+                //Delete the Table row using it's Index.
+                table2.deleteRow(row2[0].rowIndex);
+            }
+        };
+
+
+
+    </script>
+
+    <script type="text/javascript">
+        function requiredValue(arg) {
+            debugger;
+            var id = arg.getAttribute('id');
+            var value = arg.value;
+
+            var dec = document.getElementById(id).value;
+            if (dec.includes(".")) {
+                var res = dec.substring(dec.indexOf(".") + 1);
+                var kl = res.split("");
+                if (kl.length > 1) {
+                    document.getElementById(id).value = (parseInt(dec * 100) /
+                        100).toFixed(2);
+                }
+            }
+            if (value > 999.99) {
+
+                $("#" + id + "").val('');
+            }
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        function requiredValue1(arg) {
+            debugger;
+            var id = arg.getAttribute('id');
+            var value = arg.value;
+
+            var dec = document.getElementById(id).value;
+            if (dec.includes(".")) {
+                var res = dec.substring(dec.indexOf(".") + 1);
+                var kl = res.split("");
+                if (kl.length > 1) {
+                    document.getElementById(id).value = (parseInt(dec * 100) /
+                        100).toFixed(2);
+                }
+            }
+            if (value > 99.99) {
+
+                $("#" + id + "").val('');
+            }
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        function isNumberKey(evt) {
+            var charCode = (evt.which) ? evt.which : event.keyCode;
+            if (charCode != 46 && charCode > 31
+                && (charCode < 48 || charCode > 57))
+                return false;
+
+            return true;
+        }
+    </script>
+    <script>
+
+        // For Save All
+        $("body").on("click", "#btnSave", function () {
+
+            //Loop through the Table rows and build a JSON array.
+            //var CPVesselInfo = new Array();
+            //$("#tblCPVessel TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer.VesselID = row.find("TD").eq(0).html();
+            //    customer.VesselName = row.find("TD").eq(1).html();
+            //    customer.StartDate = row.find("TD").eq(2).html();
+            //    customer.EndDate = row.find("TD").eq(3).html();
+            //    customer.VoyageType = row.find("TD").eq(4).html();
+            //    //Model.CPVesselInfo.VesselID = customer.VesselID;
+            //    //Model.CPVesselInfo.VesselName = customer.VesselName;
+            //    //Model.CPVesselInfo.StartDate = customer.StartDate;
+            //    //Model.CPVesselInfo.EndDate = customer.EndDate;
+            //    //Model.CPVesselInfo.VoyageType = customer.VoyageType;
+            //    CPVesselInfo.push(customer);
+            //});
+
+            //Loop through the Table rows and build a JSON array.
+            var MainCONSUMPTION = new Array();
+            var check = 0;
+            $("#tblMainCONSUMPTION TBODY TR").each(function () {
+                var row = $(this);
+                var customer2 = {};
+                //customer.ID = row.find("TD").eq(0).html();
+                customer2.Speed = row.find("TD").eq(0).html();
+                customer2.ME_LADEN = row.find("TD").eq(1).html();
+                customer2.ME_BALLAST = row.find("TD").eq(2).html();
+                customer2.AE_VLSFO = row.find("TD").eq(3).html();
+                customer2.AE_DO = row.find("TD").eq(4).html();
+
+                check = 1;
+                MainCONSUMPTION.push(customer2);
+            });
+
+            //alert(check);
+            debugger;
+            if (check == 0) {
+
+
+                var txtSpeed = $("#txtSpeed");
+                var txtME_LADEN = $("#txtME_LADEN");
+                var txtME_BALLAST = $("#txtME_BALLAST");
+                var txtAE_VLSFO = $("#txtAE_VLSFO");
+                var txtAE_DO = $("#txtAE_DO");
+
+                //alert(txtSpeed.val());
+
+                if (txtSpeed.val() == "") {
+                    alert("Please Enter Spee55d");
+                    return;
+                }
+                if (txtME_LADEN.val() == "") {
+                    alert("Please Enter Laden");
+                    return;
+                }
+                if (txtME_BALLAST.val() == "") {
+                    alert("Please Enter Ballast");
+                    return;
+                }
+                if (txtAE_VLSFO.val() == "") {
+                    alert("Please Enter VLSFO");
+                    return;
+                }
+                if (txtAE_DO.val() == "") {
+                    alert("Please Enter DO");
+                    return;
+                }
+
+
+                debugger;
+                //Get the reference of the Table's TBODY element.
+                var tBody2 = $("#tblMainCONSUMPTION > TBODY")[0];
+
+                //Add Row.
+                var row2 = tBody2.insertRow(-1);
+
+                //Add Speed cell.
+                var cell2 = $(row2.insertCell(-1));
+                cell2.html(txtSpeed.val());
+
+                //Add ME_LADEN cell.
+                cell2 = $(row2.insertCell(-1));
+                cell2.html(txtME_LADEN.val());
+
+                //Add ME_BALLAST cell.
+                cell2 = $(row2.insertCell(-1));
+                cell2.html(txtME_BALLAST.val());
+
+                //Add AE_VLSFO cell.
+                cell2 = $(row2.insertCell(-1));
+                cell2.html(txtAE_VLSFO.val());
+
+                //Add AE_DO cell.
+                cell2 = $(row2.insertCell(-1));
+                cell2.html(txtAE_DO.val());
+
+                var MainCONSUMPTION1 = new Array();
+                debugger;
+                $("#tblMainCONSUMPTION TBODY TR").each(function () {
+
+                    var row = $(this);
+                    var customer3 = {};
+                    //customer.ID = row.find("TD").eq(0).html();
+                    customer3.Speed = row.find("TD").eq(0).html();
+                    customer3.ME_LADEN = row.find("TD").eq(1).html();
+                    customer3.ME_BALLAST = row.find("TD").eq(2).html();
+                    customer3.AE_VLSFO = row.find("TD").eq(3).html();
+                    customer3.AE_DO = row.find("TD").eq(4).html();
+
+                    
+
+                    MainCONSUMPTION1.push(customer3);
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "/CharterParty/CP/InsertCharterParty2",
+                    data: JSON.stringify(MainCONSUMPTION1),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        // alert(r + " record(s) inserted.");
+                        if (response.Success) {
+                            alert("CP_Part2 Completed" + response.Data);
+                            window.location.href = "/CharterParty/CP/" + response.Data;
+                        } else {
+                            alert("CP_Part1 Error");
+                            //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                        }
+                    }
+                });
+
+            }
+
+            else {
+
+                $.ajax({
+                    type: "POST",
+                    url: "/CharterParty/CP/InsertCharterParty2",
+                    data: JSON.stringify(MainCONSUMPTION),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        // alert(r + " record(s) inserted.");
+                        if (response.Success) {
+                            alert("CP_Part2 Completed" + response.Data);
+                            window.location.href = "/CharterParty/CP/" + response.Data;
+                        } else {
+                            alert("CP_Part1 Error");
+                            //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
+
+        $('#Menu1').removeClass('active');
+        $('#Menu2').removeClass('active');
+        $('#Menu3').addClass('active');
+        $('#Menu4').removeClass('active');
+        $('#Menu5').removeClass('active');
+
+
+    </script>
+</body>
+</html>

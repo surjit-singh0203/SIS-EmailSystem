@@ -19,5 +19,13 @@ namespace DataBuildingLayer
         public int RankId { get; set; }
         public int DepId { get; set; }
         public string UserID { get; set; }
+
+        public int VesselID1 { get; set; }
     }
+
+    //public partial class PortClass
+    //{
+    //    public string PortName { get; set; }
+    //    public string FacilityName { get; set; }
+    //}
 }

@@ -14,17 +14,17 @@ namespace DataBuildingLayer
         public int TotalCount { get; set; }
         public string Supplier { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? BargeAlongside { get; set; }
+        public DateTime BargeAlongside { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? BunkerHoseConnected { get; set; }
+        public DateTime BunkerHoseConnected { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? CommencedBunkering { get; set; }
+        public DateTime CommencedBunkering { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? BunkeringCompleted { get; set; }
+        public DateTime BunkeringCompleted { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? BunkerHosedisconnected { get; set; }
+        public DateTime BunkerHosedisconnected { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        public DateTime? BargeCastOff { get; set; }
+        public DateTime BargeCastOff { get; set; }
         public string BargeName { get; set; }
         public string Remarks { get; set; }
         public string FirstName { get; set; }
@@ -34,22 +34,20 @@ namespace DataBuildingLayer
         public string PortName_others { get; set; }
         public int VoyageId { get; set; }
         public int VesselId { get; set; }
+        public string VesselName { get; set; }
         public string voyagenumber { get; set; }
         public string File_Path { get; set; }
         public int? Fuel_type_Id { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? BDN { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Fuel_Density { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Sulphur_content { get; set; }
         public string BDN_Number { get; set; }
         public HttpPostedFileBase LabAnalysisReport { get; set; }
-        public string LabAnalysisReport_Name { get; set; }
         public string fileExtension { get; set; }
+        public string LabAnalysisReport_Name { get; set; }
         public List<BunkerReport> BunkerReportList { get; set; }
+        public List<SelectListItem> VesselList { get; set; }
         public List<VoyageClass> VoyageNumberList { get; set; }
-       
     }
 
     public class BukerFuelList

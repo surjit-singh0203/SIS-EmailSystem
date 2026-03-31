@@ -12,20 +12,16 @@ namespace DataBuildingLayer
         public int TotalCount { get; set; }
         public int Id { get; set; }
         public int VoyageId { get; set; }
-     
         public int LegPortId { get; set; }
         public string VesselStatus { get; set; }
         public string AtSeaOrPort { get; set; }
         public int? PortStatus { get; set; }
-
-        [DataType(DataType.Date, ErrorMessage = "Date only")]
         //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy/MM/dd}")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? Date { get; set; }
         public string Latitude { get; set; }
         public string Longitude { get; set; }
-        // [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm}")]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
         public DateTime? ETA { get; set; }
         public string NPOC { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -44,11 +40,9 @@ namespace DataBuildingLayer
         public decimal? EngineDist { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? TotalDistance { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? StmgTime { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? TotalTime { get; set; }
-        public bool IsSubmit { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? DistToGo_DTG { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? CP_Speed { get; set; }
@@ -100,17 +94,17 @@ namespace DataBuildingLayer
         public decimal? OT_ROB_ACYT_InUse { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? OT_ROB_ACYT_Empty { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+      //  [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? AE_RungHrs_No1 { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+      //  [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? AE_RungHrs_No2 { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+      //  [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? BR_RungHrs_No1 { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+      // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? BR_RungHrs_No2 { get; set; }
        // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? AE_RungHrs_No3 { get; set; }
-      // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+      //  [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? AE_RungHrs_No4 { get; set; }
        // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? AE_RungHrs_ShaftGen { get; set; }
@@ -169,7 +163,6 @@ namespace DataBuildingLayer
         public decimal? ER_Sludge_ROB { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? ER_WasteOil_ROB { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? PumpRoomMaxSounding { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -178,9 +171,9 @@ namespace DataBuildingLayer
         public decimal? ChainLocker2 { get; set; }
 
         public string Remarks { get; set; }
-
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? FuelRob { get; set; }
-
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? BunkerReceipt { get; set; }
 
         public decimal EOSP_ROB { get; set; }
@@ -189,7 +182,6 @@ namespace DataBuildingLayer
         public decimal ME_CP_VLSFO { get; set; }
         public decimal ME_CP_HFO { get; set; }
         public decimal ME_CP_MGO { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal ME_ACT_SEA_VLSFO { get; set; }
         public decimal ME_ACT_SEA_HFO { get; set; }
@@ -271,7 +263,7 @@ namespace DataBuildingLayer
 
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Incinerator { get; set; }
-
+        public string VesselName { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal StopageAtSea { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -289,6 +281,14 @@ namespace DataBuildingLayer
 
         public string voyagenumber { get; set; }
 
+        public string dateF { get; set; }
+
+        //---------------- New Column Add in V2 -- Date 25 May 2022 --------///////////////       
+
+
+        //-------------------------------------------------------------------/////////
+
+        public int CPID { get; set; }
 
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
@@ -308,15 +308,26 @@ namespace DataBuildingLayer
 
         //For NR_Cargo
         //
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal BL_Qty { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal LoadPortalActual { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal TodaysActual { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Qty_Diff { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public string Reasonfor_Qty_Diff { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Cargo_Temp { get; set; }
 
+        public string  LegPortName { get; set; }
+
+        public string Status { get; set; }
 
         public int HiddenTotalSum { get; set; }
+
+        public string CPNo  { get; set; }
 
 
     }
@@ -345,7 +356,6 @@ namespace DataBuildingLayer
         public decimal FRAMO_ACT_BERTH { get; set; }
 
         public decimal IGG { get; set; }
-        public decimal Incinerator { get; set; }
         public decimal StopageAtSea { get; set; }
         public decimal Deviation { get; set; }
         public decimal SlowSteaming { get; set; }
@@ -354,6 +364,19 @@ namespace DataBuildingLayer
         public decimal COTPrep { get; set; }
         public decimal CargoHeating { get; set; }
         public decimal Others { get; set; }
+        public decimal Incinerator { get; set; }
+
+        //public decimal AE_ACT_IDLING_VLSFO { get; set; }
+        //public decimal AE_ACT_Loading_VLSFO { get; set; }
+        //public decimal AE_ACT_Discharging_VLSFO { get; set; }
+
+        //public decimal BLR_ACT_IDLING_VLSFO { get; set; }
+        //public decimal BLR_ACT_Loading_VLSFO { get; set; }
+        //public decimal BLR_ACT_Discharging_VLSFO { get; set; }
+
+        //public decimal FRAMO_ACT_IDLING_VLSFO { get; set; }
+        //public decimal FRAMO_ACT_Loading_VLSFO { get; set; }
+        //public decimal FRAMO_ACT_Discharging_VLSFO { get; set; }
 
 
     }
@@ -409,7 +432,7 @@ namespace DataBuildingLayer
         public int SortingOrder { get; set; }
     }
 
-  
+
 
     public class DNR_Ballast_Tank
     {
@@ -436,8 +459,8 @@ namespace DataBuildingLayer
         public int Void_Space_Id { get; set; }
         public int DailyNoonReport_Id { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? Sounding { get; set; }
-       
+        public decimal Sounding { get; set; }
+
         public string TankName { get; set; }
         public string Height { get; set; }
         public string Capacity { get; set; }

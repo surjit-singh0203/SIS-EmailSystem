@@ -1,0 +1,266 @@
+﻿@model DataBuildingLayer.ArrivalReport
+
+<div id="arrival">
+
+    
+
+    <div id="idMaindiv" class="container">
+        <div class="row">
+
+            <div class="page-heading page-header-flex">
+                <div>
+                </div>
+                <div class="form-actions">
+                    <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+                </div>
+            </div>
+
+            @*<div class="mb-lg-1 row">
+            <div style="margin-left:550px" class="col-sm-3">
+
+                <input id="idFirst" class="form-control" type="text" />
+                <span id="messageLat" style="color:red"></span>
+            </div>
+
+            <div class="col-sm-3">
+
+                <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
+                <span id="messageLat" style="color:red"></span>
+            </div>
+
+
+            <div class="col-md button-row-top">
+                <div class="row">
+                    <div class="col">
+                        <button id="btnSearch" class="function-button submit-button">
+
+                            <i class="fa fa-plus-circle mr-2"></i>Search
+
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>*@
+
+            <table class="GeneratedTable">
+                <thead>
+                    <tr>
+                        <th style="display:none">Id</th>
+                        <th>Voyage No.</th>
+                        <th>Place</th>
+                        <th>EOSP</th>
+                        <th>Status</th>
+                        <th>Submit Date</th>
+
+                        <th>Action</th>
+
+
+                    </tr>
+
+                </thead>
+                <tbody>
+
+                    @foreach (var item in Model.GetArrivalRList)
+                    {
+
+
+                        <tr>
+                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                            <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
+                            <td> @Html.DisplayFor(modelItem => item.Place)</td>
+                            <td> @Html.DisplayFor(modelItem => item.EOSP)</td>
+                            <td>
+
+                                @{ var svd = item.SaveDraft;
+                                    if (svd == true)
+                                    {
+                                        @Html.Raw("Draft") }
+                                    else
+                                    {
+                                        @Html.Raw("Submit") } }
+                            </td>
+                            <td>
+                                @{ DateTime? cdt = item.CreatedDate;
+                                    if (cdt != null)
+                                    {
+                                        @Html.Raw(cdt.Value.ToString("dd-MMM-yyyy")) } }
+                            </td>
+
+                            <td>
+
+                                <div class="row button-row">
+                                    <div class="col table-button-container">
+                                        <button type="button" class="function-button table-button">
+                                            @Html.ActionLink("View Detail", "Edit", "Arrival", new { id = item.Id }, new { onclick = "" })
+                                        </button>
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                        </tr>
+                    }
+
+
+                </tbody>
+            </table>
+            <!-- Codes by Quackit.com -->
+            @*<nav aria-label="Page navigation example">
+            <ul class="pagination">
+
+
+                @{
+                    int totalRecords = 0;
+                    foreach (var item in Model.GetNoonRList)
+                    {
+                        totalRecords = item.TotalCount;
+                        break;
+                    }
+                    //int totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+                    // totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+
+                    int pageSize = SIS_Operational_Reports.Common.CommonMethods.PAGESIZE;
+
+                    int tot_pages = totalRecords / pageSize;
+                    int remainder = totalRecords % pageSize;
+
+                    tot_pages = remainder > 0 ? (tot_pages + 1) : tot_pages;
+
+                    int currPage = Convert.ToInt32(TempData.Peek("CurrentPage"));
+
+                    if (totalRecords > 0)
+                    {
+                        if (currPage == 0)
+                        {
+                            currPage = 1;
+                        }
+
+                        if (currPage != 1)
+                        {
+                            <li class="page-item"><a class="page-link"> @Html.ActionLink("First", "_searchnoonR", "DailyNoon", new { pageNo = 1 }, null)</a></li>
+                        }
+
+                        if (currPage != tot_pages)
+                        {
+                            for (int cnt = currPage; cnt < (currPage + tot_pages); cnt++)
+                            {
+                                if (cnt == currPage)
+                                {
+                                    <li class="page-item active"><a class="page-link" href="#">@cnt</a></li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">@Html.ActionLink(cnt.ToString(), "_searchnoonR", "DailyNoon", new { pageNo = cnt }, null)</li>
+                                }
+
+                                if (cnt == tot_pages)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+
+                        if (currPage == tot_pages)
+                        {
+                            <li class="page-item active"><a class="page-link" href="#">@tot_pages</a></li>
+                        }
+                        else
+                        {
+                            <li class="page-item">@Html.ActionLink("Last", "_searchnoonR", "DailyNoon", new { pageNo = tot_pages }, null)</li>
+                        }
+                    }
+                }
+            </ul>
+        </nav>*@
+
+        </div>
+    </div>
+
+
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+
+<script>
+
+    $("#btnSearch").click(function () {
+        //alert(34);
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+
+
+
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+
+
+
+        $("#arrival").html('');
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Arrival/arrivallist?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+            datatype: 'json',
+            cache: false,
+            contentType: 'application/json; charset=utf-8',
+            processData: false,
+            success: function (data) {
+
+                // alert(data);
+                /* if (response.Result === true) {*/
+
+                //window.location.reload();
+
+                $("#arrival").html(data);
+
+
+                //;
+
+                // $("#idMaindiv").html('');
+
+                //$("#idMaindiv").html(data);
+                // alert(data);
+                //}
+                //else {
+                //    toastr["error"](response.Message);
+                //}
+            },
+            //failure: function (response) {
+            //    toastr["error"](response.Message);
+            //}
+        });
+
+
+
+
+
+    });
+
+</script>

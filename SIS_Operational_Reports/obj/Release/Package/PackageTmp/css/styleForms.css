@@ -1,11 +1,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  font-size: 0.9em !important;
-}
-
-h1, h2, h3, h4, h5{
-	color: #676969 !important;
+  font-size: 0.9em;
 }
 
 .nav-link.active {
@@ -79,9 +75,9 @@ table.GeneratedTable th {
   text-align: center;
 }
 
-/*tr.small-titles {
+tr.small-titles {
   font-size: 8px;
-}*/
+}
 
 tr.small-titles * {
   padding-left: 3px !important;
@@ -146,9 +142,8 @@ input#Port {
   width: 100%;
 }
 
-h2,
-h4 {
-  color: #676969;
+h1, h2, h3, h4, h5 {
+  color: #676969 !important;
 }
 
 .button-row-top {
@@ -177,6 +172,7 @@ button.go-back {
 }
 
 .row.button-row {
+  max-width: fit-content !important;
   justify-content: center !important;
   display: inline-flex !important;
 }
@@ -332,13 +328,28 @@ ul#menu{
 	text-shadow: none !important
 }
 
-.long-table table td, #tblFuelC td{
-	padding-left: 2px !important;
+button i, a i{
+	display: none !important;
 }
 
-#menu li{
-	border: none !important;
-	color: rgba(255,255,255,.55);
+.GeneratedTable.large-table td {
+	padding-left: 5px !important;
+}
+
+.col-md.button-row-top a.btn{
+	margin: 0 12px !important;
+}
+
+table button, table button a, table a{
+	padding: 1px 5px !important;
+    border: none !important;
+    font-weight: 400 !important;
+    width: 40% !important;
+    margin: 2px !important;
+    min-width: fit-content !important;
+	color: black !important;
+	background: #efefef !important;
+	text-decoration: none !important;
 }
 
 .search-row{
@@ -352,107 +363,30 @@ ul#menu{
 	text-align: center !important;
 }
 
+.dropdown-toggle::after{
+display: none !important;}
+
 .centered-table td{
-	padding-left: 1px !important;
-}
-
-button.function-button.draft-button, button.function-button.reset-button {
-	background: transparent !important;
-    color: #676969 !important;
-    border: solid 1px #676969 !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-	border-radius: 0.25rem;
-}
-
-button.function-button.submit-button{
-	border: solid 1px black !important;
-}
-
-
-element.style {
-    color: rgba(255,255,255,.55);
-    text-transform: none;
-}
-#menu a {
-    display: block;
-    line-height: 35px;
-    padding: 0 14px;
-    text-decoration: none;
-    color: #eee;
-}
-.navbar-dark .navbar-nav .nav-link {
-    color: rgba(255,255,255,.55);
-}
-
-.navbar-expand-lg .navbar-nav .nav-link {
-    padding-right: 0.5rem;
-    padding-left: 0.5rem;
-}
-.navbar-nav .nav-link {
-    padding-right: 0;
-    padding-left: 0;
-}
-ul.navbar-nav * {
-    color: white;
-}
-
-.nav-link {
-    transition: none;
-}
-.nav-link {
-    display: block;
-    padding: 0.5rem 1rem;
-    color: #0d6efd;
-    text-decoration: none;
-    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out;
-}
-a {
-    color: #0d6efd;
-    text-decoration: underline;
-}
-*, ::after, ::before {
-    box-sizing: border-box;
-}
-user agent stylesheet
-a:-webkit-any-link {
-    color: -webkit-link;
-    cursor: pointer;
-    text-decoration: underline;
+	padding-left: 0 !important;
 }
 
 #menu li{
-	font: inherit !important;
+	border: none !important;
 }
 
-@media (max-width: 1400px){
-			a.nav-link.dropdown-toggle{
-			padding: 0 !important;}
-		}
-		
-/*table#tblFuelC{
-	font-size: smaller !important;
-}*/
-
-.row.report-actions * {
-    display: inline-grid;
+.long-table table td, #tblFuelC td{
+	padding-left: 2px !important;
 }
 
-#v-pills-tab{
-	margin-top: 25px !important;
+.col-md.button-row-top button, .col-md.button-row-top a{
+	margin: 0 12px;
 }
 
-table.GeneratedTable.remarks td {
-    max-width: 188px !important;
+.col-md.button-row-top a{
+	border-radius: 3px;
+	text-decoration: none;
 }
-
-table.GeneratedTable.remarks textarea{
-	width: 670px;
-    margin-left: -10px;
-	min-height: 170px;
-	width: 100% !important;
 	
-	}
-	.datetime-wrapper1{
-		display:block!important;
-	}
+span.select2.select2-container.select2-container--default.select2-container--below {
+    width: -webkit-fill-available !important;
+}

@@ -223,12 +223,12 @@ a.btn.btn-default.btn-flat:hover{
 .btn.btn-info, .btn.btn-success.btn-width, .btn.btn-danger.btn-width, .function-button.submit-button{
 	background: black !important;
 	color: white !important;
-	border: none;
+	border: solid 1px black !important;
 	padding: 6px 12px !important;
 	font-size: 12px !important;
 }
 
-.btn.btn-primary.btn-width, .btn.btn-danger.btn-width, .function-button.go-back{
+.btn.btn-primary.btn-width, .btn.btn-danger.btn-width, .function-button.go-back, .function-button.draft-button, .function-button.reset-button{
 	background: transparent !important;
 	color: #676969 !important;
 	border: solid 1px #676969 !important;
@@ -248,6 +248,6 @@ ul#menu{
 	background: transparent !important;
 }
 
-.long-table table td{
-	padding-left: 2px !important;
+.btn.btn-info i{
+	display: none;
 }

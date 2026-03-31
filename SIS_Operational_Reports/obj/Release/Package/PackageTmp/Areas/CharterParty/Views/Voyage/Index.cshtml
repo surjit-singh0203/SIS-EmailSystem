@@ -6,117 +6,124 @@
     Layout = "~/Views/Shared/_LayoutForms.cshtml";
 }
 
-
-
 <div id="voyage">
-    
-        @*<h4 style="text-align:center">
+
+    <div class="row" style="margin-top: 10px;">
+        <h4 style="text-align:center">
 
 
             @if (ViewBag.VesselName != null)
             {
                 <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
             }
-        </h4>*@
-    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
-        <div class="col-md">
-            <h2>Voyage Details</h2>
-        </div>
+        </h4>
+        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div class="col-md">
+                <h2>Voyage Details</h2>
+            </div>
 
 
 
-        @if (TempData["Error"] != null)
-        {
-            <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
-        }
-        @if (TempData["Success"] != null)
-        {
-            <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
-        }
-        @if (StaticHelper.LoginUser == "master" || StaticHelper.LoginUser == "2off")
-        {
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
 
             <div class="col-md button-row-top">
                 <div class="row">
                     <div class="col">
                         <button class="function-button submit-button">
-                            <a class="function-button submit-button" href="@Url.Action("addvoyagedetail", "Voyage")">
-                                <i class="fa fa-plus-circle mr-2"></i>Add Voyage
-                            </a>
-                        </button>
+                            @if (StaticHelper.UserRole == "Administrator")
+                            {
+                                <a class="function-button submit-button" href="@Url.Action("addvoyagedetail", "Voyage")">
+                                    <i class="fa fa-plus-circle mr-2"></i>Add Voyage
+                                </a>}
+                            </button>
                     </div>
-                    @*<div class="col">
+                    <div class="col">
                         <button name="back" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
 
-                    </div>*@
+                    </div>
                 </div>
             </div>
 
-        }
         </div>
 
-    
+    </div>
 
 
     <div class="container">
-        <div >
-            @*<div class="col-md">
+        <div class="row">
+            <div class="col-md">
                 <h4>Voyage Detail List</h4>
-               
-            </div>*@
+                @*<a href="@Url.Action("addvoyagedetail", "Voyage", new { id = Model.Id })" class="btn btn-sm btn-light btn-edit">
+                        <i class="uil uil-edit-alt mr-2"></i>Add Voyage
+                    </a>*@
+            </div>
 
             <!-- CSS Code: Place this code in the document's head (between the 'head' tags) -->
 
-				
-			
-			<div class="search-row">
-                        <div class="col m-1">
+            <div class="mb-lg-1 row">
+                <div style="margin-left:550px" class="col-sm-3">
 
-                            <input id="idFirst" autocomplete="off" placeholder="search by : voyage no." class="form-control" type="text" />
+                    <input id="idFirst" placeholder="search by : voyage no." class="form-control" type="text" />
                     <span id="messageLat" style="color:red"></span>
+                </div>
+
+                <div class="col-sm-3">
+
+                    <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
+                    <span id="messageLat" style="color:red"></span>
+                </div>
+
+
+                <div class="col-md button-row-top">
+                    <div class="row">
+                        <div class="col">
+                            <button id="btnSearch" class="function-button submit-button">
+
+                                <i class="fa fa-plus-circle mr-2"></i>Search
+
+                            </button>
                         </div>
 
-                        <div style="display:none" class="col m-1">
+                    </div>
+                </div>
 
-                            <input id="idSecond" name="datefilter" autocomplete="off" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
-                    <span id="messageLat" style="color:red"></span>
-                        </div>
+            </div>
 
-                        <button id="btnSearch" class="function-button submit-button m-1">Search</button>
-						</div>
-
-            <table class="GeneratedTable centered-table">
+            <table class="GeneratedTable">
                 <thead>
                     <tr>
                         <th style="display:none">Id</th>
                         <th>Voyage Number</th>
                         <th>Voyage Start Port</th>
                         <th>Voyage End Port</th>
-                        @if (StaticHelper.LoginUser == "master" || StaticHelper.LoginUser == "2off")
-                        {
-                            <th style="width: 350px;">Action</th>
-                        }
-                        </tr>
+                        <th>View Voyage Detail</th>
+                        <th>Action</th>
+                    </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.GetVoyageList)
                     {
-                    <tr>
-                        <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
-                        <td> @Html.DisplayFor(modelItem => item.VoyageNumber)</td>
-                        <td> @Html.DisplayFor(modelItem => item.VoyageStartP)</td>
-                        <td> @Html.DisplayFor(modelItem => item.VoyageEndP)</td>
-
-                        @if (StaticHelper.LoginUser == "master" || StaticHelper.LoginUser == "2off")
-                        {
+                        <tr>
+                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                            <td> @Html.DisplayFor(modelItem => item.VoyageNumber)</td>
+                            <td> @Html.DisplayFor(modelItem => item.VoyageStartP)</td>
+                            <td> @Html.DisplayFor(modelItem => item.VoyageEndP)</td>
                             <td>
-                                <div class="row button-row">
-
+                                <div class="col table-button-container">
                                     <button type="button" class="function-button table-button">
                                         @Html.ActionLink("View Voyage Settings", "ViewVoyageDetail", "Voyage", new { id = item.Id }, new { onclick = "" })
                                     </button>
-
-
+                                </div>
+                            </td>
+                            <td>
+                                <div class="row button-row">
                                     <div class="col table-button-container">
                                         <button type="button" class="function-button table-button">
                                             @Html.ActionLink("Edit", "editvoyage", "Voyage", new { id = item.Id }, new { onclick = "" })
@@ -129,7 +136,6 @@
                                     </div>
                                 </div>
                             </td>
-                        }
                         </tr>
                     }
                 </tbody>
@@ -261,11 +267,8 @@
         //var startDate = range.start;
         //var endDate = range.end;
 
-        //var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
-        //var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
-
-        var dateF = "";
-        var dateT ="";
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
         //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
         //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
@@ -280,7 +283,6 @@
             return;
         }
         else {
-
 
 
             $.ajax({
@@ -317,8 +319,8 @@
                 //}
             });
 
-
         }
+
 
 
     });

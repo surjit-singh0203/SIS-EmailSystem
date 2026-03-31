@@ -1,7 +1,7 @@
 ﻿@model DataBuildingLayer.FreshWaterReport
 @{
     ViewBag.Title = "FreshWaterReportList";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 <script type="text/javascript" src="~/Content/search1.js"></script>
@@ -30,7 +30,7 @@
                 <p class="alert alert-success" id="successMessage">@TempData["success"]</p>
             }
 
-            <div class="col-md button-row-top">
+            @*<div class="col-md button-row-top">
                 <div class="row">
                     <div class="col">
                         <button class="function-button submit-button">
@@ -41,7 +41,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div>*@
 
         </div>
     </div>
@@ -60,14 +60,12 @@
                         <!--<div class="col m-1">-->
                         @*@Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control importexport", @multiple = "multiple", })*@
 
-                        @*@Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })*@
+                        @Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
                     </div>
 
                     <div class="col m-1">
-
                         @*@Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })*@
                         <input id="idPortName" autocomplete="off" placeholder="Port Name" class="form-control" type="text">
-
                     </div>
 
                     <div class="col m-1">
@@ -122,6 +120,7 @@
     $('#Menu7').removeClass('active');
     $('#Menu8').addClass('active');
     $('#Menu9').removeClass('active');
+    $('#Menu10').removeClass('active');
 
 </script>
 
@@ -131,22 +130,25 @@
     $("#btnSearch").click(function () {
         debugger
 
-       /* var firstVal = $('#PortName option:selected').text();*/
-        var firstVal = $("#idPortName").val();
+        var firstVal = $('#idPortName').val();
         var secondVal = $("#idSecond").val();
+        var vsl = $("#VesselId").val();
 
-        if (firstVal == "" && secondVal == "") {
+
+       // alert(firstVal);
+
+        if (firstVal == "" && secondVal == "" && vsl == "") {
             alert("Please enter atleast 1 value for search.");
             return;
         }
-      
+
         else {
 
             $("#tblFreshWReport").html("");
 
             $.ajax({
                 type: 'GET',
-                url: '/Report/FreshWater/_FreshWaterReport?pageNo=1&firstVal=' + firstVal + '&S_val=' + secondVal,
+                url: '/Report/FreshWater/_FreshWaterReport?pageNo=1&firstVal=' + firstVal + '&S_val=' + secondVal + '&Vessel=' + vsl,
                 datatype: 'json',
                 cache: false,
                 contentType: 'application/json; charset=utf-8',
@@ -194,7 +196,7 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-          
+
         });
     });
 

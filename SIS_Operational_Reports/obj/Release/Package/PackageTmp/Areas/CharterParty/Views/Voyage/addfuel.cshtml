@@ -2,7 +2,7 @@
 @model DataBuildingLayer.VoyageClass
 @{
     ViewBag.Title = "addfuel";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
 }
 
 
@@ -39,7 +39,12 @@
 
             <td>   @Html.EditorFor(model => model.CP_Consumption, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
 
-            <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+            <td>
+                @if (StaticHelper.UserRole == "Administrator")
+                {
+                    <input class="btn btn-info" type="button" id="btnAdd" value="Add" />
+                }
+                </td>
 
 
         </tr>

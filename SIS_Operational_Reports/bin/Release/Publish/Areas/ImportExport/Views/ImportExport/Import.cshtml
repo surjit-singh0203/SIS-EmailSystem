@@ -3,8 +3,21 @@
     ViewBag.Title = "Import";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
+<style>
 
-<h2>Import Data</h2>
+
+</style>
+<div class="row">
+    <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div>
+            <h2>
+               Import Setting
+
+            </h2>
+
+        </div>
+    </div>
+</div>
 
 
 <div class="content-wrapper">
@@ -15,24 +28,143 @@
     </section>
     <section class="content">
         <div class="row">
-            <div class="col-md-12">
+
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
+
+            <div class="col-md-6"style="display: flex;align-items: center;justify-content: end;">
                 <div class="box box-info">
                     <div class="box-header with-border">
                         <div>
                             @using (Html.BeginForm("Import", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
                             {
-                                <div class="col-md-6">
+                                <div class="col">
                                     @Html.Partial("_import")
                                 </div>
 
                             }
+
                         </div>
                     </div>
                 </div>
+				
             </div>
+
+            <div class="col">
+                <!-- <input type="file" id="zipSelector" accept=".zip" style="display: none;"> -->
+                <!-- <b>Import Attachment : </b><button id="chooseZipFolderBtn">Choose ZIP Folder</button> -->
+				 <div>
+
+                <a class="btn btn-info here" onclick="showpdf(this.id)" id="~/DownloadTemplate/SISNova Vessel value instruction..xlsx"><i class="uil uil-import mr-2"></i>Download Sample Template</a>
+
+            </div>
+            </div>
+
+            
         </div>
     </section>
 </div>
 
+<div id="PdfModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div class="box-body">
+                    <div style="text-align:center">
+                        <iframe id="myFrame" style="display:none;width:100%"></iframe>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showpdf(param) {
+        // var imgSrc = $(param).attr("src");
+        //alert(param);
+
+        // /images/AttachFiles / _49 Web Street, Grey Box Web Application Vulnerability Assessment Report3798.pdf
+        var omyFrame = document.getElementById("myFrame");
+        omyFrame.style.display = "block";
+        omyFrame.src = param;
+        // omyFrame.load();
+        // $('#ifrID').attr('src', param);
+       // $('#PdfModal').modal('show');
+    }
+</script>
+<script type="text/javascript">
+    function DownloadFile(fileName) {
+        //Set the File URL.
+        var url = "DownloadTemplate/" + fileName;
+
+        //Create XMLHTTP Request.
+        var req = new XMLHttpRequest();
+        req.open("GET", url, true);
+        req.responseType = "blob";
+        req.onload = function () {
+            //Convert the Byte Data to BLOB object.
+             var blob = new Blob([req.response], { type: "application/octetstream" });
+
+          
+            //Check the Browser type and download the File.
+            var isIE = false || !!document.documentMode;
+            if (isIE) {
+                window.navigator.msSaveBlob(blob, fileName);
+            } else {
+                var url = window.URL || window.webkitURL;
+                link = url.createObjectURL(blob);
+                var a = document.createElement("a");
+                a.setAttribute("download", fileName);
+                a.setAttribute("href", link);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        };
+        req.send();
+    };
+</script>
 
 
+@*<script>
+    function downloadURL(url) {
+        var hiddenIFrameID = 'hiddenDownloader',
+            iframe = document.getElementById(hiddenIFrameID);
+        if (iframe === null) {
+            iframe = document.createElement('iframe');
+            iframe.id = hiddenIFrameID;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
+        iframe.src = url;
+    };
+</script>*@
+
+<script>
+
+    $('#chooseZipFolderBtn').click(function () {debugger
+        $('#zipSelector').click();
+    });
+
+    $('#zipSelector').change(function (e) {debugger
+
+        let path = $(this).val();
+        $('#selectedPath').text(path);
+    });
+
+</script>

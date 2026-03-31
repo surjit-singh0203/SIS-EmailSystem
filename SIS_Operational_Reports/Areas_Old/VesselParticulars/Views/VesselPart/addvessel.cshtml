@@ -1,0 +1,397 @@
+﻿@model DataBuildingLayer.VesselDetail
+@{
+    ViewBag.Title = "addvessel";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+@*@using (Html.BeginForm("addvessel", "VesselPart"))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(e => e.Id)
+
+        <div id="page-wrapper" class="content">
+
+            <div class="page-heading page-header-flex">
+                <div>
+                    <h1 class="page-title">
+                       Add Vessel Detail
+                    </h1>
+
+                </div>
+                <div class="form-actions">
+
+                    <button name="Submit" type="submit" class="btn btn-success btn-width"><i class="uil uil-check mr-2"></i>Submit</button>
+                    <button name="Reset" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
+                    <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+                </div>
+            </div>
+            <div class="wrapper wrapper-content">
+                <div class="container">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-8 mx-auto">
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Vessel Name<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        @Html.EditorFor(model => model.VesselName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 50, @required = "true", } })
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">IMO Number<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.EditorFor(model => model.ImoNo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @min = "0", @max = "9999999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+
+                                        <span id="messageImo"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Fleet Type<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.DropDownListFor(model => model.FleetTypeID, new SelectList(Model.FleetTypeList, "Tid", "FleetType"), "", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Fleet Name<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.DropDownListFor(model => model.FleetNameID, new SelectList(Model.FleetNameList, "Fid", "FleetName"), "", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Vessel Trade<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.DropDownListFor(model => model.VesselTradeID, new SelectList(Model.VesselTradeList, "Id", "VesselTrade"), "", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Displacement<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        @Html.EditorFor(model => model.Displacement, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 6, @required = "true",   @onKeyUp = "requiredValue(this)",@type="number",@step="any" } })
+                                        <span id="messageDis"></span>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }*@
+
+@using (Html.BeginForm("addvessel", "VesselPart"))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(e => e.Id)
+<div class="row" style="margin-top: 10px;">
+
+
+    @if (TempData["Error"] != null)
+    {
+        <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+    }
+
+
+    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div class="col-md">
+            <h2>Vessel Detail</h2>
+        </div>
+
+
+        <div class="col-md button-row-top">
+            <div class="row">
+                <div class="col">
+
+                    <button name="Submit" type="submit" class="function-button submit-button"><i class="uil uil-check mr-2"></i>Submit</button>
+                </div>
+                <div class="col">
+
+                    <button name="Reset" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
+                </div>
+                <div class="col">
+
+                    <button name="back" type="button" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+                    @*<a name="back" id="btnBack" onclick="goBack()" class="function-button go-back"> << Go Back</a>*@
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <div class="mb-3 row">
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Vessel Name*</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.VesselName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @required = "true", } })
+                        <div class="error"></div>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">IMO No*</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.ImoNo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @min = "0", @max = "9999999", @onkeypress = "return isNumberKey(event)", @required = "true", @onKeyUp = "requiredValue(this)" } })
+                        <span id="messageImo"></span>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Fleet Type*</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.FleetTypeID, new SelectList(Model.FleetTypeList, "Tid", "FleetType"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
+                        <div class="error"></div>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Fleet Name*</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.FleetNameID, new SelectList(Model.FleetNameList, "Fid", "FleetName"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
+                        <div class="error"></div>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Vessel Trade*</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.VesselTradeID, new SelectList(Model.VesselTradeList, "Id", "VesselTrade"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
+                        <div class="error"></div>
+                    </div>
+
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Displacement*</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.Displacement, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @type = "number", @step = "any" } })
+                        <span id="messageDis"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+<script type="text/javascript">
+    function requiredValue(arg) {
+
+
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        if (value > 9999999) {
+
+            var message = "";
+            if (id == "ImoNo") {
+                message = document.getElementById('messageImo');
+            }
+
+            var goodColor = "#0C6";
+            var badColor = "#FF0000";
+
+            message.style.color = badColor;
+            message.innerHTML = "Value can not greater then 9999999 !"
+            $("#" + id + "").val('');
+        }
+        else {
+            var message = "";
+            if (id == "ImoNo") {
+                message = document.getElementById('messageImo');
+            }
+
+            message.innerHTML = ""
+        }
+
+        //if (id == "Displacement") {
+
+
+        //    var dec = document.getElementById('Displacement').value;
+        //    if (dec.includes(".")) {
+        //        var res = dec.substring(dec.indexOf(".") + 1);
+        //        var kl = res.split("");
+        //        if (kl.length > 1) {
+        //            document.getElementById('Displacement').value = (parseInt(dec * 100) /
+        //                100).toFixed(2);
+        //        }
+        //    }
+
+
+        //    if (value > 600000) {
+
+        //        var message = "";
+        //        if (id == "Displacement") {
+        //            message = document.getElementById('messageDis');
+        //        }
+
+        //           debugger;
+        //        var goodColor = "#0C6";
+        //        var badColor = "#FF0000";
+
+        //        message.style.color = badColor;
+        //        message.innerHTML = "Value can not greater then 600000 !"
+        //        $("#" + id + "").val('');
+        //    }
+        //    else {
+        //        var message = "";
+        //        if (id == "Displacement") {
+        //            message = document.getElementById('messageDis');
+        //        }
+
+        //        message.innerHTML = ""
+        //    }
+
+        //}
+
+
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+
+
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById('Displacement').value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById('Displacement').value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+
+
+        if (value > 600000) {
+        //if (value > 999999) {
+            var message = "";
+            if (id == "Displacement") {
+                message = document.getElementById('messageDis');
+            }
+
+            var goodColor = "#0C6";
+            var badColor = "#FF0000";
+
+            message.style.color = badColor;
+            message.innerHTML = "Value can not greater than 600000 digits !"
+            $("#" + id + "").val('');
+        }
+        else {
+            var message = "";
+            if (id == "Displacement") {
+                message = document.getElementById('messageDis');
+            }
+
+            message.innerHTML = ""
+        }
+
+
+
+    }
+</script>
+
+
+<script>
+    $('#ImoNo').keypress(function (e) {
+        if (e.which === 32)
+            return false;
+    });
+
+    $('#Displacement').keypress(function (e) {
+
+        if (e.which === 32) {
+            return false;
+        }
+
+    });
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+    $('#btnReset').click(function () {
+        $("#FleetTypeID").val(null).trigger("change");
+        $("#FleetNameID").val(null).trigger("change");
+        $("#VesselTradeID").val(null).trigger("change");
+
+    });
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').addClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+
+
+</script>
+
+
+
+

@@ -47,300 +47,581 @@ E:\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.cspro
 E:\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
 E:\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
 E:\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-D:\27-Nov-2021 SIS\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\SIS Vessel 8-Dec\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csprojAssemblyReference.cache
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-D:\SIS Document\21jan2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Latest SIS Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-D:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-H:\14feb2022\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Neeraj\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\1_Nov_2023_24_Decimal_Backup\Vessel\SIS_Operational_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-E:\Neeraj\Projects\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.Razor.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuil.D087B862.Up2Date
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
-D:\Projects\Sis_Nova_Vessel\Sis_Nova_Vessel\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\27-Nov-2021 SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Kuldip 13-Dec\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\SIS 24 Dec 2021\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\SIS OFC 11-01-2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+H:\SIS 11-02-2022\Office\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_Version 2.0\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\Office_SIS\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\Amit pc backup 29042022\9May 2022_backup\SIS_31Oct2022\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Neeraj\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\SIS Office Latest\SIS_Office_Reports\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\SiS_Nova\SisNova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CopyComplete
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Win32.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\netstandard.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.AppContext.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Collections.Concurrent.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Collections.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Collections.NonGeneric.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Collections.Specialized.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ComponentModel.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ComponentModel.EventBasedAsync.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ComponentModel.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ComponentModel.TypeConverter.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Console.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Data.Common.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.Contracts.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.Debug.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.FileVersionInfo.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.Process.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.StackTrace.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.TextWriterTraceListener.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.Tools.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.TraceSource.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.Tracing.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Drawing.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Dynamic.Runtime.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Globalization.Calendars.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Globalization.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Globalization.Extensions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.Compression.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.Compression.ZipFile.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.FileSystem.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.FileSystem.DriveInfo.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.FileSystem.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.FileSystem.Watcher.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.IsolatedStorage.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.MemoryMappedFiles.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.Pipes.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IO.UnmanagedMemoryStream.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Linq.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Linq.Expressions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Linq.Parallel.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Linq.Queryable.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Http.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.NameResolution.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.NetworkInformation.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Ping.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Requests.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Security.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.Sockets.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.WebHeaderCollection.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.WebSockets.Client.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Net.WebSockets.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ObjectModel.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Reflection.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Reflection.Extensions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Reflection.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Resources.Reader.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Resources.ResourceManager.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Resources.Writer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.CompilerServices.VisualC.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Extensions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Handles.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.InteropServices.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.InteropServices.RuntimeInformation.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Numerics.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Serialization.Formatters.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Serialization.Json.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Serialization.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.Serialization.Xml.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Claims.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Cryptography.Algorithms.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Cryptography.Csp.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Cryptography.Encoding.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Cryptography.Primitives.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Cryptography.X509Certificates.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.Principal.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Security.SecureString.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encoding.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encoding.Extensions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.RegularExpressions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Overlapped.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.Parallel.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Thread.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.ThreadPool.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Timer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.ReaderWriter.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.XDocument.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.XmlDocument.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.XmlSerializer.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.XPath.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Xml.XPath.XDocument.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Azure.Core.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Bcl.AsyncInterfaces.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Graph.Core.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Identity.Client.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Abstractions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.JsonWebTokens.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Logging.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Tokens.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Abstractions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Authentication.Azure.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Http.HttpClientLibrary.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Form.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Json.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Multipart.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Text.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Std.UriTemplate.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Buffers.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.DiagnosticSource.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IdentityModel.Tokens.Jwt.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.Data.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Numerics.Vectors.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.CompilerServices.Unsafe.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encodings.Web.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Json.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.Extensions.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ValueTuple.dll
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Azure.Core.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Bcl.AsyncInterfaces.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Graph.Core.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Identity.Client.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Abstractions.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.JsonWebTokens.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Logging.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.OpenIdConnect.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Tokens.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Abstractions.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Authentication.Azure.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Http.HttpClientLibrary.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Form.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Json.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Multipart.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Text.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Buffers.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.DiagnosticSource.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IdentityModel.Tokens.Jwt.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.Data.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Numerics.Vectors.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.CompilerServices.Unsafe.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encodings.Web.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Json.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.Extensions.xml
+E:\Neeraj\Projects\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ValueTuple.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll.config
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\DataBuildingLayer.pdb
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Azure.Core.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Bcl.AsyncInterfaces.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Graph.Core.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Identity.Client.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Abstractions.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Logging.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Tokens.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Abstractions.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Authentication.Azure.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Http.HttpClientLibrary.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Form.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Json.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Multipart.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Text.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Web.Infrastructure.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Std.UriTemplate.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Buffers.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.DiagnosticSource.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IdentityModel.Tokens.Jwt.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.Data.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Numerics.Vectors.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.CompilerServices.Unsafe.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encodings.Web.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Json.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.Extensions.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ValueTuple.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Azure.Core.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\EntityFramework.SqlServer.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Bcl.AsyncInterfaces.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Graph.Core.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Identity.Client.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Abstractions.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.JsonWebTokens.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Logging.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Protocols.OpenIdConnect.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.IdentityModel.Tokens.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Abstractions.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Authentication.Azure.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Http.HttpClientLibrary.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Form.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Json.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Multipart.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\Microsoft.Kiota.Serialization.Text.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Buffers.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Diagnostics.DiagnosticSource.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.IdentityModel.Tokens.Jwt.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Memory.Data.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Numerics.Vectors.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Runtime.CompilerServices.Unsafe.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Encodings.Web.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Text.Json.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Threading.Tasks.Extensions.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.ValueTuple.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Helpers.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Mvc.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.Razor.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Deployment.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\bin\Release\System.Web.WebPages.Razor.xml
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.AssemblyReference.cache
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.csproj.CoreCompileInputs.cache
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuil.D087B862.Up2Date
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.dll
+D:\Projects\Sis_Nova_Office\Sis_Nova_Office\DataBuildingLayer\obj\Release\DataBuildingLayer.pdb

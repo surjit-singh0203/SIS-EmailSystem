@@ -1,4 +1,9 @@
-﻿<h5 class="heading-s2">
+﻿
+
+
+
+
+<h5 style="font-size:18px;">
     Import File
 </h5>
 <div class="row">
@@ -6,7 +11,7 @@
             <input type="file" name="photo" id="photo" multiple />
         </div>*@
     <div class="col-sm-12 form-group">
-        <input type="file" name="photo" id="photo" onchange="check()" multiple />
+        <input type="file" name="photo" accept=".xlsx, .xls" id="photo" @*onchange="check()"*@ multiple />
         @*<input type="file" name="photo" id="photo" onchange="check()" accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />*@
 
     </div>
@@ -15,13 +20,20 @@
     <br />
 
     <div class="clearfix"></div>
-    <div class="col-sm-4">
+    <div class="col-sm-12">
         <input name="submit" type="submit" value="Import" id="Import" class="btn peach-btn btn-block btn-info" />
     </div>
     @*<div class="col-sm-4">
             <input name="submit" type="submit" value="Import Attachments" id="Import" class="btn peach-btn btn-block btn-warning" />
         </div>*@
+
 </div>
+@*<br />
+<div class="col">
+    <input type="file" id="zipSelector" accept=".zip" style="display: none;">
+    <b>Import Attachment : </b><button id="chooseZipFolderBtn">Choose ZIP Folder</button>
+</div>*@
+
 @*<div align="center" id="jigsawbar" style="width: 100px; margin-left: 200px; height: 18px;max-height: 18px"></div>*@
 <div align="center" style="height:51px">
     <p id="loading" style="display: none; margin-top:-33px; text-align-last:center;" height="Auto">
@@ -36,19 +48,22 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $('#photo').change(function () {
+
             var fp = $("#photo");
-            var lg = fp[0].files.length; // get length
+            var lg = fp[0].files.length;
             var items = fp[0].files;
             var fileSize = 0;
-            var fileName = document.getElementById('photo').value.tolowerCase();
-            if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+
+            var fileName = document.querySelector('#photo').value;
+
+            if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls') && !fileName.endsWith('.XLS') && !fileName.endsWith('.XLSX')) {
                 alert('Please upload excel file only.');
                 document.getElementById("photo").value = null;
                 return false;
             }
             if (lg > 0) {
                 for (var i = 0; i < lg; i++) {
-                    fileSize = fileSize + items[i].size; // get file size
+                    fileSize = fileSize + items[i].size;
                 }
                 if (fileSize >= 10485760) {
                     alert('File size must not be more than 10 MB');
@@ -62,21 +77,16 @@
 
 
 
-
-
-
-
-
-
-
-
 @*<script>
-        function check() {
-            var fileName = document.getElementById('photo').value.toLowerCase();
-            if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-                alert('Please upload excel file only.');
-                document.getElementById("photo").value = null;
-                return false;
-            }
-        }
-    </script>*@
+
+     $('#chooseZipFolderBtn').click(function () {
+         $('#zipSelector').click();
+     });
+
+     $('#zipSelector').change(function (e) {
+
+         let path = $(this).val();
+         $('#selectedPath').text(path);
+     });
+
+</script>*@

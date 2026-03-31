@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,10 @@ namespace DataBuildingLayer
     {
         public int Id { get; set; }
         public string Name { get; set; }
+
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString  = "{0:0.###}")]
         public decimal Height { get; set; }
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:0.###}")]
         public decimal Capacity { get; set; }
         public int TanksTypeId { get; set; }
         public string Maintaining_Status { get; set; }

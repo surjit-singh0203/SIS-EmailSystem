@@ -1,50 +1,21 @@
 ﻿
 @{
     ViewBag.Title = "Index";
-    //Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
-    
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
-
-<style>
-input#Export{
-padding: 8px 26px!important;
-}
-input#Import{
-padding: 8px 26px!important;
-}
-a.btn.btn-sm.btn-light.btn-edit {
-padding: 8px 26px!important;
-}
-a.btn.btn-sm.btn-light.btn-edit {
-    padding: 6px 26px!important;
-	margin:0px!important;
-}
-
-table.GeneratedTable thead th {
-   
-    padding: 10px!important;
-}
-</style>
 
 <div class="content-wrapper">
     <section class="content-header">
-       
+        @*<h1>
+                Import/ Export
+            </h1>*@
     </section>
     <section class="content">
-		<div class= "container" style="box-shadow: 0px 0px 10px -3px rgb(0 0 0 / 50%);padding:40px;">
-        <h4 style="text-align:center">
 
-
-            @if (ViewBag.VesselName != null)
-            {
-                <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
-            }
-        </h4>
-        <div class="row">
+        <div class="container">
             @if (TempData["Error"] != null)
             {
-                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>            
             }
             @if (TempData["Success"] != null)
             {
@@ -56,7 +27,7 @@ table.GeneratedTable thead th {
                         <div>
                             @using (Html.BeginForm("Index", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
                             {
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     @Html.Partial("_Export")
                                 </div>
 
@@ -67,14 +38,14 @@ table.GeneratedTable thead th {
             </div>
         </div>
         <hr />
-        <div class="row">
+        <div class="container">
             <div class="col-md-12">
                 <div class="box box-info">
                     <div class="box-header with-border">
                         <div>
                             @using (Html.BeginForm("Index", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
                             {
-                                <div class="col-md-6">
+                                <div class="col	">
                                     @Html.Partial("_import")
                                 </div>
 
@@ -84,12 +55,27 @@ table.GeneratedTable thead th {
                 </div>
             </div>
         </div>
-		</div>
+
+        <div class="container">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <div>
+                            @*@using (Html.BeginForm("_importAttachment", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
+                            {*@
+                                <div class="col	">
+                                    @Html.Partial("_importAttachment")
+                                </div>
+
+                            @*}*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </section>
 </div>
-
-<link href="~/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
-<script src="~/dist/js/bootstrap-multiselect.js"></script>
 
 <script type="text/javascript">
 
@@ -97,7 +83,8 @@ table.GeneratedTable thead th {
 
         $('#successMessage').fadeOut('fast');
         $('#errorMessage').fadeOut('fast');
-    }, 3000);
+    }, 5000);
 
 
 </script>
+

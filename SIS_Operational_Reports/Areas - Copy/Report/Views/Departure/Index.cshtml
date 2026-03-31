@@ -1,0 +1,2924 @@
+﻿@model DataBuildingLayer.DepartureReport
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row" style="margin-top: 10px;">
+
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+            
+           
+            <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @onchange = "GetLeg(this);Getfuelcons5(this)", @required = "true", })
+                <span id="messageVoyid" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Next Leg</label>
+            <div class="col-sm-8">
+                @*@Html.DropDownListFor(model => model.NextLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", @onchange = "GetDisByLeg1(this)", })
+                    <span id="msgLegPortId" style="color:red"></span>*@
+
+
+                @Html.DropDownListFor(model => model.NextLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", @onchange = "bindport1(this)", })
+                <span id="msgNextLegPortId" style="color:red"></span>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Report Date</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.ReportDate, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
+                <span id="msgReportDate" style="color:red"></span>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
+            <div class="col-sm-8">
+
+
+                @Html.DropDownListFor(model => model.DepLegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", @onchange = "bindport(this);GetDRCargo()", })
+                <span id="msgDepLegPortId" style="color:red"></span>
+
+
+            </div>
+
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Next Port</label>
+            <div class="col-sm-8">
+                @*@Html.DropDownListFor(model => model.NextPort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", })*@
+                @Html.EditorFor(model => model.NextPort, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input" } })
+                <span id="msgNextPort" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Vessel Name</label>
+            <div class="col-sm-8">
+                @Html.DisplayFor(model => model.VesselName)
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Dep. Port</label>
+            <div class="col-sm-8">
+                @*@Html.DropDownListFor(model => model.DeparturePort, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", })*@
+                @Html.EditorFor(model => model.DeparturePort, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input" } })
+                <span id="msgDeparturePort" style="color:red"></span>
+            </div>
+
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">ETA</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.ETA, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
+                <span id="msgETA" style="color:red"></span>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Fwd</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftFwd, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftFwd" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Mid</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftMid, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftMid" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Aft</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftAft, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftAft" style="color:red"></span>
+            </div>
+
+        </div>
+
+        <div class="col-md">
+
+            <div class="row">
+                <div class="col">
+                    <button id="btnPrint" class="function-button submit-button" onclick="window.print()">
+                        Print
+                    </button>
+                   
+                </div>
+                @*<div id="SDraft" class="col">
+                    <button onclick="SaveDraftFunction()" class="function-button draft-button">
+                        Save Draft
+                    </button>
+                    <div hidden="hidden">
+                        @Html.CheckBoxFor(model => model.SaveDraft)
+                    </div>
+
+                </div>
+
+                <div class="col">
+                    <button class="function-button reset-button">
+                        Reset
+                    </button>
+                </div>*@
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    @*<table class="GeneratedTable">
+                            <thead>
+                                <tr>
+                                    <th colspan="3">Cargo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td> </td>
+                                    <td>ULSD</td>
+                                    <td>LSD</td>
+                                </tr>
+                                <tr>
+                                    <td>B/L QTY.</td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td>Load Portal Actual</td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td>Cargo Tempurature</td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td>Completion Date &amp; Time</td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td>Rate</td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                            </tbody>
+                        </table>*@
+
+                    <table id="tblCargo" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="6">Cargo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+
+                                <td> B/L QTY</td>
+                                <td> Load Portal Actual</td>
+                                <td>Cargo Temp.</td>
+                                <td>Completion Date &amp; Time</td>
+                                <td>Rate</td>
+
+                            </tr>
+                            <tr>
+                                <td></td>
+
+
+                                <td>@Html.EditorFor(model => model.BL_Qty, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                <td>@Html.EditorFor(model => model.LoadPortalActual, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                <td>@Html.EditorFor(model => model.Cargo_Temp, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                <td>
+                                </td>
+
+
+                                <td>@Html.EditorFor(model => model.Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                @*<td> @Html.DisplayFor(model => model.Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @step = "any" } })</td>*@
+
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Ballast</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td> ROB</td>
+                                <td> @Html.EditorFor(model => model.Ballast_ROB, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="4">Slops / Bilge Disposed &amp; ROB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td> </td>
+                                <td>Oil</td>
+                                <td>Water</td>
+                                <td>Total</td>
+                            </tr>
+                            <tr>
+                                <td>Slops Disposed</td>
+                                <td> @Html.EditorFor(model => model.SlopsDisposed_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.SlopsDisposed_Water, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+
+                                <td> @Html.EditorFor(model => model.SlopsDisposed_Total, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>ROB</td>
+                                <td> @Html.EditorFor(model => model.SlopsROB_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.SlopsROB_Water, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.SlopsROB_Total, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Bilge Disposed</td>
+                                <td> @Html.EditorFor(model => model.BilgesDisposed_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.BilgesDisposed_Water, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.BilgesDisposed_Total, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>ROB</td>
+                                <td> @Html.EditorFor(model => model.BilgesROB_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.BilgesROB_Water, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                                <td> @Html.EditorFor(model => model.BilgesROB_Total, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Other Disposal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sludge</td>
+                                <td> @Html.EditorFor(model => model.Sludge, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Garbage - Plastic</td>
+                                <td> @Html.EditorFor(model => model.GarbagePlastic, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Garbage - Others</td>
+                                <td> @Html.EditorFor(model => model.GarbageOthers, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Other Disposal</td>
+                                <td> @Html.EditorFor(model => model.OtherDisposal, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+            <div class="col-xl">
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Manoeuvring</th>
+                            </tr>
+
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Manoeuvring Hours</td>
+                                <td> @Html.EditorFor(model => model.Manoeuvring_Hrs, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Manoeuvring Distance</td>
+                                <td> @Html.EditorFor(model => model.Manoeuvring_Distance, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Weather</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sea State</td>
+
+                                <td>
+                                    @Html.DropDownListFor(model => model.SeaState, new SelectList(Model.SeaStateList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", })
+
+                                    <span id="msgSeaState" style="color:red"></span>
+                                </td>
+                                @*<td> @Html.EditorFor(model => model.SeaState, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  </td>*@
+
+                            </tr>
+                            <tr>
+                                <td>Wind Direction</td>
+
+                                <td>@Html.DropDownListFor(model => model.WindDirection, new SelectList(Model.WindDirectionList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", })  <span id="msgWindDirection" style="color:red"></span></td>
+                                @*<td> @Html.EditorFor(model => model.WindDirection, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  </td>*@
+                            </tr>
+                            <tr>
+                                <td>Wind Force</td>
+                                <td>@Html.DropDownListFor(model => model.WindForce, new SelectList(Model.WindForceList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", })<span id="msgWindForce" style="color:red"></span> </td>
+                                @*<td> @Html.EditorFor(model => model.WindForce, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  </td>*@
+                            </tr>
+                            <tr>
+                                <td>Swell Direction</td>
+                                <td> @Html.EditorFor(model => model.SwellDirection, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgSwellDirection" style="color:red"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Swell Height</td>
+                                <td> @Html.EditorFor(model => model.SwellHeight, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Wave Length</td>
+                                <td> @Html.EditorFor(model => model.WaveLength, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>Wave Height</td>
+                                <td> @Html.EditorFor(model => model.WaveHeight, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Non-Routine Events</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type='text' class='table-inputs'> </td>
+                                <td> Owners/Charterers Account</td>
+                                <td> Hrs.</td>
+                            </tr>
+                            <tr>
+                                <td>Stopage at Sea</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", }) </td>
+                                <td><input id="IdFirst" onclick="firstFunc()" maxlength="4" type='text' onblur="myFunction1()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>Deviation</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdSecond" maxlength="4" onclick="secondFunc()" onblur="myFunction2()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>Slow Steaming</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdThird" maxlength="4" onclick="thirdFunc()" onblur="myFunction3()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>Bad Weather</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdFourth" maxlength="4" onclick="fourthFunc()" onblur="myFunction4()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>COT Preparation</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdFifth" maxlength="4" onclick="fifthFunc()" onblur="myFunction5()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>Cargo Heating</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdSixth" maxlength="4" onclick="sixthFunc()" onblur="myFunction6()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                            <tr>
+                                <td>BW Exchange</td>
+
+                                <td>@Html.DropDownListFor(model => model.OwChaterer, new SelectList(Model.OwChList, "Value", "Text", "Owners"), "", htmlAttributes: new { @class = "mdb-select bottom-border-input", @required = "true", }) </td>
+                                <td><input type='text' id="IdSeventh" maxlength="4" onclick="seventhFunc()" onblur="myFunction7()" onkeypress="return isNumberKey(event)" class='table-inputs'> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Engine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SLIP</td>
+                                <td> @Html.EditorFor(model => model.Slip, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>RPM</td>
+                                <td> @Html.EditorFor(model => model.RPM, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>BHP</td>
+                                <td> @Html.EditorFor(model => model.BHP, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>MCR</td>
+                                <td> @Html.EditorFor(model => model.MCR, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="4">LO &amp; HO Consumptions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>MECC</td>
+                                <td>@Html.EditorFor(model => model.LO_HO_Cons_MECC, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>MECYL</td>
+                                <td>@Html.EditorFor(model => model.LO_HO_Cons_MECYL, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })  </td>
+                            </tr>
+                            <tr>
+                                <td>AECC</td>
+                                <td>@Html.EditorFor(model => model.LO_HO_Cons_AECC, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                            </tr>
+                            <tr>
+                                <td>HYDRAULIC Oil</td>
+                                <td>@Html.EditorFor(model => model.LO_HO_Cons_HYDR_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="4">Other ROB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type='text' class='table-inputs'> </td>
+                                <td> Full</td>
+                                <td> In Use</td>
+                                <td> Empty</td>
+                            </tr>
+                            <tr>
+                                <td>Oxygen</td>
+                                <td> @Html.EditorFor(model => model.OT_ROB_OXY_Full, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                                <td>@Html.EditorFor(model => model.OT_ROB_OXY_InUse, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                                <td>@Html.EditorFor(model => model.OT_ROB_OXY_Empty, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                            <tr>
+                                <td>Acytylene</td>
+                                <td>@Html.EditorFor(model => model.OT_ROB_ACYT_Full, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                                <td>@Html.EditorFor(model => model.OT_ROB_ACYT_InUse, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                                <td>@Html.EditorFor(model => model.OT_ROB_ACYT_Empty, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table id="tblbunkerRec" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Bunker, LO &amp; HO Receipts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td><input type="text" class="table-inputs"> </td>
+                                <td>Rec</td>
+
+                            </tr>
+                            <tr>
+                                <td>VLSFO</td>
+                                <td>
+
+                                    @Html.EditorFor(model => model.BunkerReceipt, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>MDO</td>
+                                <td>
+
+                                    @Html.EditorFor(model => model.BunkerReceipt, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                            </tr>
+                            @*<tr>
+                                    <td>HFO</td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td>MGO</td>
+                                    <td> </td>
+                                </tr>*@
+
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Bunker, LO Receipts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td>MECC</td>
+                                <td> @Html.EditorFor(model => model.Bunker_LO_Rec_MECC, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                            <tr>
+                                <td>MECYL</td>
+                                <td> @Html.EditorFor(model => model.Bunker_LO_Rec_MECYL, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                            <tr>
+                                <td>AECC</td>
+                                <td> @Html.EditorFor(model => model.Bunker_LO_Rec_AECC, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                            <tr>
+                                <td>HYDRAULIC OIL</td>
+                                <td> @Html.EditorFor(model => model.Bunker_LO_Rec_HYDR_Oil, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+            </div>
+            <div class="col-xl">
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="6">Time &amp; Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td> </td>
+                                <td>Date &amp; Time</td>
+
+                            </tr>
+                            <tr>
+                                <td>SBE</td>
+                                <td>
+                                    @Html.EditorFor(model => model.SBE_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
+                                    <span id="msgSBE_DateT" style="color:red"></span>
+
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>RFA</td>
+                                <td>
+                                    @Html.EditorFor(model => model.RFA_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
+                                    <span id="msgRFA_DateT" style="color:red"></span>
+                                </td>
+
+                            </tr>
+                            <tr></tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table id="tblFuelRob" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Fuel ROB in MT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="table-inputs"> </td>
+                                <td>SBE</td>
+                                <td>RFA</td>
+                            </tr>
+                            <tr>
+                                <td>VLSFO</td>
+                                <td>
+                                    @Html.EditorFor(model => model.SBE_ROB, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RFA_ROB, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>MDO</td>
+                                <td>
+                                    @Html.EditorFor(model => model.SBE_ROB, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RFA_ROB, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Other Receipts, Repairs, Crew Change &amp; Landed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CTM (Mention Currency &amp; Amount)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.CTM, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgCTM" style="color:red"></span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>SPARES (Mention Revision Numbers)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.Spares, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgSpares" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>STORES (Mention Revision Numbers)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.Stores, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgStores" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>REPAIRS CONDUCTED (Mention details)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.RepairsConducted, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgRepairsConducted" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>CREW CHANGE (No of Crew)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.CrewChange, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgCrewChange" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ITEMS LANDED (Mention Details)</td>
+                                <td>
+                                    @Html.EditorFor(model => model.ItemsLanded, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })
+                                    <span id="msgItemsLanded" style="color:red"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Departure Report Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Departure Report<br>Remarks</td>
+                                <td> @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="col-xl-12">
+    <div class="row long-table">
+        <table id="tblFuelC" class="GeneratedTable">
+            <tbody></tbody>
+            <thead>
+                <tr>
+                    <th colspan="29">Fuel Consumption in MT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6">Main Engine</td>
+                    <td colspan="5">Aux Eng</td>
+                    <td colspan="4">Boiler</td>
+                    <td colspan="4">Framo System</td>
+                    <td colspan="1">IGG</td>
+                    <td id="eventsId" colspan="8">Events</td>
+                    @*<td rowspan="2">ROB</td>*@
+                    <td rowspan="2">TOTAL</td>
+                </tr>
+                <tr>
+                    <td><input type='text' class='table-inputs'></td>
+                    @*<td>CP</td>*@
+                    <td colspan="5">ACT</td>
+
+                    @*<td>CP</td>*@
+                    <td colspan="5">ACT</td>
+                    <td colspan="4">ACT</td>
+                    <td colspan="4">ACT</td>
+                    <td colspan="1"></td>
+                    @*<td colspan="4">ACT</td>*@
+                    <td>Stopage at Sea</td>
+                    <td>Deviation</td>
+                    <td>Slow Steaming</td>
+
+                    <td>Bad Weather</td>
+
+                    <td>COT Prep</td>
+                    <td>Cargo Heating</td>
+                    <td>BW Exchange</td>
+
+                    <td>Others</td>
+
+                </tr>
+                <tr class="small-titles">
+                    <td><input type='text' class='table-inputs'></td>
+                    @*<td><input type='text' class='table-inputs'></td>*@
+                    <td>AT SEA</td>
+                    <td>MANOEUV</td>
+                    <td>ANCHOR/WAIT</td>
+                    <td>BERTH</td>
+                    <td>SUB TOTAL</td>
+
+                    @*<td><input type='text' class='table-inputs'></td>*@
+                    <td>AT SEA</td>
+                    <td>MANOEUV</td>
+                    <td>ANCHOR/WAIT</td>
+                    <td>BERTH</td>
+                    <td>SUB TOTAL</td>
+                    <td>AT SEA</td>
+                    <td>MANOEUV</td>
+                    <td>ANCHOR/WAIT</td>
+                    <td>BERTH</td>
+                    <td>AT SEA</td>
+                    <td>MANOEUV</td>
+                    <td>ANCHOR/WAIT</td>
+                    <td>BERTH</td>
+
+                    <td><input type='text' class='table-inputs'></td>
+                    @*<td>AT SEA</td>
+                        <td>MANOEUV</td>
+                        <td>ANCHOR/WAIT</td>
+                        <td>BERTH</td>*@
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+                    <td><input type='text' class='table-inputs'></td>
+
+                    @*<td><input type='text' class='table-inputs'></td>*@
+                </tr>
+                <tr id="tblDynamic">
+                    <td>VLSFO</td>
+                    @*<td>@Html.EditorFor(model => model.ME_CP_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
+                    <td>@Html.EditorFor(model => model.ME_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id1", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id2", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id3", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id4", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td><input type='text' class='table-inputs'></td>
+                    @*<td>@Html.EditorFor(model => model.AE_CP_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
+                    <td>@Html.EditorFor(model => model.AE_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id5", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id6", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id7", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id8", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td><input type='text' class='table-inputs'></td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id9", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id10", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id11", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id12", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id13", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id14", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id15", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id16", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.IGG, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.StopageAtSea, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs first", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.Deviation, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs second", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.SlowSteaming, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs third", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.BadWeather, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs fourth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.COTPrep, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs fifth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.CargoHeating, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs sixth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.BWExchange, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs seventh", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.Others, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs eighth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+
+
+                    @*<td><input type='text' class='table-inputs'></td>*@
+                </tr>
+
+                <tr id="tblDynamic1">
+                    <td>MDO</td>
+                    @*<td>@Html.EditorFor(model => model.ME_CP_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
+                    <td>@Html.EditorFor(model => model.ME_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id25", @autocomplete = "off", @class = "table-inputs", @title = "tool tip text", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id26", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id27", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.ME_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id28", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td><input type='text' class='table-inputs'></td>
+                    @*<td>@Html.EditorFor(model => model.AE_CP_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>*@
+                    <td>@Html.EditorFor(model => model.AE_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id29", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id30", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id31", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.AE_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id32", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td><input type='text' class='table-inputs'></td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_SEA_VLSFO, new { htmlAttributes = new { @id = "Id33", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_MAN_VLSFO, new { htmlAttributes = new { @id = "Id34", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_WAIT_VLSFO, new { htmlAttributes = new { @id = "Id35", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.BLR_ACT_BERTH_VLSFO, new { htmlAttributes = new { @id = "Id36", @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_SEA_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_MAN_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_WAIT_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                    <td>@Html.EditorFor(model => model.FRAMO_ACT_BERTH_VLSFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.IGG, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+
+                    <td>@Html.EditorFor(model => model.StopageAtSea, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs first", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.Deviation, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs second", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.SlowSteaming, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs third", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.BadWeather, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs fourth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.COTPrep, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs fifth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.CargoHeating, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs sixth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.BWExchange, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs seventh", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @disabled = "true", @step = "any" } }) </td>
+                    <td>@Html.EditorFor(model => model.Others, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs eighth", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } }) </td>
+
+
+                    @*<td><input type='text' class='table-inputs'></td>*@
+                </tr>
+
+                @*<tr>
+                        <td>HFO</td>
+                        <td>@Html.EditorFor(model => model.ME_CP_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_SEA_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_MAN_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_WAIT_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_BERTH_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td>@Html.EditorFor(model => model.AE_CP_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_SEA_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_MAN_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_WAIT_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_BERTH_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+
+                        <td>@Html.EditorFor(model => model.BLR_ACT_SEA_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_MAN_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_WAIT_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_BERTH_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_SEA_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_MAN_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_WAIT_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_BERTH_HFO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                    </tr>
+                    <tr>
+                        <td>MGO</td>
+                        <td>@Html.EditorFor(model => model.ME_CP_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_SEA_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_MAN_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_WAIT_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.ME_ACT_BERTH_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td>@Html.EditorFor(model => model.AE_CP_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_SEA_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_MAN_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_WAIT_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.AE_ACT_BERTH_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+
+                        <td>@Html.EditorFor(model => model.BLR_ACT_SEA_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_MAN_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_WAIT_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.BLR_ACT_BERTH_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_SEA_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_MAN_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_WAIT_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                        <td>@Html.EditorFor(model => model.FRAMO_ACT_BERTH_MGO, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                        <td><input type='text' class='table-inputs'></td>
+                    </tr>*@
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue2(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 999999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+<script type="text/javascript">
+    function requiredValue3(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+
+
+<script type="text/javascript">
+    // $('.datepicker').datepicker();
+    $("#ReportDate").datepicker({
+        endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
+
+    $("#ETA").datepicker({
+        endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
+    $("#SBE_DateT").datepicker({
+        endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
+    $("#RFA_DateT").datepicker({
+        endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
+
+    $("#Completion_DateT").datepicker({
+        endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
+</script>
+
+<script>
+
+
+    function Getfuelcons() {
+
+        var VoyId = $("#VoyageId option:selected").val();
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/Getfuelcons?VoyId=' + VoyId,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    @*var FtypeList =@Html.Raw(Json.Encode(@ViewBag.Ftype));
+                    var CPList =@Html.Raw(Json.Encode(@ViewBag.CPValue));*@
+
+                    var FtypeList = response.ft;
+                    var CPList = response.cp;
+
+
+
+                    //$('#tblFuelC tr').click(function () {
+                    //    $(this).remove();
+                    //    return false;
+                    //});
+
+                    //$('.tbll').on('click', '.rmv', function () {
+                    //    alert("wee");
+                    //    $(this).closest('tr').remove();
+                    //});
+                    var rowCount = FtypeList.length;
+
+
+                    let len = rowCount - 1;
+                    let len1 = rowCount ;
+
+        for (let i = 2; i <= len; i++) {
+
+            var $tableBody = $('#tblFuelC').find("tbody"),
+                $trLast = $tableBody.find("tr:last"),
+                $trNew = $trLast.clone();
+
+            $trLast.after($trNew);
+                    }
+
+
+
+
+
+
+                    //rowCount = rowCount + 1;
+                    for (var i = rowCount - 4; i > 0; i--) {
+                        tblFuelC.deleteRow(i);
+                    }
+
+
+
+
+                    var count = 0; var ss = ""; var ss1 = "";
+                    var table = document.getElementById('tblFuelC');
+
+                    var j = 4;
+                    $.each(FtypeList, function (index, value) {
+
+                        ss = value;
+                        table.rows[j].cells[0].innerHTML = ss;
+                        //table1.rows[j].cells[0].innerHTML = ss;
+                        j++;
+                    });
+
+                    var j = 4;
+                    $.each(CPList, function (index, value) {
+                        ss = value;
+                        //alert(ss);
+                        table.rows[j].cells[1].innerHTML = ss;
+                        table.rows[j].cells[7].innerHTML = ss;
+                        j++;
+                    });
+
+
+
+                    debugger;
+                    var rowCount1 = FtypeList.length;
+                    var cc = 10 + rowCount1;
+
+                    try {
+                        for (var i = rowCount1 + 4; i > 0; i++) {
+                            tblFuelC.deleteRow(i);
+                        }
+                    }catch{}
+
+
+
+                    for (let i = 1; i <= len-1; i++) {
+
+                        var $tableBody = $('#tblFuelRob').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+                    for (var i = rowCount - 3; i > 0; i--) {
+                        tblFuelRob.deleteRow(i);
+                    }
+
+                    var table1 = document.getElementById('tblFuelRob');
+                    var k = 2;
+                    $.each(FtypeList, function (index, value) {
+                        ss1 = value;
+                        table1.rows[k].cells[0].innerHTML = ss1;
+                        k++;
+                    });
+
+                    for (var t = rowCount1 + 2; t > 0; t++) {
+                        tblFuelRob.deleteRow(t);
+                    }
+
+
+
+
+
+
+
+                    // For Fuel ROB
+
+
+
+                    debugger;
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+    @*var FtypeList =@Html.Raw(Json.Encode(@ViewBag.Ftype));
+     var CPList =@Html.Raw(Json.Encode(@ViewBag.CPValue));
+
+
+    var count = 0; var ss = ""; var ss1 = "";
+
+    var table = document.getElementById('tblFuelC');
+
+
+    var j = 4;
+    $.each(FtypeList, function (index, value) {
+
+                ss = value;
+                table.rows[j].cells[0].innerHTML = ss;
+                j++;
+    });
+
+    var j = 4;
+    $.each(CPList, function (index, value) {
+
+        ss = value;
+        table.rows[j].cells[1].innerHTML = ss;
+        table.rows[j].cells[7].innerHTML = ss;
+        j++;
+    });*@
+
+
+
+
+</script>
+
+<script type="text/javascript">
+      function DRCargoInsertion() {
+
+
+
+                var drcargo = [];
+                var table = document.getElementById('tblCargo'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 2, j = rows.length; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var DRCargo = {};
+
+                    DRCargo.CargoName = cells[0].innerHTML;
+                    DRCargo.BL_Qty = cells[1].children[0].value;
+                    DRCargo.LoadPortalActual = cells[2].children[0].value;
+                    DRCargo.Cargo_Temp = cells[3].children[0].value;
+                    DRCargo.Completion_DateT = cells[4].children[0].value;
+                    DRCargo.Rate = cells[5].children[0].value;
+
+
+                    drcargo.push(DRCargo);
+
+                }
+
+                //alert(fuelconsumptions);
+
+          drcargo = JSON.stringify(drcargo);
+
+                $.ajax({
+                    url: '@Url.Action("InsertDRCargo", "Departure")',
+                    type: "POST",
+                    data: { 'drcargo': drcargo },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script>
+
+    function myFunction1() {
+        var x = document.getElementById("IdFirst");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.first').prop("disabled", true)
+        }
+    }
+    function myFunction2() {
+        var x = document.getElementById("IdSecond");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.second').prop("disabled", true)
+        }
+    }
+    function myFunction3() {
+        var x = document.getElementById("IdThird");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.third').prop("disabled", true)
+        }
+    }
+    function myFunction4() {
+        var x = document.getElementById("IdFourth");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.fourth').prop("disabled", true)
+        }
+    }
+    function myFunction5() {
+        var x = document.getElementById("IdFifth");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.fifth').prop("disabled", true)
+        }
+    }
+    function myFunction6() {
+        var x = document.getElementById("IdSixth");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.sixth').prop("disabled", true)
+        }
+    }
+
+    function myFunction7() {
+        var x = document.getElementById("IdSeventh");
+        //x.value = x.value.toUpperCase();
+        if (x.value == '') {
+            $('.seventh').prop("disabled", true)
+        }
+    }
+
+
+    function firstFunc() {
+        $('.first').prop("disabled", false)
+    }
+    function secondFunc() {
+        $('.second').prop("disabled", false)
+    }
+    function thirdFunc() {
+        $('.third').prop("disabled", false)
+    }
+    function fourthFunc() {
+        $('.fourth').prop("disabled", false)
+    }
+    function fifthFunc() {
+        $('.fifth').prop("disabled", false)
+    }
+    function sixthFunc() {
+        $('.sixth').prop("disabled", false)
+    }
+    function seventhFunc() {
+        $('.seventh').prop("disabled", false)
+    }
+
+</script>
+<script>
+    function CheckValidation(arg) {
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+        debugger;
+        if (value == "") {
+            $("#" + id + "").val('0.00');
+        }
+    }
+</script>
+
+<script>
+    function SaveDraftFunction() {
+        $("#SaveDraft").prop("checked", true);
+        SaveDepartureReport();
+
+    }
+</script>
+<script>
+    function SaveDepartureReport() {
+
+
+        var _departure = {};
+
+        _departure.Id = $('#Id').val();
+        var voy = document.getElementById("VoyageId");
+        var voyid = voy.options[voy.selectedIndex].value;
+
+        var leg = document.getElementById("DepLegPortId");
+        var legdepid = leg.options[leg.selectedIndex].value;
+
+        var nextleg = document.getElementById("NextLegPortId");
+        var nextlegid = nextleg.options[nextleg.selectedIndex].value;
+
+        var nextport = document.getElementById("NextPort");
+        var nxtport = nextport.options[nextport.selectedIndex].text;
+
+        var depport = document.getElementById("DeparturePort");
+        var departport = depport.options[depport.selectedIndex].text;
+
+        debugger;
+
+        _departure.VoyageId = voyid;
+        if (_departure.VoyageId == "") {
+            $("#messageVoyid").text("Please Choose Voyage Number.");
+            return;
+        }
+        else {
+            $("#messageVoyid").text('');
+        }
+
+        _departure.DepLegPortId = legdepid;
+        if (_departure.DepLegPortId == "") {
+            $("#msgDepLegPortId").text("Please Choose Departure Leg.");
+            return;
+        }
+        else {
+            $("#msgDepLegPortId").text('');
+        }
+
+        _departure.NextLegPortId = nextlegid;
+        if (_departure.NextLegPortId == "") {
+            $("#msgNextLegPortId").text("Please Choose Next Port Leg.");
+            return;
+        }
+        else {
+            $("#msgNextLegPortId").text('');
+        }
+
+        _departure.DeparturePort = departport;
+        if (_departure.DeparturePort == "") {
+            $("#msgDeparturePort").text("Please Choose Departure Port.");
+            return;
+        }
+        else {
+            $("#msgDeparturePort").text('');
+        }
+
+        _departure.NextPort = nxtport;
+        if (_departure.NextPort == "") {
+            $("#msgNextPort").text("Please Choose Next Port.");
+            return;
+        }
+        else {
+            $("#msgNextPort").text('');
+        }
+
+
+        _departure.ETA = $("#ETA").val();
+        if (_departure.ETA == "") {
+            $("#msgETA").text("Please Choose ETA.");
+            return;
+        }
+        else {
+            $("#msgETA").text('');
+        }
+
+        _departure.ReportDate = $("#ReportDate").val();
+        if (_departure.ReportDate == "") {
+            $("#msgReportDate").text("Please Choose Report Date.");
+            return;
+        }
+        else {
+            $("#msgReportDate").text('');
+        }
+
+        _departure.Manoeuvring_Hrs = $("#Manoeuvring_Hrs").val();
+        if (_departure.Manoeuvring_Hrs == "") {
+            $("#msgManoeuvring_Hrs").text("Manoeuvring hrs can not be empty.");
+            return;
+        }
+        else {
+            $("#msgManoeuvring_Hrs").text('');
+        }
+
+
+        _departure.Manoeuvring_Distance = $("#Manoeuvring_Distance").val();
+        if (_departure.Manoeuvring_Hrs == "") {
+            $("#msgManoeuvring_Distance").text("Manoeuvring Distance can not be empty.");
+            return;
+        }
+        else {
+            $("#msgManoeuvring_Distance").text('');
+        }
+
+
+
+
+
+        _departure.DraftFwd = $("#DraftFwd").val();
+        if (_departure.DraftFwd == "") {
+            $("#msgDraftFwd").text("DraftFwd can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftFwd").text('');
+        }
+        _departure.DraftAft = $("#DraftAft").val();
+        if (_departure.DraftAft == "") {
+            $("#msgDraftAft").text("DraftAft can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftAft").text('');
+        }
+        _departure.DraftMid = $("#DraftMid").val();
+        if (_departure.DraftMid == "") {
+            $("#msgDraftMid").text("DraftMid can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftMid").text('');
+        }
+
+
+        _departure.SlopsDisposed_Oil = $("#SlopsDisposed_Oil").val();
+        _departure.SlopsDisposed_Water = $("#SlopsDisposed_Water").val();
+        _departure.SlopsDisposed_Total = $("#SlopsDisposed_Total").val();
+
+        _departure.SlopsROB_Oil = $("#SlopsROB_Oil").val();
+        _departure.SlopsROB_Water = $("#SlopsROB_Water").val();
+        _departure.SlopsROB_Total = $("#SlopsROB_Total").val();
+
+        _departure.BilgesDisposed_Oil = $("#BilgesDisposed_Oil").val();
+        _departure.BilgesDisposed_Water = $("#BilgesDisposed_Water").val();
+        _departure.BilgesDisposed_Total = $("#BilgesDisposed_Total").val();
+
+        _departure.BilgesROB_Oil = $("#BilgesROB_Oil").val();
+        _departure.BilgesROB_Water = $("#BilgesROB_Water").val();
+        _departure.BilgesROB_Total = $("#BilgesROB_Total").val();
+
+
+        _departure.SBE_DateT = $("#SBE_DateT").val();
+        if (_departure.SBE_DateT == "") {
+            $("#msgSBE_DateT").text("Please Choose SBE Date.");
+            return;
+        }
+        else {
+            $("#msgSBE_DateT").text('');
+        }
+
+        _departure.RFA_DateT = $("#RFA_DateT").val();
+        if (_departure.RFA_DateT == "") {
+            $("#msgRFA_DateT").text("Please Choose RFA Date.");
+            return;
+        }
+        else {
+            $("#msgRFA_DateT").text('');
+        }
+
+
+
+
+
+        _departure.SeaState = $("#SeaState").val();
+        if (_departure.SeaState == "") {
+            $("#msgSeaState").text("Please choose SeaState.");
+            return;
+        }
+        else {
+            $("#msgSeaState").text('');
+        }
+        _departure.WindDirection = $("#WindDirection").val();
+        if (_departure.WindDirection == "") {
+            $("#msgWindDirection").text("Please choose WindDirection.");
+            return;
+        }
+        else {
+            $("#msgWindDirection").text('');
+        }
+        _departure.WindForce = $("#WindForce").val();
+        if (_departure.WindForce == "") {
+            $("#msgWindForce").text("Please choose WindForce.");
+            return;
+        }
+        else {
+            $("#msgWindForce").text('');
+        }
+        _departure.SwellDirection = $("#SwellDirection").val();
+        if (_departure.SwellDirection == "") {
+            $("#msgSwellDirection").text("Swell Direction can not be empty.");
+            return;
+        }
+        else {
+            $("#msgSwellDirection").text('');
+        }
+        _departure.SwellHeight = $("#SwellHeight").val();
+        _departure.WaveLength = $("#WaveLength").val();
+        _departure.WaveHeight = $("#WaveHeight").val();
+        _departure.Slip = $("#Slip").val();
+
+
+        _departure.RPM = $("#RPM").val();
+        _departure.BHP = $("#BHP").val();
+        _departure.MCR = $("#MCR").val();
+
+
+        _departure.Sludge = $("#Sludge").val();
+        _departure.GarbagePlastic = $("#GarbagePlastic").val();
+        _departure.GarbageOthers = $("#GarbageOthers").val();
+
+        _departure.OtherDisposal = $("#OtherDisposal").val();
+
+
+
+
+        _departure.OT_ROB_OXY_Full = $("#OT_ROB_OXY_Full").val();
+        _departure.OT_ROB_OXY_InUse = $("#OT_ROB_OXY_InUse").val();
+        _departure.OT_ROB_OXY_Empty = $("#OT_ROB_OXY_Empty").val();
+        _departure.OT_ROB_ACYT_Full = $("#OT_ROB_ACYT_Full").val();
+        _departure.OT_ROB_ACYT_InUse = $("#OT_ROB_ACYT_InUse").val();
+        _departure.OT_ROB_ACYT_Empty = $("#OT_ROB_ACYT_Empty").val();
+
+        _departure.Bunker_LO_Rec_MECC = $("#Bunker_LO_Rec_MECC").val();
+        _departure.Bunker_LO_Rec_MECYL = $("#Bunker_LO_Rec_MECYL").val();
+        _departure.Bunker_LO_Rec_AECC = $("#Bunker_LO_Rec_AECC").val();
+        _departure.Bunker_LO_Rec_HYDR_Oil = $("#Bunker_LO_Rec_HYDR_Oil").val();
+
+        _departure.CTM = $("#CTM").val();
+        if (_departure.CTM == "") {
+            $("#msgCTM").text("CTM can not be empty.");
+            return;
+        }
+        else {
+            $("#msgCTM").text('');
+        }
+
+
+        _departure.Spares = $("#Spares").val();
+        if (_departure.Spares == "") {
+            $("#msgSpares").text("Spares can not be empty.");
+            return;
+        }
+        else {
+            $("#msgSpares").text('');
+        }
+
+        _departure.Stores = $("#Stores").val();
+        if (_departure.Stores == "") {
+            $("#msgStores").text("Stores can not be empty.");
+            return;
+        }
+        else {
+            $("#msgStores").text('');
+        }
+
+        _departure.RepairsConducted = $("#RepairsConducted").val();
+        if (_departure.RepairsConducted == "") {
+            $("#msgRepairsConducted").text("RepairsConducted can not be empty.");
+            return;
+        }
+        else {
+            $("#msgRepairsConducted").text('');
+        }
+
+        _departure.CrewChange = $("#CrewChange").val();
+        if (_departure.CrewChange == "") {
+            $("#msgCrewChange").text("CrewChange can not be empty.");
+            return;
+        }
+        else {
+            $("#msgCrewChange").text('');
+        }
+
+        _departure.ItemsLanded = $("#ItemsLanded").val();
+        if (_departure.ItemsLanded == "") {
+            $("#msgItemsLanded").text("ItemsLanded can not be empty.");
+            return;
+        }
+        else {
+            $("#msgItemsLanded").text('');
+        }
+
+
+
+
+        _departure.LO_HO_Cons_MECC = $("#LO_HO_Cons_MECC").val();
+        _departure.LO_HO_Cons_MECYL = $("#LO_HO_Cons_MECYL").val();
+        _departure.LO_HO_Cons_AECC = $("#LO_HO_Cons_AECC").val();
+        _departure.LO_HO_Cons_HYDR_Oil = $("#LO_HO_Cons_HYDR_Oil").val();
+        _departure.Ballast_ROB = $("#Ballast_ROB").val();
+        if (_departure.Ballast_ROB == "") {
+            $("#msgBallast_ROB").text("Ballast ROB can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBallast_ROB").text('');
+        }
+
+
+        _departure.Remarks = $("#Remarks").val();
+
+        if (_departure.Remarks == "") {
+            $("#msgRemarks").text("Remarks can not be empty.");
+            return;
+        }
+        else {
+            $("#msgRemarks").text('');
+        }
+
+
+
+
+        _departure.SaveDraft = $('#SaveDraft').is(':checked');
+
+        debugger;
+
+     var newUrl= '@Url.Action("departurelist", "Departure")';
+
+        $.ajax({
+            type: "POST",
+            url: "/Report/Departure/insertDepartureR",
+            data: JSON.stringify(_departure),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (r) {
+                alert("Success");
+
+                FConsumptionInsertion();
+                FuelROBInsertion();
+                BunkerRecInsertion();
+                DRCargoInsertion();
+                window.location.href = newUrl;
+                //VoidSpaceInsertion();
+            }
+        });
+
+
+    }
+</script>
+
+<script>
+    window.onload = function () {
+
+        var loadingid = '@TempData["departureReportId"]';
+
+        debugger;
+        if (loadingid == "") {
+            $('#SDraft').show();
+            $('#Id').val(0);
+
+        }
+        else {
+            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                $('#SDraft').hide();
+            }
+
+            $('#Id').val(loadingid);
+        }
+        //'@TempData["departureReportId"]' = loadingid;
+    };
+</script>
+
+<script type="text/javascript">
+
+
+    $("body").on("click", "#btnSave", function () {
+
+        $("#SaveDraft").prop("checked", false);
+        SaveDepartureReport();
+
+    });
+</script>
+
+
+
+<script>
+    function GetLeg(t) {
+        debugger;
+        var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#NextLegPortId').empty();
+                    $('#DepLegPortId').empty();
+                    debugger;
+                    $('#NextLegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+
+                    $('#DepLegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+<script>
+    function bindport(t) {
+        debugger;
+        var Id = t.value;
+        var Legid = $("#DepLegPortId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindPort?Legid=' + Legid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#DeparturePort').empty();
+
+
+                    $('#DeparturePort').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DeparturePort').append('<option value="' + txt + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+<script>
+    function bindport1(t) {
+        debugger;
+        var Id = t.value;
+        var Legid = $("#NextLegPortId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindPort?Legid=' + Legid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#NextPort').empty();
+
+
+                    $('#NextPort').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextPort').append('<option value="' + txt + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+<script type="text/javascript">
+      function FConsumptionInsertion() {
+
+          //alert("Check");
+
+                var fuelconsumptions = [];
+                var table = document.getElementById('tblFuelC'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 4, j = rows.length; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var FuelConsumption = {};
+
+
+
+                    FuelConsumption.FuelType = cells[0].innerHTML;
+                   // FuelConsumption.ME_CP = cells[1].innerHTML;
+                    FuelConsumption.ME_ACT_SEA = cells[1].children[0].value;
+                    FuelConsumption.ME_ACT_MAN = cells[2].children[0].value;
+                    FuelConsumption.ME_ACT_WAIT = cells[3].children[0].value;
+                    FuelConsumption.ME_ACT_BERTH = cells[4].children[0].value;
+                    //FuelConsumption.AE_CP = cells[7].innerHTML;
+                    FuelConsumption.AE_ACT_SEA = cells[6].children[0].value;
+                    FuelConsumption.AE_ACT_MAN = cells[7].children[0].value;
+                    FuelConsumption.AE_ACT_WAIT = cells[8].children[0].value;
+                    FuelConsumption.AE_ACT_BERTH = cells[9].children[0].value;
+                    FuelConsumption.BLR_ACT_SEA = cells[11].children[0].value;
+                    FuelConsumption.BLR_ACT_MAN = cells[12].children[0].value;
+                    FuelConsumption.BLR_ACT_WAIT = cells[13].children[0].value;
+                    FuelConsumption.BLR_ACT_BERTH = cells[14].children[0].value;
+                    FuelConsumption.FRAMO_ACT_SEA = cells[15].children[0].value;
+                    FuelConsumption.FRAMO_ACT_MAN = cells[16].children[0].value;
+                    FuelConsumption.FRAMO_ACT_WAIT = cells[17].children[0].value;
+                    FuelConsumption.FRAMO_ACT_BERTH = cells[18].children[0].value;
+                    FuelConsumption.IGG = cells[19].children[0].value;
+
+                    FuelConsumption.StopageAtSea = cells[20].children[0].value;
+                    FuelConsumption.Deviation = cells[21].children[0].value;
+                    FuelConsumption.SlowSteaming = cells[22].children[0].value;
+                    FuelConsumption.BadWeather = cells[23].children[0].value;
+                    FuelConsumption.COTPrep = cells[24].children[0].value;
+                    FuelConsumption.CargoHeating = cells[25].children[0].value;
+                    FuelConsumption.BWExchange = cells[26].children[0].value;
+                    FuelConsumption.Others = cells[27].children[0].value;
+
+
+                    fuelconsumptions.push(FuelConsumption);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+                fuelconsumptions = JSON.stringify(fuelconsumptions);
+
+                $.ajax({
+                    url: '@Url.Action("InsertFuelConsumption", "Departure")',
+                    type: "POST",
+                    data: { 'fuelconsumptions': fuelconsumptions },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script>
+
+
+    function Getfuelcons11(id, VID) {
+
+
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Departure/Getfuelcons?NoonReportId=' + id + '&VID=' + VID,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+
+
+                    var FtypeList = response.ft;
+                    var CPList = response.cp;
+                    var FCList = response.fc;
+                    var FROBList = response.frob;
+                    var FROBList1 = response.frob1;
+                    var rowCount = FtypeList.length;
+                    let len = rowCount - 1;
+                    for (let i = 2; i <= 1; i++) {
+
+                        var $tableBody = $('#tblFuelC').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+                    debugger;
+
+                    //for (var i = rowCount - 4; i > 0; i--) {
+                    //    tblFuelC.deleteRow(i);
+                    //}
+                    var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+                    var table = document.getElementById('tblFuelC');
+                    //var j = 4;
+                    //$.each(FtypeList, function (index, value) {
+                    //    ss = value;
+                    //    table.rows[j].cells[0].innerHTML = ss;
+                    //    j++;
+                    //});
+
+                    debugger;
+                    var j = 4; var k = 1;
+                    $.each(FCList, function (index, value) {
+                        ss1 = value;
+                        if (k == 5) {
+                            k++;
+                        }
+                        if (k == 10) {
+                            k++;
+                        }
+                        table.rows[j].cells[k].children[0].value = ss1;
+                        k++;
+                        if (k >= 28) {
+                            k = 1;
+                            j++;
+                        }
+                    });
+
+
+
+                    var table1 = document.getElementById('tblFuelRob');
+                    var j = 2; var k = 1;
+                    $.each(FROBList, function (index, value) {
+                        ss = value;
+                        //alert(ss);
+                        debugger;
+                        table1.rows[j].cells[k].children[0].value = ss;
+                        j++;
+                    });
+
+                    var j = 2; var k = 2;
+                    $.each(FROBList1, function (index, value) {
+                        ss2 = value;
+                        //alert(ss);
+                        debugger;
+                        table1.rows[j].cells[k].children[0].value = ss2;
+                        j++;
+                    });
+
+                    //var j = 4;
+                    //$.each(CPList, function (index, value) {
+                    //    ss = value;
+                    //    table.rows[j].cells[1].innerHTML = ss;
+                    //    table.rows[j].cells[7].innerHTML = ss;
+                    //    j++;
+                    //});
+
+
+
+                    //var rowCount1 = FtypeList.length;
+
+                    //for (var i = rowCount1 + 4; i > 0; i++) {
+                    //    tblFuelC1.deleteRow(i);
+                    //}
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+<script>
+
+    var val = '@ViewBag.FuelConsCount';
+
+    let len = 3;
+
+    for (let i=2 ; i <= len; i++) {
+
+        var $tableBody = $('#tblFuelC1').find("tbody"),
+            $trLast = $tableBody.find("tr:last"),
+            $trNew = $trLast.clone();
+
+        $trLast.after($trNew);
+    }
+
+    for (let i = 2; i <= len; i++) {
+
+        var $tableBody = $('#tblFuelRob1').find("tbody"),
+            $trLast = $tableBody.find("tr:last"),
+            $trNew = $trLast.clone();
+
+        $trLast.after($trNew);
+        }
+
+        for (let i = 2; i <= len; i++) {
+
+            var $tableBody = $('#tblbunkerRec1').find("tbody"),
+                $trLast = $tableBody.find("tr:last"),
+                $trNew = $trLast.clone();
+
+            $trLast.after($trNew);
+        }
+
+
+
+
+</script>
+
+
+
+<script>
+
+
+    function Getfuelcons() {
+
+        var VoyId = $("#VoyageId option:selected").val();
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/Getfuelcons?VoyId=' + VoyId,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    @*var FtypeList =@Html.Raw(Json.Encode(@ViewBag.Ftype));
+                    var CPList =@Html.Raw(Json.Encode(@ViewBag.CPValue));*@
+
+                    var FtypeList = response.ft;
+                    var CPList = response.cp;
+
+                    var rowCount = FtypeList.length;
+
+
+                    let len = rowCount - 1;
+                    let len1 = rowCount ;
+
+        for (let i = 2; i <= len; i++) {
+
+            var $tableBody = $('#tblFuelC').find("tbody"),
+                $trLast = $tableBody.find("tr:last"),
+                $trNew = $trLast.clone();
+
+            $trLast.after($trNew);
+                    }
+
+                    //rowCount = rowCount + 1;
+                    for (var i = rowCount - 4; i > 0; i--) {
+                        tblFuelC.deleteRow(i);
+                    }
+
+                    var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+                    var table = document.getElementById('tblFuelC');
+
+                    var j = 4;
+                    $.each(FtypeList, function (index, value) {
+
+                        ss = value;
+                        table.rows[j].cells[0].innerHTML = ss;
+                        //table1.rows[j].cells[0].innerHTML = ss;
+                        j++;
+                    });
+
+                    var j = 4;
+                    $.each(CPList, function (index, value) {
+                        ss = value;
+                        //alert(ss);
+                        table.rows[j].cells[1].innerHTML = ss;
+                        table.rows[j].cells[7].innerHTML = ss;
+                        j++;
+                    });
+
+
+
+
+                    var rowCount1 = FtypeList.length;
+                    var cc = 10 + rowCount1;
+
+                    try {
+                        for (var i = rowCount1 + 4; i > 0; i++) {
+                            tblFuelC.deleteRow(i);
+                        }
+                    }catch{}
+
+
+                    // For Fuel ROB
+
+
+                    for (let i = 1; i <= len-1; i++) {
+
+                        var $tableBody = $('#tblFuelRob').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+                    try {
+                        for (var i = rowCount - 3; i > 0; i--) {
+                            tblFuelRob.deleteRow(i);
+                        }
+                    } catch{}
+
+                    var table1 = document.getElementById('tblFuelRob');
+                    var k = 2;
+                    $.each(FtypeList, function (index, value) {
+                        ss1 = value;
+                        table1.rows[k].cells[0].innerHTML = ss1;
+                        k++;
+                    });
+
+                    try {
+                        for (var t = rowCount1 + 2; t > 0; t++) {
+                            tblFuelRob.deleteRow(t);
+                        }
+                    } catch{ }
+
+
+                 // For Bunker Receipt
+
+                    for (let i = 1; i <= len - 1; i++) {
+
+                        var $tableBody = $('#tblbunkerRec').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+                    try {
+                        for (var i = rowCount - 3; i > 0; i--) {
+                            tblbunkerRec.deleteRow(i);
+                        }
+                    } catch{ }
+
+                    var table11 = document.getElementById('tblbunkerRec');
+                    var m = 2;
+                    $.each(FtypeList, function (index, value) {
+                        ss2 = value;
+                        table11.rows[m].cells[0].innerHTML = ss2;
+                        m++;
+                    });
+
+                    try {
+                        for (var t = rowCount1 + 2; t > 0; t++) {
+                            tblbunkerRec.deleteRow(t);
+                        }
+                    } catch{ }
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+<script type="text/javascript">
+      function FuelROBInsertion() {
+
+
+
+          debugger;
+
+                var fuelRob = [];
+                var table = document.getElementById('tblFuelRob'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 2, j = rows.length; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var FuelROB = {};
+
+
+
+                    FuelROB.FuelType = cells[0].innerHTML;
+                    //FuelConsumption.ME_CP = cells[1].innerHTML;
+                    FuelROB.SBE_ROB = cells[1].children[0].value;
+                    FuelROB.RFA_ROB = cells[2].children[0].value;
+
+
+                    fuelRob.push(FuelROB);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+          fuelRob = JSON.stringify(fuelRob);
+
+                $.ajax({
+                    url: '@Url.Action("InsertFuelROB", "Departure")',
+                    type: "POST",
+                    data: { 'fuelRob': fuelRob },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script type="text/javascript">
+      function BunkerRecInsertion() {
+
+
+
+                var bunkerRec = [];
+                var table = document.getElementById('tblbunkerRec'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 2, j = rows.length; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var BunkerRec = {};
+
+                    BunkerRec.FuelType = cells[0].innerHTML;
+                    BunkerRec.Rec = cells[1].children[0].value;
+                    bunkerRec.push(BunkerRec);
+
+                }
+
+                //alert(fuelconsumptions);
+
+          bunkerRec = JSON.stringify(bunkerRec);
+
+                $.ajax({
+                    url: '@Url.Action("InsertBunkerRec", "Departure")',
+                    type: "POST",
+                    data: { 'bunkerRec': bunkerRec },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script>
+    function GetLegEdit(deplegportid, VID) {
+
+
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid + '&VID=' + VID,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#DepLegPortId').empty();
+
+
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#DepLegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#DepLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#DepLegPortId option[value=" + deplegportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+<script>
+    function GetLegEditNext(nextlegportid, VID) {
+
+
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/BindLeg?Voyid=' + Voyid + '&VID=' + VID,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#NextLegPortId').empty();
+
+
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#NextLegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#NextLegPortId option[value=" + nextlegportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+<script>
+
+
+
+
+    function GetDRCargo() {
+
+        var LegId = $("#DepLegPortId option:selected").val();
+        var VoyageId = $("#VoyageId option:selected").val();
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Departure/GetDRCargo?LegId=' + LegId + '&VoyageId=' + VoyageId,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    var CNameList = response.cn;
+
+                    var rowCount = CNameList.length;
+
+                    debugger;
+                    var table = document.getElementById('tblCargo');
+
+
+                    if (rowCount == 0) {
+
+                        $("#tblCargo").find("tr:gt(" + rowCount + 2 + ")").remove();
+                        //return;
+
+
+
+                        //ss = value;
+                        table.rows[2].cells[0].innerHTML = "";
+                        table.rows[2].cells[1].children[0].value = '0.00';
+                        table.rows[2].cells[2].children[0].value = '0.00';
+                        table.rows[2].cells[3].children[0].value = '0.00';
+                        table.rows[2].cells[4].children[0].value = "";
+                        table.rows[2].cells[5].children[0].value = '0.00';
+
+
+                    }
+
+                    //for (var i = rowCount - 2; i > 0; i--) {
+                    //    tblCargo.deleteRow(i);
+                    //}
+
+
+                    //alert(rowCount);
+
+
+                    let len = rowCount;
+
+                    //alert(len);
+                    //for (let i = 2; i <= len; i++) {
+
+                    //    var $tableBody = $('#tblCargo').find("tbody"),
+                    //        $trLast = $tableBody.find("tr:last"),
+                    //        $trNew = $trLast.clone();
+                    //         $trLast.after($trNew);
+                    //            }
+
+                    for (let i = 1; i <= len - 1; i++) {
+
+                        var $tableBody = $('#tblCargo').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+
+
+                    var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+
+
+                    var j = 2;
+                    $.each(CNameList, function (index, value) {
+
+                        ss = value;
+                        table.rows[j].cells[0].innerHTML = ss;
+                        j++;
+                    });
+
+
+                    //try {
+                    //    for (var i = rowCount + 3; i > 0; i++) {
+                    //        tblCargo.deleteRow(i);
+                    //    }
+                    //} catch { }
+
+
+                    /*   $("#tblCargo").find("tr:gt(" + rowCount-1 + ")").remove();*/
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+</script>
+<script>
+
+
+    function GetDRCargoEdit(id, VID) {
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Departure/GetdRCargoEdit?DepReportId=' + id + '&VID=' + VID,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    var DRCargoList = response.drc;
+                    // var CountCargo = response.cntdrc;
+
+                    //alert(FtypeList);
+                    debugger;
+                    var rowCount = DRCargoList.length;
+
+
+                    let len = rowCount;
+
+                    for (let i = 0; i <= len - 2; i++) {
+
+                        var $tableBody = $('#tblCargo').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+
+
+
+                    }
+
+
+
+
+
+                    var table = document.getElementById('tblCargo');
+
+                    var j = 2; var CargoName = ""; var BL_Qty = ""; var LoadPortalActual = ""; var Cargo_Temp = ""; var Completion_Date = ""; var Rate = "";
+                    $.each(DRCargoList, function (index, value) {
+                        debugger;
+                        CargoName = value.CargoName;
+                        BL_Qty = value.BL_Qty;
+                        LoadPortalActual = value.LoadPortalActual;
+                        Cargo_Temp = value.Cargo_Temp;
+                        Completion_Date = value.Completion_Date;
+                        Rate = value.Rate;
+
+                        table.rows[j].cells[0].innerHTML = value.CargoName;
+                        table.rows[j].cells[1].children[0].value = BL_Qty;
+                        table.rows[j].cells[2].children[0].value = LoadPortalActual;
+                        table.rows[j].cells[3].children[0].value = value.Cargo_Temp;
+                        table.rows[j].cells[4].innerHTML = value.Completion_Date;
+                        table.rows[j].cells[5].children[0].value = value.Rate;
+
+                        j++;
+                    });
+
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+<script>
+
+
+    function GetDRCargoEdit4545(id, VID) {
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Departure/GetdRCargoEdit?DepReportId=' + id + '&VID=' + VID,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    var DRCargoList = response.drc;
+                    var CountCargo = response.cntdrc;
+
+                    //alert(FtypeList);
+
+                    var rowCount = CountCargo;
+                    let len = rowCount;
+                    for (let i = 2; i <= len; i++) {
+
+                        var $tableBody = $('#tblCargo').find("tbody"),
+                            $trLast = $tableBody.find("tr:last"),
+                            $trNew = $trLast.clone();
+
+                        $trLast.after($trNew);
+                    }
+
+
+
+
+                    debugger;
+
+                    //for (var i = rowCount - 4; i > 0; i--) {
+                    //    tblFuelC.deleteRow(i);
+                    //}
+                    var count = 0; var ss = ""; var ss1 = "";
+                    var table = document.getElementById('tblCargo');
+
+
+                    var j = 2; var k = 0;
+                    $.each(DRCargoList, function (index, value) {
+                        ss1 = value;
+
+                        if (k == 0) {
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            k++;
+                        }
+                        else if (k == 4) {
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            k++;
+                        }
+                        else if (k == 6) {
+                            k = 0;
+                            j++;
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            k++;
+                        }
+                        else {
+                            alert(ss1);
+                            table.rows[j].cells[k].children[0].value = ss1;
+                            k++;
+                        }
+
+                    });
+
+
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+@if (ViewBag.EditDepFC != null)
+{
+    <script type="text/javascript">
+            @Html.Raw(ViewBag.EditDepFC)
+    </script>
+}
+@if (ViewBag.EditLeg != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditLeg)
+    </script>
+}
+@if (ViewBag.EditLegNext != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditLegNext)
+    </script>
+}
+@if (ViewBag.EditDRCargo != null)
+{
+    <script type="text/javascript">
+            @Html.Raw(ViewBag.EditDRCargo)
+    </script>
+}
+
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').addClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+
+</script>

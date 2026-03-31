@@ -1,0 +1,39 @@
+﻿@model DataBuildingLayer.ExportPeram2
+<h5 class="heading-s2">
+    Export Data
+</h5>
+<div class="row">
+    @*<div class="col-sm-12 form-group">
+            <input type="file" name="photo" id="photo" multiple />
+        </div>*@
+
+    <label for="inputPassword" class="col-sm-12 col-form-label">Vessel Name.</label>
+    <div class="col-sm-4">
+        @*@Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @onchange = "GetLeg(this)", @required = "true", @oninvalid = "setCustomValidity('Please Select Voyage No.')" })*@
+        @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", @oninvalid = "setCustomValidity('Please select a vessel')" })
+        <span id="messageVoyid" style="color:red"></span>
+    </div>
+    <label class="col-sm-12 col-form-label">Date From</label>
+    <div class="col-sm-4 form-group">
+        @Html.EditorFor(model => model.FromDate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "Date", @required = "true", @oninvalid = "setCustomValidity('Please Select Range of Date From.')" } })
+        <span id="msgETDDateTime" style="color:red"></span>
+    </div>
+    <br />
+    <label class="col-sm-12 col-form-label">Date To</label>
+    <div class="col-sm-4 form-group">
+
+        @Html.EditorFor(model => model.ToDate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "Date", @required = "true", @oninvalid = "setCustomValidity('Please Select Range of Date To.')" } })
+
+    </div>
+
+    <br />
+    <br />
+    <br />
+    <div class="clearfix"></div>
+    <div class="col-sm-4">
+        <input name="submit" type="submit" value="Export" id="Export" class="btn peach-btn btn-block btn-info" />
+    </div>
+    @*<div class="col-sm-4">
+            <input name="submit" type="submit" value="Import Attachments" id="Import" class="btn peach-btn btn-block btn-warning" />
+        </div>*@
+</div>

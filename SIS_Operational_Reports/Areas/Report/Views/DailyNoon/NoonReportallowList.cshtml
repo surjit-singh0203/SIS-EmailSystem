@@ -1,0 +1,154 @@
+﻿@using DataBuildingLayer;
+@model DailyNoonReportAllow
+
+@{
+    ViewBag.Title = "NoonReportallowList";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+
+<div id="idCP">
+    <div class="row">
+        <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div>
+                <h2>
+                    Noon Report By-Pass allow Date
+                </h2>
+                @*<ol class="breadcrumb">
+                        <li><a href="">Home</a></li>
+                        <li><a href="">Form</a></li>
+                        <li><a>Create</a></li>
+                    </ol>*@
+            </div>
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
+            <div class="col-md button-row-top">
+                @if (StaticHelper.UserRole == "Administrator" || StaticHelper.UserRole == "Superintendent")
+                {
+                    <a class="btn btn-info" href="@Url.Action("AddNoonReportallow", "DailyNoon")">
+                        Add By-Pass Noon Date
+                    </a>
+                }
+                @*<a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>*@
+            </div>
+        </div>
+    </div>
+
+
+    <div class="wrapper wrapper-content">
+        <div class="container">
+            <div class="inline-content">
+                <div class="col-md">
+
+                </div>
+
+                <div class="inline-content">
+                    <div class="col m-1">
+
+                        <input id="idFirst" autocomplete="off" placeholder="search by :Vessel Name" class="form-control" type="text">
+                        <span id="messageLat" style="color:red"></span>
+                    </div>
+
+                    <div class="col m-1">
+                        <input id="idSecond" autocomplete="off" placeholder="yyyy-mm-dd" class="form-control" type="date">
+                        <span id="messageLat" style="color:red"></span>
+                    </div>
+
+                    <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+
+                </div>
+            </div>
+
+            <div style="overflow:auto; height:auto;">
+                <ul>
+                    <li style="list-style: none; margin-top:20px">
+
+                        @Html.Partial("_noonReport_BypassDate")
+
+                    </li>
+                </ul>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').addClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+
+
+</script>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+
+<script>
+
+    $("#btnSearch").click(function () {debugger
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+
+        if (firstVal == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        else {
+
+            $("#tblByPassNoonreport_Date").html("");
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/DailyNoon/_noonReport_BypassDate?pageNo=1&firstVal=' + firstVal + '&secondVal=' + secondVal,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+                    if (data.trim() != "") {
+                        $("#tblByPassNoonreport_Date").fadeIn("fast");
+                        $("#tblByPassNoonreport_Date").html("");
+                        $("#tblByPassNoonreport_Date").html(data);
+                    }
+                    else {
+                        $("#tblByPassNoonreport_Date").html("");
+                        $("#tblByPassNoonreport_Date").html('<div class="text-danger card-avatar text-center"><img class="imgnorecord" src="../Include/Admin/img/norecord.png"/><br/>no record found</div>');
+                    }
+                },
+                error: function (data) {
+                    $("#tblByPassNoonreport_Date").html("");
+                    $("#tblByPassNoonreport_Date").html(data);
+                }
+
+            });
+        }
+
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>

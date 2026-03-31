@@ -3,7 +3,7 @@
 
 @{
     ViewBag.Title = "AddCP_Part2";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
 }
 
 <h2>Charter Party Main-CONSUMPTION</h2>
@@ -33,14 +33,14 @@
         <tbody>
             @foreach (CPMainCONSUMPTIONClass customer2 in Model.MainCONSUMPTION)
             {
-            <tr>
-                <td>@customer2.Speed</td>
-                <td>@customer2.ME_LADEN</td>
-                <td>@customer2.ME_BALLAST</td>
-                <td>@customer2.AE_VLSFO</td>
-                <td>@customer2.AE_DO</td>
-                <td><input type="button" id="button2" value="Remove" onclick="Remove2(this)" /></td>
-            </tr>
+                <tr>
+                    <td>@customer2.Speed</td>
+                    <td>@customer2.ME_LADEN</td>
+                    <td>@customer2.ME_BALLAST</td>
+                    <td>@customer2.AE_VLSFO</td>
+                    <td>@customer2.AE_DO</td>
+                    <td><input type="button" id="button2" value="Remove" onclick="Remove2(this)" /></td>
+                </tr>
             }
         </tbody>
         <tfoot>
@@ -50,7 +50,12 @@
                 <td><input type="text" id="txtME_BALLAST" /></td>
                 <td><input type="text" id="txtAE_VLSFO" /></td>
                 <td><input type="text" id="txtAE_DO" /></td>
-                <td><input type="button" id="btnAdd2" value="Add" /></td>
+                <td>
+                    @if (StaticHelper.UserRole == "Administrator")
+                    {
+                        <input type="button" id="btnAdd2" value="Add" />
+                    }
+                </td>
             </tr>
         </tfoot>
     </table>
@@ -58,8 +63,8 @@
 
     <br />
     <input type="button" id="btnSave" value="Save All" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script type="text/javascript" src="~/js/forAdd.js"></script>
+    <script type="text/javascript" src="~/js/forAdd1.js"></script>
 
 
     <script>
@@ -186,7 +191,7 @@
             //    OtherCONSUMPTION.push(customer3);
             //});
 
-           // var CharterParty = '{"CPVesselInfo":["' + CPVesselInfo.join('","') + '"],"MainCONSUMPTION":]"' + MainCONSUMPTION.join('","') + '"],"OtherCONSUMPTION":["' + OtherCONSUMPTION.join('","') + '"]}';
+            // var CharterParty = '{"CPVesselInfo":["' + CPVesselInfo.join('","') + '"],"MainCONSUMPTION":]"' + MainCONSUMPTION.join('","') + '"],"OtherCONSUMPTION":["' + OtherCONSUMPTION.join('","') + '"]}';
 
             //var CharterParty = new Array();
             //CharterParty.push(CPVesselInfo);

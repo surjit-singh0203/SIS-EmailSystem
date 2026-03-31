@@ -4,7 +4,7 @@
 
     ViewBag.Title = "Index";
     int Id = Model.Id;
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 <link href="~/css/flatpickr.min.css" rel="stylesheet" />
@@ -67,7 +67,7 @@
 </style>
 
 <style>
-   
+
     #cover-spin {
         position: fixed;
         width: 100%;
@@ -116,39 +116,6 @@
         -webkit-animation: spin .8s linear infinite;
         animation: spin .8s linear infinite;
     }
-
-    table#tblFuelC td {
-        text-align: center;
-        width: 50px;
-    }
-
-    tr.small-titles td {
-        max-width: 150px !important;
-        word-wrap: break-word !important;
-        white-space: normal !important;
-    }
-
-    input#Laden {
-        margin-right: 10px;
-    }
-
-    input#Ballast {
-        margin-left: 11px;
-        margin-right: 7px;
-    }
-
-    textarea#Remarks {
-        border: none;
-    }
-
-    input#Sea {
-        margin-right: 7px;
-    }
-
-    input#Port {
-        margin-left: 10px;
-        margin-right: 6px;
-    }
 </style>
 
 <div id="cover-spin"></div>
@@ -183,6 +150,7 @@
 </div>
 
 @Html.HiddenFor(e => e.Id)
+@Html.HiddenFor(e => e.VesselId)
 @Html.HiddenFor(x => x.File_Name)
 
 
@@ -377,7 +345,7 @@
                 }
                 else
                 {
-                    @Html.EditorFor(model => model.Received_Date, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                    @Html.EditorFor(model => model.Received_Date, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", } })
                     <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                 }
                 <span id="msgReceived_Date" style="color:red"></span>
@@ -407,7 +375,7 @@
                 <span id="msgDifference_in_Meter_Reading_MT" style="color:red"></span>
             </div>
 
-            <label for="inputPassword" class="col-sm-4 col-form-label">Received QTY(MT)</label>
+            <label for="inputPassword" class="col-sm-4 col-form-label">QTY Received(MT)</label>
             <div class="col-sm-8">
                 @Html.EditorFor(model => model.QTY_supplied_MT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 20, } })
                 <span id="msgQTY_supplied_MT" style="color:red"></span>
@@ -441,14 +409,7 @@
     $('#Menu7').removeClass('active');
     $('#Menu8').addClass('active');
     $('#Menu9').removeClass('active');
-
-</script>
-
-<script>
-
-    function goBack() {
-        window.history.back();
-    }
+    $('#Menu10').removeClass('active');
 
 </script>
 
@@ -473,6 +434,12 @@
 </script>
 
 <script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script>
 
     $(document).ready(function () {
 
@@ -491,7 +458,7 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-           // defaultDate: new Date()
+            defaultDate: new Date()
         });
     });
 
@@ -535,14 +502,6 @@
 
 <script>
 
-    function goBack() {
-        window.history.back();
-    }
-
-</script>
-
-<script>
-
     $(".check-AlphaNumeric").on("input", function () {
         //  this.value = this.value.replace(/[^a-zA-Z0-9!@@#$%^&*(),.?":{}|<>]/g, '');
         this.value = this.value.replace(/[^a-zA-Z0-9!@@#$%^&*(),.?":{}|<> ]/g, '');
@@ -569,7 +528,7 @@
             const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "image/jpeg", "image/jpg", "image/png"];
 
             if (!allowedTypes.includes(fileType)) {
-                alert("Only PDF, Word, Excel, JPG, and PNG files are allowed. Please select a valid file.");
+                alert("Only PDF, Word, JPG, and PNG files are allowed. Please select a valid file.");
                 input.value = "";
                 return;
             }
@@ -606,7 +565,7 @@
       // _FreshR.PortName = $('#PortName option:selected').text();
         _FreshR.PortName = $("#PortName").val();
       if (_FreshR.PortName == "") {
-          $("#msgPortName").text("Port Name can not be empty.");
+          $("#msgPortName").text("Please Choose Port Name");
           return;
       }
       else {
@@ -642,7 +601,7 @@
 
       _FreshR.Intial_Meter_Reading_MT_supplied = $("#Intial_Meter_Reading_MT_supplied").val();
       if (_FreshR.Intial_Meter_Reading_MT_supplied == "") {
-          $("#msgIntial_Meter_Reading_MT_supplied").text("Intial Meter Reading MT supplied can not be empty.");
+          $("#msgIntial_Meter_Reading_MT_supplied").text("Intial Meter Reading MT can not be empty.");
         return;
       }
       else {
@@ -669,14 +628,14 @@
 
       _FreshR.QTY_supplied_MT = $("#QTY_supplied_MT").val();
       if (_FreshR.QTY_supplied_MT == "") {
-          $("#msgQTY_supplied_MT").text("QTY supplied MT can not be empty.");
+          $("#msgQTY_supplied_MT").text("QTY Received(MT) can not be empty.");
         return;
       }
       else {
             $("#msgQTY_supplied_MT").text('');
       }
 
-      
+
 
         var fileInput = $('input[name="FreshWater_File"]');
         var filePath = fileInput.val();;
@@ -701,6 +660,8 @@
 
         }
 
+        _FreshR.VesselId = $("#VesselId").val();
+
         formData.append("Id", _FreshR.Id);
         formData.append("PortName", _FreshR.PortName);
         formData.append("Facility_Name", _FreshR.Facility_Name);
@@ -710,6 +671,8 @@
         formData.append("Difference_in_Meter_Reading_MT", _FreshR.Difference_in_Meter_Reading_MT);
         formData.append("QTY_supplied_MT", _FreshR.QTY_supplied_MT);
         formData.append("Received_Date", _FreshR.Received_Date);
+        formData.append("VesselId", _FreshR.VesselId);
+
 
        debugger;
 

@@ -3,7 +3,7 @@
 
 @{
     ViewBag.Title = "AddCP_Part1";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
 }
 
 <h2>Charter Party</h2>
@@ -34,25 +34,25 @@
         <tbody>
             @foreach (CPVessel customer in Model.CPVesselInfo)
             {
-            <tr>
-                @*<td>@customer.Speed</td>*@
-                @*<td>
-            @Html.DropDownListFor(model => customer.VesselID, new SelectList(customer.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
-        </td>
-        <td>@Html.TextBoxFor(x => customer.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
-        <td>@Html.TextBoxFor(x => customer.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
-        <td>
-            @Html.DropDownListFor(model => customer.VoyageType, new SelectList(customer.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
-        </td>*@
-                @customer.CPId = @Model.Id;
-                <td>@customer.CPId</td>
-                <td>@customer.VesselID</td>
-                <td>@customer.VesselName</td>
-                <td>@customer.StartDate</td>
-                <td>@customer.EndDate</td>
-                @*<td>@customer.VoyageType</td>*@
-                <td><input type="button" id="button1" value="Remove" onclick="Remove(this)" /></td>
-            </tr>
+                <tr>
+                    @*<td>@customer.Speed</td>*@
+                    @*<td>
+                            @Html.DropDownListFor(model => customer.VesselID, new SelectList(customer.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                        </td>
+                        <td>@Html.TextBoxFor(x => customer.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                        <td>@Html.TextBoxFor(x => customer.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                        <td>
+                            @Html.DropDownListFor(model => customer.VoyageType, new SelectList(customer.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                        </td>*@
+                    @customer.CPId = @Model.Id;
+                    <td>@customer.CPId</td>
+                    <td>@customer.VesselID</td>
+                    <td>@customer.VesselName</td>
+                    <td>@customer.StartDate</td>
+                    <td>@customer.EndDate</td>
+                    @*<td>@customer.VoyageType</td>*@
+                    <td><input type="button" id="button1" value="Remove" onclick="Remove(this)" /></td>
+                </tr>
             }
         </tbody>
         <tfoot>
@@ -76,7 +76,12 @@
                         @Html.DropDownListFor(model => model.VoyageType, new SelectList(Model.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
                     </td>*@
 
-                <td><input type="button" id="btnAdd" value="Add" /></td>
+                <td>
+                    @if (StaticHelper.UserRole == "Administrator")
+                    {
+                        <input type="button" id="btnAdd" value="Add" />
+                    }
+                </td>
             </tr>
         </tfoot>
     </table>
@@ -84,8 +89,8 @@
 
     <br />
     <input type="button" id="btnSave" value="Save All" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script type="text/javascript" src="~/js/forAdd.js"></script>
+    <script type="text/javascript" src="~/js/forAdd1.js"></script>
     <script type="text/javascript">
 
         $("body").on("click", "#btnAdd", function () {
@@ -180,6 +185,7 @@
         // For Save All
         $("body").on("click", "#btnSave", function () {
 
+            debugger;
             //Loop through the Table rows and build a JSON array.
             var CPVesselInfo = new Array();
             $("#tblCPVessel TBODY TR").each(function () {

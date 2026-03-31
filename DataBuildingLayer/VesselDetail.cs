@@ -40,8 +40,8 @@ namespace DataBuildingLayer
        
 
         public DateTime CreatedDate { get; set; }
-
-        public decimal Displacement { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        public decimal? Displacement { get; set; }
 
         public bool IsActive { get; set; }
 

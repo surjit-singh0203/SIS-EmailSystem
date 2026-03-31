@@ -1,0 +1,299 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.VoyageClass
+@{
+                /**/
+
+                ViewBag.Title = "insertleg";
+                Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+
+
+<table id="tblvoyageleg" class="GeneratedTable" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+
+            <th id="LegA">
+                Leg Port (A)
+            </th>
+            <th id="ReasonA">
+                Reason for Port Call (A)
+            </th>
+            <th id="LegB">
+                Leg Port (B)
+            </th>
+            <th id="ReasonB">
+                Reason for Port Call (B)
+
+            </th>
+            <th id="LegDTG" >DTG</th>
+            <th id="LegCP_SOG">CP SOG</th>
+            <th id="LegCP_Log_Speed">CP Log Speed</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (VoyageLeg VLeg in Model.VoyageLegList)
+        {
+        <tr>
+            <td>@VLeg.LegPort_A</td>
+            <td>@VLeg.ReasonforPortCall_A</td>
+            <td>@VLeg.LegPort_B</td>
+            <td>@VLeg.ReasonforPortCall_B</td>
+            <td>@VLeg.DTG</td>
+            <td>@VLeg.CP_SOG</td>
+            <td>@VLeg.CP_Log_Speed</td>
+            <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+        </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td> @Html.DropDownListFor(model => model.LegPort_A, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+            <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_A, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td> @Html.DropDownListFor(model => model.LegPort_B, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_B, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td>@Html.EditorFor(model => model.DTG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 8,  @max = "9999", @required = "true", @onKeyUp = "requiredValue2(this)" } })</td>
+            <td>  @Html.DropDownListFor(model => model.CP_SOG, new SelectList(Model.SpeedStatusList, "Speed", "Speed"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            @*<td> @Html.EditorFor(model => model.CP_SOG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
+            <td> @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+            <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+        </tr>
+    </tfoot>
+</table>
+
+
+
+
+
+<input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />
+
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+<script type="text/javascript">
+    function requiredValue2(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        //Reference the Name and Country TextBoxes.
+
+        debugger;
+        var rsnA = $("#ReasonforPortCall_A option:selected").text();
+        var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+        var legA = $("#LegPort_A option:selected").text();
+        var legB = $("#LegPort_B option:selected").text();
+
+
+        if (legA == "") {
+            alert("Please Choose Leg Port(A)");
+            return;
+        }
+        if (rsnA == "") {
+            alert("Please Choose Reason for Port Call (A)");
+            return;
+        }
+        if (legB == "") {
+            alert("Please Choose Leg Port(B)");
+            return;
+        }
+        if (rsnB == "") {
+            alert("Please Choose Reason for Port Call (B)");
+            return;
+        }
+       
+       
+
+
+     
+        var txtLegA = $("#LegPort_A");
+
+      
+
+        var txtRsnA = $("#ReasonforPortCall_A");
+        var txtLegB = $("#LegPort_B");
+        var txtRsnB = $("#ReasonforPortCall_B");
+
+        var txtDTG = $("#DTG");
+        var txtCP_SOG = $("#CP_SOG");
+        var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblvoyageleg > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtLegA.val());
+
+        //Add Height cell.
+        cell = $(row.insertCell(-1));
+        //alert(VesselName);
+        debugger;
+        cell.html(txtRsnA.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtLegB.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtRsnB.val());
+
+        //Add DTG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDTG.val());
+
+        //Add CP_SOG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtCP_SOG.val());
+
+        //Add Log_Speed cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtCP_Log_Speed.val());
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtLegA.val("");
+        txtRsnA.val("");
+        txtLegB.val("");
+        txtRsnB.val("");
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblvoyageleg")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+    $("body").on("click", "#btnSave", function () {
+        //Loop through the Table rows and build a JSON array.
+
+        //var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        //var urlparam = url[0].split('=');
+        var result = getUrlVars()["id"];
+    //    var ww = this.href.substring(this.href.lastIndexOf('/') + 1);
+        //alert(result);
+        var voyage = new Array();
+        $("#tblvoyageleg TBODY TR").each(function () {
+            var row = $(this);
+            var VG = {};
+            VG.LegPort_A = row.find("TD").eq(0).html();
+            VG.ReasonforPortCall_A = row.find("TD").eq(1).html();
+            VG.LegPort_B = row.find("TD").eq(2).html();
+            VG.ReasonforPortCall_B = row.find("TD").eq(3).html();
+            VG.DTG = row.find("TD").eq(4).html();
+            VG.CP_SOG = row.find("TD").eq(5).html();
+            VG.CP_Log_Speed = row.find("TD").eq(6).html();
+            VG.Id = result;
+            voyage.push(VG);
+        });
+        var origin = window.location.origin;
+        // alert(origin);
+        //Send the JSON array to Controller using AJAX.
+        $.ajax({
+            type: "POST",
+
+            url: "/CharterParty/Voyage/insertlegD",
+            data: JSON.stringify(voyage),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //alert(r + " record(s) inserted.");
+
+               // window.location = origin + "/CharterParty/Voyage/addfuel?vid=" + r + "";
+
+                if (response.Success) {
+                    //alert("CP_Part2 Completed" + response.Data);
+                    window.location.href = "/CharterParty/Voyage/" + response.Data;
+                } else {
+                    //alert("CP_Part1 Error");
+                    //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                }
+            }
+
+            //success: function (json) {
+
+            //    if (json.isRedirect) {
+            //        window.location.href = json.redirectUrl;
+            //    }
+            //},
+        });
+    });
+</script>
+
+
+<script>
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('/') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+</script>

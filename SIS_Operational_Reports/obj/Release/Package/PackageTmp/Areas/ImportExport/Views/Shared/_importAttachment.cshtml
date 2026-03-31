@@ -1,0 +1,173 @@
+@model DataBuildingLayer.ExportPeram2
+<div class="row">
+    @*<div class="col-sm-12 form-group">
+            <input type="file" name="photo" id="photo" multiple />
+        </div>*@
+    <div class="col-sm-12 form-group">
+        <input type="file" name="zip" accept=".zip" id="zipSelector" multiple />
+        @*<input type="file" name="photo" id="photo" onchange="check()" accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />*@
+
+    </div>
+    <br />
+    <br />
+    <br />
+
+    <div class="clearfix"></div>
+    <div class="col-sm-4">
+        <input name="submit" type="submit" value="Import BunkerR Attachment" id="ImportAttachment" class="btn peach-btn btn-block btn-info" />
+        <input name="submit" type="submit" value="Import FreshWR Attachment" id="ImportAttachment1" class="btn peach-btn btn-block btn-info" />
+    </div>
+
+
+    
+
+
+
+    @*<div class="col-sm-4">
+            <input name="submit" type="submit" value="Import Attachments" id="Import" class="btn peach-btn btn-block btn-warning" />
+        </div>*@
+
+</div>
+@*<br />
+<div class="col">
+    <input type="file" id="zipSelector" accept=".zip" style="display: none;">
+    <b>Import Attachment : </b><button id="chooseZipFolderBtn">Choose ZIP Folder</button>
+</div>*@
+
+@*<div align="center" id="jigsawbar" style="width: 100px; margin-left: 200px; height: 18px;max-height: 18px"></div>*@
+<div align="center" style="height:51px">
+    <p id="loading" style="display: none; margin-top:-33px; text-align-last:center;" height="Auto">
+        <img src="~/images/loader4.gif" height="40" />&nbsp;&nbsp; Please Wait...
+    </p>
+</div>
+<div align="center" id="bmsname1">
+    @* <h4  style="color: Red">@ViewBag.bmsname</h4>
+        @Html.Partial("_importexport")*@
+</div>
+
+<script type="text/javascript">
+
+  
+    $('#ImportAttachment').click(function () {debugger
+  
+        var fp = $("#zipSelector");
+        var lg = fp[0].files.length;
+        var items = fp[0].files;
+        var fileSize = 0;
+  
+        var fileName = document.querySelector('#zipSelector').value;
+  
+        if (!fileName.endsWith('.zip')) {
+            alert('Please upload zip folder only.');
+            document.getElementById("zipSelector").value = null;
+            return false;
+        }
+        else
+        {
+         
+            var formData = new FormData();
+            var files = $('#zipSelector')[0].files;
+  
+            for (var i = 0; i < files.length; i++) {
+               formData.append('files', files[i]);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/ImportExport/ImportExport/UploadZip",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.success == true) {
+                        alert(data.message);
+                    }
+
+                    if (data.success == false) {
+                        alert(data.message);
+                    }
+
+                }
+            });
+         
+        }
+  
+    });
+  
+  
+</script>
+
+
+
+<script type="text/javascript">
+
+
+    $('#ImportAttachment1').click(function () {
+        debugger
+
+        var fp = $("#zipSelector");
+        var lg = fp[0].files.length;
+        var items = fp[0].files;
+        var fileSize = 0;
+
+        var fileName = document.querySelector('#zipSelector').value;
+
+        if (!fileName.endsWith('.zip')) {
+            alert('Please upload zip folder only.');
+            document.getElementById("zipSelector").value = null;
+            return false;
+        }
+        else {
+
+            var formData = new FormData();
+            var files = $('#zipSelector')[0].files;
+
+            for (var i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/ImportExport/ImportExport/UploadFreshWZip",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.success == true) {
+                        alert(data.message);
+                    }
+
+                    if (data.success == false) {
+                        alert(data.message);
+                    }
+
+                }
+            });
+
+        }
+
+    });
+
+</script>
+
+@*<script type="text/javascript">
+    function getEmailValues() {
+        var toEmails = $('#emailToValues').val();
+        var ccEmails = $('#emailCcValues').val();
+        return {
+            to: toEmails ? toEmails.split(',').map(function(e) { return e.trim(); }).filter(Boolean) : [],
+            cc: ccEmails ? ccEmails.split(',').map(function(e) { return e.trim(); }).filter(Boolean) : []
+        };
+    }
+
+    $('#SaveEmail').click(function () {
+        var emailData = getEmailValues();
+        console.log('To:', emailData.to);
+        console.log('CC:', emailData.cc);
+        
+        alert('To: ' + (emailData.to.join(', ') || '(none)') + '\nCC: ' + (emailData.cc.join(', ') || '(none)'));
+
+        $.ajax
+    });
+</script>*@
+

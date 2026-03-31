@@ -91,8 +91,35 @@
 
         <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
             <div class="col-md">
-                <h2>Add Pump Detail</h2>
+                @*<h2>Add Pump Detail</h2>*@
+                <h2>
+                    @{
+                        var idcheck = Model.Id.ToString();
+                        var addEdit = "";
+                        if (idcheck == "0")
+                        {
+                            addEdit = "Add";
+                        }
+                        else
+                        {
+                            addEdit = "Edit";
+                        }
+                    }
+
+
+                    @addEdit Pump Detail
+                </h2>
+
             </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
 
             <div class="col-md button-row-top">
                 <div class="row">
@@ -102,7 +129,7 @@
                     </div>
                     <div class="col">
 
-                        <button name="Reset" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
+                        <button name="Reset" onClick="window.location.reload();" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
                     </div>
                     <div class="col">
 
@@ -120,21 +147,27 @@
             <div class="col-md">
                 <div class="mb-3 row">
 
-                    <label for="inputPassword" class="col-sm-4 col-form-label">Pump Type</label>
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Pump Category*</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.PumpUseId, new SelectList(Model.PumpUseName, "Id", "Type"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
+                        <div class="error"></div>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Pump Type*</label>
                     <div class="col-sm-8">
                         @Html.DropDownListFor(model => model.PumpTypeId, new SelectList(Model.PumpTypeList, "Id", "Type"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
                         <div class="error"></div>
                     </div>
 
-                    <label for="inputPassword" class="col-sm-4 col-form-label">Name</label>
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Name*</label>
                     <div class="col-sm-8">
                         @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @min = "0", @max = "9999999", @required = "true", @onKeyUp = "requiredValue(this)" } })
                         <span id="messageImo"></span>
                     </div>
 
-                    <label for="inputPassword" class="col-sm-4 col-form-label">Capacity</label>
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Capacity(m3/hr)*</label>
                     <div class="col-sm-8">
-                        @Html.EditorFor(model => model.Capacity, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @min = "0", @max = "99999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+                        @Html.EditorFor(model => model.Capacity, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @min = "0", @max = "99999", @onkeypress = "return isNumberKey(event)", @required = "true", } })
                         <span id="messageCap"></span>
                     </div>
 
@@ -156,6 +189,47 @@
         window.history.back();
     }
 </script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if ( charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+<script type="text/javascript">
+
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        // Check for '.' and ensure there's only one
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        // Allow only backspace, delete, and numeric values
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        return true;
+    });
+
+</script>
+
 
 <script type="text/javascript">
     function requiredValue(arg) {
@@ -227,10 +301,6 @@
     $('#Menu3').removeClass('active');
     $('#Menu4').removeClass('active');
     $('#Menu5').addClass('active');
-    $('#Menu6').removeClass('active');
-    $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 
 </script>

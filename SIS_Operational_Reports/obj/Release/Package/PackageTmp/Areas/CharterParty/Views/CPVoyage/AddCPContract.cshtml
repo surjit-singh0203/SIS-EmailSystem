@@ -3,7 +3,7 @@
 
 @{
     ViewBag.Title = "AddCPContract";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
 }
 
 
@@ -28,7 +28,7 @@
             <div class="form-actions">
                 @*<button name="Submit" type="submit" class="btn btn-success btn-width" onclick="this.form.submit();this.disabled = true; this.value = 'Submit...';"><i class="uil uil-check mr-2"></i>Submit</button>*@
                 <button name="Submit" type="submit" class="btn btn-success btn-width"><i class="uil uil-check mr-2"></i>Submit</button>
-                <button name="Reset" type="reset" onClick="window.location.reload();" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
+                <button name="Reset" onClick="window.location.reload();" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
                 <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
             </div>
         </div>

@@ -13,7 +13,7 @@ namespace DataBuildingLayer
 
     public partial class UserDetail    {
         // BerthTypeList = new List<SelectListItem>();
-        SqlConnection cons = ConnectionBulder.con;        public UserDetail()        {            DepartmentWiseUserRole = GetDepartment();
+        SqlConnection cons = ConnectionBulder.con;        public UserDetail()        {            DepartmentWiseUserRole = new List<SelectListItem>(); //GetDepartment();
             // RankList = GetRanksvalues(1);//new List<SelectListItem>();
             RankList = new List<SelectListItem>();            GetUserList = new List<UserDetail>();            VesselList = CommonClass.GetVesselList();
             //FleetNameList = GetFleetNameType("FleetName");
@@ -27,9 +27,10 @@ namespace DataBuildingLayer
         }        public UserDetail EditUser { get; set; }        public List<UserDetail> GetUserList { get; set; }        public List<SelectListItem> DepartmentWiseUserRole { get; set; }        public List<SelectListItem> RankList { get; set; }        public List<SelectListItem> FixUserList { get; set; }        public List<SelectListItem> VesselList { get; set; }
         // public List<SelectListItem> UserTypeList { get; set; }
         public string ConfirmPassword { get; set; }        public string VesselName { get; set; }        public string Password { get; set; }        public int TotalCount { get; set; }
-        public string RankName { get; set; }        public string UserName { get; set; }        public string DeptName { get; set; }        public int VesselID { get; set; }        public List<int> VesselIDs { get; set; }        public List<int> FTypeIDs { get; set; }        public List<int> FNameIDs { get; set; }        public List<SelectListItem> FleetTypeList { get; set; }        public List<SelectListItem> FleetNameList { get; set; }        public List<SelectListItem> GetDepartment()        {            List<SelectListItem> jst = new List<SelectListItem>();
-            //jst.Add(new SelectListItem() { Text = "None Selected", Value = null });
-            using (SqlDataAdapter sda = new SqlDataAdapter("Select * from DepartmentWiseRole", cons))            {                DataTable tbl = new DataTable();                sda.Fill(tbl);                if (tbl.Rows.Count > 0)                {                    for (int i = 0; i < tbl.Rows.Count; i++)                    {                        jst.Add(new SelectListItem() { Text = tbl.Rows[i]["Departments"].ToString(), Value = tbl.Rows[i]["Id"].ToString() });                    }                }            }            return jst;        }
+        public string RankName { get; set; }        public string UserName { get; set; }        public string DeptName { get; set; }        public int VesselID { get; set; }
+
+
+               public List<int> VesselIDs { get; set; }        public List<int> FTypeIDs { get; set; }        public List<int> FNameIDs { get; set; }        public List<SelectListItem> FleetTypeList { get; set; }        public List<SelectListItem> FleetNameList { get; set; }      
 
         public List<SelectListItem> GetFleetNameType(string Action)        {            List<SelectListItem> jst = new List<SelectListItem>();
             //jst.Add(new SelectListItem() { Text = "None Selected", Value = null });
@@ -39,6 +40,56 @@ namespace DataBuildingLayer
                         //jst.Add(new SelectListItem() { Text = tbl.Rows[i]["FixUser"].ToString(), Value = tbl.Rows[i]["Id"].ToString() });
                         jst.Add(new SelectListItem() { Text = tbl.Rows[i]["FixUser"].ToString(), Value = tbl.Rows[i]["FixUser"].ToString() });                    }                }            }            return jst;        }    }
 
+
+
+
+
+    public partial class PortListClass
+    {
+        public PortListClass()
+        {
+            // PortList = CommonClass.portList();
+            CountryList = CountList();
+        }
+        public List<string> PortIDs { get; set; }
+
+        public List<SelectListItem> PortList { get; set; }
+        public string ExportedPortName { get; set; }
+
+        public List<Country> CountryList { get; set; }
+        public List<PortListClass> GetPortList { get; set; }
+
+
+
+        public static List<Country> CountList()
+        {
+            List<Country> ftype = new List<Country>();
+            using (SqlDataAdapter adp = new SqlDataAdapter("select distinct (CountryName) from PortList order by CountryName asc", ConnectionBulder.con))
+            {
+                //adp.SelectCommand.CommandType = CommandType.StoredProcedure;
+                //adp.SelectCommand.Parameters.AddWithValue("@Action", tblName);
+                DataTable dt = new DataTable();
+                adp.Fill(dt);
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    ftype.Add(new Country
+                    {
+                        //Id = Convert.ToInt32(dt.Rows[i][0]),
+                        Name = dt.Rows[i][0].ToString()
+                    });
+                }
+                // con.Close();
+            }
+
+            return ftype;
+        }
+
+    }
+    public class Country
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
     public partial class VesselDetail
     {
 
@@ -150,9 +201,9 @@ namespace DataBuildingLayer
     {
         SqlConnection cons = ConnectionBulder.con;
         public TanksType()
-        {
-            GetTanksTypeList = new List<TanksType>();
-        }
+        {           
+            GetTanksTypeList = new List<TanksType>();          
+        }       
         public List<TanksType> GetTanksTypeList { get; set; }
     }
 
@@ -171,27 +222,29 @@ namespace DataBuildingLayer
         public PumpClass()
         {
             GetPumpList = new List<PumpClass>();
-            PumpTypeList = pumpTypeList();
+            PumpUseName = pumpTypeList("tblPumpUse");
+            PumpTypeList = pumpTypeList("PumpType");
         }
         public List<PumpClass> GetPumpList { get; set; }
         public List<PumpType> PumpTypeList { get; set; }
+        public List<PumpType> PumpUseName { get; set; }
+        public string PumpName { get; set; }
 
-
-        public static List<PumpType> pumpTypeList()
+        public static List<PumpType> pumpTypeList(string tblName)
         {
-            List<PumpType> ftype = new List<PumpType>();
+            List<PumpType> ftype = new List<PumpType>();           
             using (SqlDataAdapter adp = new SqlDataAdapter("spCommonBinding", ConnectionBulder.con))
             {
                 adp.SelectCommand.CommandType = CommandType.StoredProcedure;
-                adp.SelectCommand.Parameters.AddWithValue("@Action", "PumpType");
+                adp.SelectCommand.Parameters.AddWithValue("@Action", tblName);
                 DataTable dt = new DataTable();
                 adp.Fill(dt);
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     ftype.Add(new PumpType
                     {
-                        Id = Convert.ToInt32(dt.Rows[i]["Id"]),
-                        Type = dt.Rows[i]["Type"].ToString()
+                        Id = Convert.ToInt32(dt.Rows[i][0]),
+                        Type = dt.Rows[i][1].ToString()
                     });
                 }
                 // con.Close();
@@ -208,22 +261,21 @@ namespace DataBuildingLayer
         {
             GetNoonRList = new List<DailyNoonReport>();
             PortStatusList = portSList();
+            //VesselList = CommonClass.GetVesselList();
             //VoyageNumberList = voyageNList();
             //LegPortList = bindleg();
             LegPortList = new List<SelectListItem>();
+            CPNameList = new List<SelectListItem>();
             NREventsList = nonREventsList();
             CargoTanks = GetCargoTankList();
             BallastTanks = GetBallastTankList();
             Void_SpaceTanks = GetVoid_SpaceList();
 
-            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },             new SelectListItem { Text = "9", Value = "9" },
-     new SelectListItem { Text = "10", Value = "10" },
-      new SelectListItem { Text = "11", Value = "11" },
-       new SelectListItem { Text = "12", Value = "12" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };
+            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };
             NS = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "S", Value = "S" }        };
             EW = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "W", Value = "W" }        };
 
-            MEControlLocList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Bridge", Value = "Bridge" },            new SelectListItem { Text = "ECR ", Value = "ECR " },            new SelectListItem { Text = "Man. Stn ", Value = "Man. Stn " }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SE" },             new SelectListItem { Text = "SSE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
+            MEControlLocList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Bridge", Value = "Bridge" },            new SelectListItem { Text = "ECR ", Value = "ECR " },            new SelectListItem { Text = "Man. Stn ", Value = "Man. Stn " }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
 
 
         };
@@ -232,9 +284,35 @@ namespace DataBuildingLayer
         public decimal BadWeather { get; set; }
         public List<SelectListItem> SeaStateList { get; set; }
         public List<SelectListItem> WindDirectionList { get; set; }
-
+        public List<SelectListItem> VesselList { get; set; }
         public List<SelectListItem> MEControlLocList { get; set; }
         public List<SelectListItem> WindForceList { get; set; }
+        public decimal ROB_VLSFO { get; set; }
+        public decimal ROB_MDO { get; set; }
+
+        //-------------------
+
+        public decimal Cons_ME_VLSFO { get; set; }
+        public decimal Cons_AE_VLSFO { get; set; }
+        public decimal Cons_ME_MDO { get; set; }
+        public decimal Cons_AE_MDO { get; set; }
+        public decimal ME_Cons_Laden { get; set; }
+        public decimal ME_Cons_Ballast { get; set; }
+        public decimal AE_Cons_Laden { get; set; }
+        public decimal AE_Cons_Ballast { get; set; }
+        public decimal Idling_Vlsfo { get; set; }
+        public decimal Idling_mdo { get; set; }
+        public decimal loading_Vlsfo { get; set; }
+        public decimal loading_mdo { get; set; }
+        public decimal Discharging_Vlsfo { get; set; }
+        public decimal Discharging_mdo { get; set; }
+
+        //------------------
+
+        public decimal allow_Noondate { get; set; }
+
+
+
 
         public List<DNR_Void_Space> Void_SpaceTanks { get; set; }
         public List<FuelROB> Fuel_ROB { get; set; }
@@ -245,6 +323,8 @@ namespace DataBuildingLayer
         public List<VoyageClass> VoyageNumberList { get; set; }
         //public List<VoyageClass> LegPortList { get; set; }
         public List<SelectListItem> LegPortList { get; set; }
+
+        public List<SelectListItem> CPNameList { get; set; }
         public List<SelectListItem> OwChList { get; set; }
 
         public List<SelectListItem> NS { get; set; }
@@ -320,7 +400,7 @@ namespace DataBuildingLayer
                     {
                         Void_Space_Id = Convert.ToInt32(dt.Rows[i]["Void_Space_Id"]),
                         TankName = dt.Rows[i]["Name"].ToString(),
-                        //Sounding = 0.00m,
+                        Sounding = 0.00m,
 
                     });
                 }
@@ -435,6 +515,9 @@ namespace DataBuildingLayer
         public ArrivalReport()
         {
             GetArrivalRList = new List<ArrivalReport>();
+            //VesselList = CommonClass.GetVesselList();
+
+          
             //PortStatusList = portSList();
             //VoyageNumberList = voyageNList();
             PortList = new List<SelectListItem>();
@@ -444,15 +527,19 @@ namespace DataBuildingLayer
             //CargoTanks = GetCargoTankList();
             //BallastTanks = GetBallastTankList();
             //Void_SpaceTanks = GetVoid_SpaceList();
-            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },             new SelectListItem { Text = "9", Value = "9" },            new SelectListItem { Text = "10", Value = "10" },            new SelectListItem { Text = "11", Value = "11" },            new SelectListItem { Text = "12", Value = "12" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };
+            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };
             NS = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "S", Value = "S" }        };
-            EW = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "W", Value = "W" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SE" },               new SelectListItem { Text = "SSE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
+            EW = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "W", Value = "W" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
 
 
         };
         }
+
+        public List<int> VesselIDs { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal BadWeather { get; set; }
+
+        
         public List<SelectListItem> SeaStateList { get; set; }
         public List<SelectListItem> WindDirectionList { get; set; }
         public List<SelectListItem> WindForceList { get; set; }
@@ -460,6 +547,9 @@ namespace DataBuildingLayer
         public List<SelectListItem> PortList { get; set; }
         public List<ArrivalReport> GetArrivalRList { get; set; }
 
+        //public List<SelectListItem> VesselList { get; set; }
+
+        public List<SelectListItem> VesselList { get; set; }
         public List<VoyageClass> VoyageNumberList { get; set; }
         //public List<VoyageClass> LegPortList { get; set; }
         public List<SelectListItem> LegPortList { get; set; }
@@ -553,6 +643,7 @@ namespace DataBuildingLayer
         {
             GetDepRList = new List<DepartureReport>();
             PortList = new List<SelectListItem>();
+            //VesselList = CommonClass.GetVesselList();
             //VoyageNumberList = voyageNList();
             //LegPortList = bindleg();
             LegPortList = new List<SelectListItem>();
@@ -560,7 +651,7 @@ namespace DataBuildingLayer
             CargoTanks = GetCargoTankList();
             BallastTanks = GetBallastTankList();
             Void_SpaceTanks = GetVoid_SpaceList();
-            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },             new SelectListItem { Text = "9", Value = "9" },            new SelectListItem { Text = "10", Value = "10" },            new SelectListItem { Text = "11", Value = "11" },            new SelectListItem { Text = "12", Value = "12" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SE" },              new SelectListItem { Text = "SSE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
+            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
 
 
         };
@@ -578,12 +669,10 @@ namespace DataBuildingLayer
         public List<SelectListItem> PortList { get; set; }
         public List<VoyageClass> VoyageNumberList { get; set; }
         //public List<VoyageClass> LegPortList { get; set; }
-       // public List<VoyageClass1> VoyageClass1List { get; set; }
-        
         public List<SelectListItem> LegPortList { get; set; }
         public List<SelectListItem> OwChList { get; set; }
         public List<NonRoutineEvents> NREventsList { get; set; }
-
+        public List<SelectListItem> VesselList { get; set; }
         public int NREventsId { get; set; }
         public string OwChaterer { get; set; }
 
@@ -765,6 +854,7 @@ namespace DataBuildingLayer
         {
             GetBerthRList = new List<BerthingReport>();
             // PortList = portList();
+            //VesselList = CommonClass.GetVesselList();
 
             PortList = new List<SelectListItem>();
             //VoyageNumberList = voyageNList();
@@ -775,10 +865,7 @@ namespace DataBuildingLayer
             CargoTanks = GetCargoTankList();
             BallastTanks = GetBallastTankList();
             Void_SpaceTanks = GetVoid_SpaceList();
-            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },              new SelectListItem { Text = "9", Value = "9" },
-     new SelectListItem { Text = "10", Value = "10" },
-      new SelectListItem { Text = "11", Value = "11" },
-       new SelectListItem { Text = "12", Value = "12" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SE" },             new SelectListItem { Text = "SSE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
+            WindForceList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "0", Value = "0" },            new SelectListItem { Text = "1", Value = "1" },            new SelectListItem { Text = "2", Value = "2" },            new SelectListItem { Text = "3", Value = "3" },            new SelectListItem { Text = "4", Value = "4" },            new SelectListItem { Text = "5", Value = "5" },            new SelectListItem { Text = "6", Value = "6" },            new SelectListItem { Text = "7", Value = "7" },            new SelectListItem { Text = "8", Value = "8" },        };            SeaStateList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Smooth", Value = "Smooth" },            new SelectListItem { Text = "Slight", Value = "Slight" },             new SelectListItem { Text = "Moderate", Value = "Moderate" },            new SelectListItem { Text = "Rough", Value = "Rough" },             new SelectListItem { Text = "Very Rough", Value = "Very Rough" },            new SelectListItem { Text = "High", Value = "High" },               new SelectListItem { Text = "Very High", Value = "Very High" }        };            OwChList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "Owners", Value = "Owners" },            new SelectListItem { Text = "Charterers Acc", Value = "Charterers Acc" }        };            WindDirectionList = new List<SelectListItem>        {            //new SelectListItem { Text = "--Select--", Value = null },            new SelectListItem { Text = "N", Value = "N" },            new SelectListItem { Text = "NNE", Value = "NNE" },             new SelectListItem { Text = "NE", Value = "NE" },            new SelectListItem { Text = "ENE", Value = "ENE" },             new SelectListItem { Text = "E", Value = "E" },            new SelectListItem { Text = "ESE", Value = "ESE" },             new SelectListItem { Text = "SE", Value = "SSE" },            new SelectListItem { Text = "S", Value = "S" },             new SelectListItem { Text = "SSW", Value = "SSW" },            new SelectListItem { Text = "SW", Value = "SW" },             new SelectListItem { Text = "WSW", Value = "WSW" },            new SelectListItem { Text = "W", Value = "W" },             new SelectListItem { Text = "WNW", Value = "WNW" },            new SelectListItem { Text = "NW", Value = "NW" },             new SelectListItem { Text = "NNW", Value = "NNW" },
 
 
         };
@@ -804,7 +891,7 @@ namespace DataBuildingLayer
 
         public List<SelectListItem> PortList { get; set; }
         public List<SelectListItem> FacilityList { get; set; }
-
+        public List<SelectListItem> VesselList { get; set; }
         public int NREventsId { get; set; }
         public string OwChaterer { get; set; }
 
@@ -1020,9 +1107,9 @@ namespace DataBuildingLayer
         public LoadingReport()
         {
             PortList = new List<SelectListItem>();
-            //VoyageNumberList = voyageNList();
-
             CargoNameList = cargonameList();
+            //VoyageNumberList = voyageNList();
+            // VesselList = CommonClass.GetVesselList();
             LegPortList = new List<SelectListItem>();
             CargoLists = new List<CargoList>();
             LR_Ballast_PumpUseList = GetPumpsINUse(2);
@@ -1039,7 +1126,6 @@ namespace DataBuildingLayer
         }
         public string VoyageNumber { get; set; }
         public string LegPort_A { get; set; }
-
 
         public static List<CargoNameClass> cargonameList()
         {
@@ -1063,15 +1149,16 @@ namespace DataBuildingLayer
 
             return ftype;
         }
-
+        public List<CargoNameClass> CargoNameList { get; set; }
         public List<SelectListItem> LOPList { get; set; }
         public List<StoppageList> StoppageLists { get; set; }
         public List<CargoList> CargoLists { get; set; }
-        public List<CargoNameClass> CargoNameList { get; set; }
         public List<LR_DCR_PumpsUse> LR_Ballast_PumpUseList { get; set; }
         public List<SelectListItem> PortList { get; set; }
         public List<VoyageClass> VoyageNumberList { get; set; }
-        public List<SelectListItem> LegPortList { get; set; }       
+        public List<SelectListItem> LegPortList { get; set; }
+
+        public List<SelectListItem> VesselList { get; set; }
         public static List<VoyageClass> voyageNList()
         {
             List<VoyageClass> ftype = new List<VoyageClass>();
@@ -1125,52 +1212,35 @@ namespace DataBuildingLayer
 
         //------------- Use for Dynamic Cargo Text ------------
         public string CargoName { get; set; }
-        public DateTime? LoadingDatetime { get; set; }
-        // public int? TerminalLoadingRate { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? TerminalLoadingRate { get; set; }
-        // public int? LoadingRateAccepted { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? LoadingRateAccepted { get; set; }
-        //public int? AverageAchievedLoadingRate { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? AverageAchievedLoadingRate { get; set; }
-        //public int? No_Manifold_Hoses_by_Terminal { get; set; }
-        // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        // public decimal No_Manifold_Hoses_by_Terminal { get; set; }
+        public DateTime LoadingDatetime { get; set; }
+        public int? TerminalLoadingRate { get; set; }
+        public int? LoadingRateAccepted { get; set; }
+        public int? AverageAchievedLoadingRate { get; set; }
         public int? No_Manifold_Hoses_by_Terminal { get; set; }
-        //public int? Size_of_Manifold_Hoses_by_Terminal { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        // public int? Size_of_Manifold_Hoses_by_Terminal { get; set; }
+
         public decimal? Size_of_Manifold_Hoses_by_Terminal { get; set; }
-        //public int? No_Manifold_Hoses_by_Vessel { get; set; }
-        // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        // public decimal No_Manifold_Hoses_by_Vessel { get; set; }
         public int? No_Manifold_Hoses_by_Vessel { get; set; }
-        //public int? Size_of_Manifold_Hoses_by_Vessel { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        // public int? Size_of_Manifold_Hoses_by_Vessel { get; set; }
+
         public decimal? Size_of_Manifold_Hoses_by_Vessel { get; set; }
-        //public int? ShoreLineDistance { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? ShoreLineDistance { get; set; }
-        //public int? QuantityOnboard { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? QuantityOnboard { get; set; }
-        // public int? BalanceQuantityLoaded { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? BalanceQuantityLoaded { get; set; }
-        public DateTime? EstCompDateTime { get; set; }
-        public DateTime? ActualCompDateTime { get; set; }
+        public int? ShoreLineDistance { get; set; }
+        public int? QuantityOnboard { get; set; }
+        public int? BalanceQuantityLoaded { get; set; }
+        public DateTime EstCompDateTime { get; set; }
+        public DateTime ActualCompDateTime { get; set; }
 
         //--------------Use for Stoppage List----------
         public string Stoppage { get; set; }
         public string Reason { get; set; }
-        public DateTime? DateTimeFrom { get; set; }
-        public DateTime? DateTimeTo { get; set; }
+        public DateTime DateTimeFrom { get; set; }
+        public DateTime DateTimeTo { get; set; }
 
         //---------------------------------------------------
 
         public List<LoadingReport> LoadingReportList { get; set; }
     }
+
 
     public partial class VoyageClass
     {
@@ -1181,7 +1251,7 @@ namespace DataBuildingLayer
 
             GetVoyageList = new List<VoyageClass>();
             NorCList = norCList();
-            // CPList = CharterPList();
+            CPList = CharterPList();
             VoyagStartList = voyaSList();
             PortList = portList();
             FuelTypeList = fuelTList();
@@ -1191,23 +1261,16 @@ namespace DataBuildingLayer
 
         }
         public string CP_Consumption { get; set; }
-
+       
         public string Leg { get; set; }
         public string FuelT { get; set; }
         public int VoyageId { get; set; }
         public int FuelTypeId { get; set; }
 
         public string LegPort_A { get; set; }
-
-        public string LegPort_othersA { get; set; }
         public string ReasonforPortCall_A { get; set; }
         public string LegPort_B { get; set; }
-
-        public string LegPort_othersB { get; set; }
         public string ReasonforPortCall_B { get; set; }
-
-        public string ReasonA { get; set; }
-        public string ReasonB { get; set; }
         //===========================================
         public decimal DTG { get; set; }
         public decimal CP_SOG { get; set; }
@@ -1250,10 +1313,8 @@ namespace DataBuildingLayer
 
         public static List<CharterPartyC> CharterPList()
         {
-
             List<CharterPartyC> ftype = new List<CharterPartyC>();
-            //using (SqlDataAdapter adp = new SqlDataAdapter("spCommonBinding", ConnectionBulder.con))
-            using (SqlDataAdapter adp = new SqlDataAdapter("select a.id,a.cpno from CPContract a inner join CPpart1 b on a.Id=b.CPId where VesselID=123456", ConnectionBulder.con))
+            using (SqlDataAdapter adp = new SqlDataAdapter("spCommonBinding", ConnectionBulder.con))
             {
                 adp.SelectCommand.CommandType = CommandType.StoredProcedure;
                 adp.SelectCommand.Parameters.AddWithValue("@Action", "CPList");
@@ -1321,7 +1382,6 @@ namespace DataBuildingLayer
 
         public static List<PortClass> portList()
         {
-
             List<PortClass> ftype = new List<PortClass>();
             using (SqlDataAdapter adp = new SqlDataAdapter("spCommonBinding", ConnectionBulder.con))
             {
@@ -1333,7 +1393,7 @@ namespace DataBuildingLayer
                 {
                     ftype.Add(new PortClass
                     {
-                        // Id = Convert.ToInt32(dt.Rows[i]["Id"]),
+                       // Id = Convert.ToInt32(dt.Rows[i]["Id"]),
                         PortName = dt.Rows[i]["PortName"].ToString()
                     });
                 }
@@ -1371,6 +1431,10 @@ namespace DataBuildingLayer
 
         public List<SpeedStatus> SpeedStatusList { get; set; }
 
+
+        
+
+
     }
 
     public partial class BunkerReport
@@ -1384,13 +1448,12 @@ namespace DataBuildingLayer
             new SelectListItem { Text = "VLSFO", Value = "5" },
             new SelectListItem { Text = "MDO", Value = "2" },
         };
-
         }
 
         public List<PortClass> PortList { get; set; }
         public List<BukerFuelList> B_FuelLists { get; set; }
-
         public List<SelectListItem> BunkerFuelTypeList { get; set; }
+       // public List<SelectListItem> VesselList { get; set; }
 
         public static List<PortClass> portList()
         {
@@ -1417,5 +1480,45 @@ namespace DataBuildingLayer
         }
 
     }
+
+    public partial class FreshWaterReport
+    {
+        SqlConnection cons = ConnectionBulder.con;
+        public FreshWaterReport()
+        {
+           // PortList = portList();
+            VesselList = CommonClass.GetVesselList();
+        }
+
+      //  public List<PortClass> PortList { get; set; }
+
+        public List<SelectListItem> VesselList { get; set; }
+
+        //public static List<PortClass> portList()
+        //{
+
+        //    List<PortClass> ftype = new List<PortClass>();
+        //    using (SqlDataAdapter adp = new SqlDataAdapter("spCommonBinding", ConnectionBulder.con))
+        //    {
+        //        adp.SelectCommand.CommandType = CommandType.StoredProcedure;
+        //        adp.SelectCommand.Parameters.AddWithValue("@Action", "PortList");
+        //        DataTable dt = new DataTable();
+        //        adp.Fill(dt);
+        //        for (int i = 0; i < dt.Rows.Count; i++)
+        //        {
+        //            ftype.Add(new PortClass
+        //            {
+        //                // Id = Convert.ToInt32(dt.Rows[i]["Id"]),
+        //                PortName = dt.Rows[i]["PortName"].ToString()
+        //            });
+        //        }
+                
+        //    }
+
+        //    return ftype;
+        //}
+
+    }
+
 }
 

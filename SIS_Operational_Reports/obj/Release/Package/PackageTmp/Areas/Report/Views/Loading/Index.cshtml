@@ -1,8 +1,7 @@
 ﻿@model DataBuildingLayer.LoadingReport
 @{
     ViewBag.Title = "Index";
-    int Id = Model.Id;
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 @*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -11,30 +10,18 @@
 
 <link href="~/css/flatpickr.min.css" rel="stylesheet" />
 <script src="~/css/flatpickr.js"></script>
+@*<link href="~/css/all.min.css" rel="stylesheet" />*@
 
 <style>
 
-    td.datetime-wrapper {
-        border: none !important;
-    }
-
-        td.datetime-wrapper .datetime-icon {
-            margin-right: -51px !important;
-            top: 15px;
-        }
-
-    input.datetimePickerEdit.flatpickr-input {
-        border: none !important;
+    .datetime-wrapper {
+        position: relative;
+        display: inline-block;
     }
 
     .datetime-wrapper2 {
         position: relative;
         /*display: inline-block;*/
-    }
-
-    .datetime-wrapper {
-        position: relative;
-        display: inline-block;
     }
 
     .datetime-icon {
@@ -85,28 +72,6 @@
 
     .tab-content .row .col-md .GeneratedTable {
         margin: 15px 4.8px;
-    }
-
-    .col-form-label {
-        padding: 0px !important;
-        padding-top: 10px !important;
-    }
-
-    textarea#Remarks {
-        border: none;
-    }
-
-    td.datetime-wrapper {
-        width: 100% !important;
-    }
-
-        td.datetime-wrapper .datetime-icon {
-            margin-right: 0px !important;
-            top: 15px;
-        }
-
-    .datetime-icon {
-        top: 42% !important;
     }
 </style>
 
@@ -160,66 +125,17 @@
         -webkit-animation: spin .8s linear infinite;
         animation: spin .8s linear infinite;
     }
-
-    div#divIDheader input {
-        /* border: 1px solid #aaaaaa !important;*/
-        border-radius: 3px;
-    }
-
-    .col-form-label {
-        padding: 0px !important;
-        padding-top: 0px !important;
-        margin-bottom: 0px !important;
-    }
-
-    input#btnAddStoppage {
-        width: 100% !important;
-    }
-
-    table#tblStoppage td {
-        padding-left: 0px !important;
-    }
-
-    table.GeneratedTable td {
-        border-width: 1px;
-        border-color: #676969;
-        border-style: solid;
-        padding-left: 8px !important;
-    }
-
-    span.datetime-icon {
-        margin-right: 0px !important;
-    }
-
-    input#btnAdd {
-        padding: 6px 23px !important;
-    }
-
-    input#StopRe {
-        width: 100%;
-    }
-
-    div#divIDheader .col-sm-8.datetime-wrapper {
-        border: 1px solid #aaa !important;
-        border-radius: 3px;
-        height: 34px;
-        /* margin-left: -1px; */
-        width: 63%;
-    }
-
-    .col-form-label {
-        padding: 0px !important;
-        padding-top: 0px !important;
-        margin-bottom: 0px !important;
-    }
-
-
-    div#divIDheader .col-sm-8.datetime-wrapper {
-        padding: 0px !important;
-    }
+	input.datetimePickerEdit.flatpickr-input {
+    border: none!important;
+}
+td.datetime-wrapper {
+    width: 100%;
+}
+select {
+   
+    width: 100%!important;
+}
 </style>
-
-
 <div id="cover-spin"></div>
 <div class="row">
     <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
@@ -229,6 +145,7 @@
             <h2>
                 @{
                     var idcheck = Model.Id.ToString();
+                    var vslname = Model.VesselName;
                     var addEdit = "";
                     if (idcheck == "0")
                     {
@@ -241,7 +158,7 @@
                 }
 
 
-                @addEdit Loading Report
+                Loading Report (@vslname)
             </h2>
 
         </div>
@@ -260,42 +177,19 @@
 
         <div class="mb-3 row">
 
-            @if (Id == 0)
-            {
-                <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
-                <div class="col-sm-8">
-                    @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", })
-                    <span id="messageVoyid" style="color:red"></span>
-                </div>
-            }
-            else
-            {
+            <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @onchange = "GetLeg(this)", @required = "true", })
+                <span id="messageVoyid" style="color:red"></span>
+            </div>
 
-                <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
-                <div class="col-sm-8">
-                    @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", @disabled = "disabled" })
-                    <span id="messageVoyid" style="color:red"></span>
-                </div>
-
-            }
-
-            <label for="inputPassword" class="col-sm-4 col-form-label mt-3">ETD Date & Time</label>
-            <div class="col-sm-8 datetime-wrapper mt-3">
+            <label for="inputPassword" class="col-sm-4 col-form-label">ETD Date & Time</label>
+            <div class="col-sm-8 datetime-wrapper">
                 @*<input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">*@
                 @*@Html.EditorFor(model => model.ETDDateTime, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                @* @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
-                @if (Model.Id != 0)
-                {
-                    @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                }
-                else
-                {
-                    @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _", } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                }
+                @*@Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
+                @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
                 <span id="msgETDDateTime" style="color:red"></span>
             </div>
 
@@ -309,10 +203,14 @@
             <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
             <div class="col-sm-8">
 
-                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "bindport(this)", })
+
+                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", @onchange = "bindport(this)", })
                 <span id="msgLegPortId" style="color:red"></span>
 
+
             </div>
+
+
 
         </div>
     </div>
@@ -323,50 +221,30 @@
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", })
                 <span id="msgPortName" style="color:red"></span>
             </div>
+
+
 
         </div>
     </div>
 
     <div class="col-md">
 
-        @if (Id == 0)
-        {
-            <div class="mb-3 row">
+        <div class="mb-3 row">
 
-                <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
-                <div class="col-sm-8 datetime-wrapper">
-                    @* @{
-                            var currentDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
-                        }
-                        @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @max = currentDate } })*@
-                    @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerT", @placeholder = "YYYY-MM-DD  -- : -- : --", } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                    <span id="msgReportDateTime" style="color:red"></span>
-                </div>
-
+            <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
+            <div class="col-sm-8 datetime-wrapper">
+                @*<input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">*@
+                @*@Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
+                @*@Html.EditorFor(model => model.ReportDateTime, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
+                @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerT", @placeholder = "YYYY-MM-DD  -- : -- : --", } })
+                <span class="datetime-icon" style="font-size: 15px; margin-right:-10px; margin-top:-10px">&#128197;</span>
+                <span id="msgReportDateTime" style="color:red"></span>
             </div>
-        }
-        else
-        {
-            <div class="mb-3 row">
 
-                <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
-                <div class="col-sm-8 datetime-wrapper">
-                    @* @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @disabled = "disabled" } })*@
-                    @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @disabled = "disabled" } })
-                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
-                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-                    <span id="msgReportDateTime" style="color:red"></span>
-                </div>
-
-            </div>
-        }
-
-
+        </div>
     </div>
 
     <div class="col-md">
@@ -375,8 +253,7 @@
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Draft Fwd</label>
             <div class="col-sm-8">
-                @*@Html.EditorFor(model => model.DraftFwd, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "number", @min = "0", @onKeyUp = "requiredValueDFT(this)", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })*@
-                @Html.EditorFor(model => model.DraftFwd, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @type = "number", @min = "0", @required = "true", @onKeyUp = "requiredValueDFT(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                @Html.EditorFor(model => model.DraftFwd, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "number", @min = "0", @onKeyUp = "requiredValueDFT(this)", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
                 <span id="msgDraftFwd" style="color:red"></span>
             </div>
 
@@ -397,12 +274,8 @@
         <div class="col-md">
 
             <div class="row report-actions">
-                <div class="col">
-                    <button id="btnSave1" class="function-button submit-button">
-                        Submit
-                    </button>
-                </div>
-                <div id="SDraft" class="col">
+
+                <div style="display:none" id="SDraft" class="col">
                     <button onclick="SaveDraftFunction()" class="function-button draft-button">
                         Save Draft
                     </button>
@@ -411,15 +284,22 @@
                     </div>
 
                 </div>
-                @if (Model.SaveDraft != true)
+                <div style="display:none" class="col">
+                    <button onClick="window.location.reload();" class="function-button reset-button">
+                        Reset
+                    </button>
+                </div>
+
+                @if (StaticHelper.UserRole == "Administrator")
                 {
-                    <div class="col">
-                        <button onClick="window.location.reload();" class="function-button reset-button">
-                            Reset
+                    <div style="margin-left:250px" class="col">
+                        <button id="btnSave1" class="function-button submit-button">
+                            Submit
                         </button>
                     </div>
                 }
             </div>
+
 
         </div>
 
@@ -443,6 +323,7 @@
     </div>
     <div class="tab-content" id="v-pills-tabContent">
 
+
         <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
 
             <div class="col-md">
@@ -453,6 +334,7 @@
                             <table id="tblCargo" class="GeneratedTable" cellpadding="0" cellspacing="0">
                                 <thead>
                                     <tr>
+                                        <th>id</th>
                                         <th width="120px">Cargo Grades</th>
                                         <th width="210px">
                                             Commence Loading Date & Time
@@ -480,24 +362,25 @@
                                 <tbody>
                                     @foreach (var VLeg in Model.CargoLists)
                                     {
-                                        <tr>
-                                            @*<td>@VLeg.CargoName</td>*@
-                                            <td>@VLeg.CargoName</td>
-                                            <td>@VLeg.LoadingDatetime</td>
-                                            <td>@VLeg.TerminalLoadingRate</td>
-                                            <td>@VLeg.LoadingRateAccepted</td>
-                                            <td>@VLeg.AverageAchievedLoadingRate</td>
-                                            <td>@VLeg.No_Manifold_Hoses_by_Terminal</td>
-                                            <td>@VLeg.Size_of_Manifold_Hoses_by_Terminal</td>
-                                            <td>@VLeg.No_Manifold_Hoses_by_Vessel</td>
-                                            <td>@VLeg.Size_of_Manifold_Hoses_by_Vessel</td>
-                                            <td>@VLeg.ShoreLineDistance</td>
-                                            <td>@VLeg.QuantityOnboard</td>
-                                            <td>@VLeg.BalanceQuantityLoaded</td>
-                                            <td>@VLeg.EstCompDateTime</td>
-                                            <td>@VLeg.ActualCompDateTime</td>
-                                            <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
-                                        </tr>
+                                    <tr>
+                                        <td>@VLeg.Id</td>
+                                        <td>@VLeg.CargoName</td>
+                                        <td>@VLeg.LoadingDatetime</td>
+                                        <td>@VLeg.TerminalLoadingRate</td>
+                                        <td>@VLeg.LoadingRateAccepted</td>
+                                        <td>@VLeg.AverageAchievedLoadingRate</td>
+                                        <td>@VLeg.No_Manifold_Hoses_by_Terminal</td>
+                                        <td>@VLeg.Size_of_Manifold_Hoses_by_Terminal</td>
+                                        <td>@VLeg.No_Manifold_Hoses_by_Vessel</td>
+                                        <td>@VLeg.Size_of_Manifold_Hoses_by_Vessel</td>
+                                        <td>@VLeg.ShoreLineDistance</td>
+                                        <td>@VLeg.QuantityOnboard</td>
+                                        <td>@VLeg.BalanceQuantityLoaded</td>
+                                        <td>@VLeg.EstCompDateTime</td>
+                                        <td>@VLeg.ActualCompDateTime</td>
+                                        @*<td><input disabled class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>*@
+                                        <td><input disabled class="btn btn-info" type="button" value="Remove1" /></td>
+                                    </tr>
                                     }
                                 </tbody>
                                 <tfoot>
@@ -505,33 +388,42 @@
 
                                         @*<td> @Html.EditorFor(model => model.CargoName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 30, @required = "true" } })</td>*@
 
+
+                                        <td> @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @autocomplete = "off", @min = "0", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+
                                         <td> @Html.DropDownListFor(model => model.CargoName, new SelectList(Model.CargoNameList, "Cargo", "Cargo"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
 
-                                        @* <td> @Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>*@
-                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
-                                        <td> @Html.EditorFor(model => model.TerminalLoadingRate,@*"{0:F3}",*@new { htmlAttributes = new { @autocomplete = "off", @min = "0", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
 
-                                        <td> @Html.EditorFor(model => model.LoadingRateAccepted, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.AverageAchievedLoadingRate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Terminal, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Vessel, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.ShoreLineDistance, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @min = "0", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.QuantityOnboard, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @min = "0", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
-                                        <td> @Html.EditorFor(model => model.BalanceQuantityLoaded, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+
+                                        @*<td> @Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @step = "any" } })</td>*@
+                                        <td> @Html.EditorFor(model => model.TerminalLoadingRate, new { htmlAttributes = new { @autocomplete = "off", @min = "0", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+
+                                        <td> @Html.EditorFor(model => model.LoadingRateAccepted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.AverageAchievedLoadingRate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 5, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.ShoreLineDistance, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input ", @maxlength = 5, @required = "true", @min = "0", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.QuantityOnboard, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 7, @required = "true", @min = "0", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.BalanceQuantityLoaded, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
                                         @*<td> @Html.EditorFor(model => model.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>*@
-                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.EstCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right: -20px">&#128197;</span></td>
-                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.EstCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
 
-                                        <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+                                        <td><input disabled class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
 
 
                                     </tr>
                                 </tfoot>
                             </table>
 
+
+
+
                         </div>
+
 
                     </div>
 
@@ -544,6 +436,8 @@
                 <div class="col-md">
                     <div class="row">
                         <div class="col-xl">
+
+
 
                             <div class="row">
                                 <!-- Speed - Distance - Time Table -->
@@ -592,9 +486,11 @@
                             </div>
                             <div class="row">
 
+
                                 <table id="tblStoppage" class="GeneratedTable" cellpadding="0" cellspacing="0">
                                     <thead>
                                         <tr>
+                                            <th>Id</th>
                                             <th>Stoppage Reason</th>
                                             @*<th>Reason</th>*@
                                             <th width="210px">Date Time From</th>
@@ -607,10 +503,11 @@
                                         @foreach (var Stop in Model.StoppageLists)
                                         {
                                             <tr>
+                                                <td>@Stop.Id</td>
                                                 <td>@Stop.Stoppage</td>
                                                 @*<td>@Stop.Reason</td>*@
-                                                <td>@Stop.DateTimeFrom</td>
-                                                <td>@Stop.DateTimeTo</td>
+                                                <td width="250px">@Stop.DateTimeFrom</td>
+                                                <td width="250px">@Stop.DateTimeTo</td>
 
                                                 <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
                                             </tr>
@@ -628,15 +525,15 @@
 
                                                 <td> @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
                                             *@
+                                            <td> @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @autocomplete = "off", @disabled = "true", @class = "form-control bottom-border-input", @required = "true" } })</td>
                                             <td> @Html.EditorFor(model => model.Stoppage, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 250, @required = "true" } })</td>
                                             @*<td> @Html.EditorFor(model => model.Reason, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @required = "true" } })</td>*@
                                             @*<td> @Html.EditorFor(model => model.DateTimeFrom, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @onchange = "CheckDate(this)" } })</td>*@
                                             <td class="datetime-wrapper2">@Html.EditorFor(model => model.DateTimeFrom, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
-
-                                            @*<td> @Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @onchange = "CheckDate(this)" } })</td>*@
                                             <td class="datetime-wrapper2">@Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
 
-                                            <td><input class="btn btn-info" type="button" id="btnAddStoppage" value="Add" /></td>
+                                            @*<td> @Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @onchange = "CheckDate(this)" } })</td>*@
+                                            <td><input disabled class="btn btn-info" type="button" id="btnAddStoppage" value="Add" /></td>
 
 
                                         </tr>
@@ -671,7 +568,7 @@
                                     <td>Rate</td>
                                     @foreach (var BTank in Model.LR_Ballast_PumpUseList)
                                     {
-                                        <td>@Html.EditorFor(model => BTank.Rate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @required = "true", @maxlength = 7, @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                        <td>@Html.EditorFor(model => BTank.Rate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
                                     }
                                     @*<td> @Html.EditorFor(model => model.BallastPumps_Rate1, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
                                         <td> @Html.EditorFor(model => model.BallastPumps_Rate2, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
@@ -690,6 +587,13 @@
                                         <td>@Html.EditorFor(model => BTank.PumpUseId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
                                     }
                                 </tr>
+                                <tr style="display:none">
+                                    <td>Id</td>
+                                    @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Id, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                    }
+                                </tr>
                             </tbody>
                         </table>
                         <!-- table-end -->
@@ -706,7 +610,7 @@
                                 <tr>
                                     <td>Remarks</td>
                                     <td>
-                                        @Html.TextAreaFor(model => model.Remarks, new { @style = "width:370px", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @required = "true" } })
+                                        @Html.TextAreaFor(model => model.Remarks, new { @style = "width:100%", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @required = "true" } })
                                         <span id="msgRemarks" style="color:red"></span>
                                     </td>
 
@@ -746,7 +650,7 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: true,
-            // defaultDate: new Date()
+            defaultDate: new Date()
         });
     });
 
@@ -764,16 +668,36 @@
 
 <script>
 
-    $(document).ready(function () {
-        $("#ReportDateTime").prop("disabled", true);
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
 
+        // Check for '.' and ensure there's only one
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        // Allow only backspace, delete, and numeric values
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        return true;
     });
 
 </script>
 
 <script>
     function CheckDate(arg) {
-        debugger;
+
         var frmdt = $("#DateTimeFrom").val();
         var todt = $("#DateTimeTo").val();
         var frmdt1 = frmdt.replace("T", " ");
@@ -795,43 +719,43 @@
     }
 </script>
 
-<script>
+@*<script>
 
-       var loginUser = '@StaticHelper.LoginUser';
-    if (loginUser == "cheng") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#divIDheader :input").prop('disabled', true);
-        $("#tblCargo :input").prop('disabled', true);
-    }
-    if (loginUser == "choff") {
-        $("#v-pills-home :input").prop('disabled', false);
-        $("#v-pills-profile :input").prop('disabled', false);
-        $("#divIDheader :input").prop('disabled', false);
-    }
-    if (loginUser == "2off") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#divIDheader :input").prop('disabled', true);
-    }
-
-    window.onload = function () {
-
-        var loadingid = '@TempData["loadingReportId"]';
-
-        debugger;
-        if (loadingid == "") {
-            $('#SDraft').show();
-
-
+           var loginUser = '@StaticHelper.LoginUser';
+        if (loginUser == "cheng") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#divIDheader :input").prop('disabled', true);
+            $("#tblCargo :input").prop('disabled', true);
         }
-        else {
-            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
-                $('#SDraft').hide();
+        if (loginUser == "choff") {
+            $("#v-pills-home :input").prop('disabled', false);
+            $("#v-pills-profile :input").prop('disabled', false);
+            $("#divIDheader :input").prop('disabled', false);
+        }
+        if (loginUser == "2off") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#divIDheader :input").prop('disabled', true);
+        }
+
+        window.onload = function () {
+
+            var loadingid = '@TempData["loadingReportId"]';
+
+            debugger;
+            if (loadingid == "") {
+                $('#SDraft').show();
+
+
             }
-        }
-    };
-</script>
+            else {
+                if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                    $('#SDraft').hide();
+                }
+            }
+        };
+    </script>*@
 
 <script>
     function GetLegEdit(legportid) {
@@ -858,10 +782,10 @@
                     $('#cpid').val(response.CPID);
                     // alert(ddd);
 
-                    debugger;
+
                     $('#LegPortId').append('<option value="">None Selected</option>');
                     for (var i = 0; i < response.Data.length; i++) {
-                        debugger;
+
                         var txt = response.Data[i].Text;
                         var valu = response.Data[i].Value;
                         // alert(txt);
@@ -886,28 +810,6 @@
     };
 </script>
 
-<script type="text/javascript">
-
-
-    $(".check-number").on("keypress", function (event) {
-
-        var charCode = (event.which) ? event.which : event.keyCode;
-        var value = $(this).val();
-
-        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-            return false;
-        }
-
-        var finalValue = value + String.fromCharCode(charCode);
-
-        if (finalValue.length > 7) {
-            return false;
-        }
-
-        return true;
-    });
-
-</script>
 
 <script>
 
@@ -918,15 +820,13 @@
     $('#Menu5').removeClass('active');
     $('#Menu6').addClass('active');
     $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 </script>
 
 
 <script>
     function GetLeg(t) {
-        debugger;
+
         var Id = t.value;
         var Voyid = $("#VoyageId option:selected").val();
         //alert(portName);
@@ -943,10 +843,20 @@
                 if (response.Result === true) {
                     // $('#NextLegPortId').empty();
                     $('#LegPortId').empty();
+                    //debugger;
+                    //$('#NextLegPortId').append('<option value="">None Selected</option>');
+                    //for (var i = 0; i < response.Data.length; i++) {
+                    //    debugger;
+                    //    var txt = response.Data[i].Text;
+                    //    var valu = response.Data[i].Value;
+                    //    // alert(txt);
+                    //    $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    //}
 
                     $('#LegPortId').append('<option value="">None Selected</option>');
                     for (var i = 0; i < response.Data.length; i++) {
-                        debugger;
+
                         var txt = response.Data[i].Text;
                         var valu = response.Data[i].Value;
                         // alert(txt);
@@ -969,18 +879,11 @@
 
 <script>
     function bindport(t) {
-        debugger;
+
         var Id = t.value;
-        /*var Legid = $("#LegPortId option:selected").val();*/
+       // var Legid = $("#LegPortId option:selected").val();
         var Voyid = $("#VoyageId option:selected").val();
         //alert(portName);
-
-        var Id = $("#Id").val();
-
-        if (Id == 0) {
-            $("#ReportDateTime").val('');
-            $("#ReportDateTime").prop("disabled", false);
-        }
 
 
         $.ajax({
@@ -998,7 +901,7 @@
 
                     $('#PortName').append('<option value="">None Selected</option>');
                     for (var i = 0; i < response.Data.length; i++) {
-                        debugger;
+
                         var txt = response.Data[i].Text;
                         var valu = response.Data[i].Value;
                         // alert(txt);
@@ -1024,7 +927,6 @@
     /*function bindportEdit(legportid) {*/
     function bindportEdit(Voyid) {
 
-
         $.ajax({
             type: 'GET',
             // url: '/Report/Loading/BindPortEdit?Legid=' + legportid,
@@ -1042,7 +944,7 @@
 
                     $('#PortName').append('<option value="">None Selected</option>');
                     for (var i = 0; i < response.Data.length; i++) {
-                        debugger;
+
                         var txt = response.Data[i].Text;
                         var valu = response.Data[i].Value;
                         // alert(txt);
@@ -1066,12 +968,24 @@
 </script>
 
 
+@*<script type="text/javascript">
+        // $('.datepicker').datepicker();
+        $("#ReportDateTime").datepicker({
+            endDate: 'today',
+            format: 'yyyy-MM-dd',
+        });
+
+        $("#ETDDateTime").datepicker({
+            endDate: 'today',
+            format: 'yyyy-MM-dd',
+        });
+
+    </script>*@
+
+
 <script type="text/javascript" src="~/js/addremoveRows.js"></script>
 <script type="text/javascript">
     $("body").on("click", "#btnAdd", function () {
-        //Reference the Name and Country TextBoxes.
-
-        debugger;
 
 
         var txtCargoName = $("#CargoName");
@@ -1080,16 +994,9 @@
             return;
         }
         var txtLoadingDatetime = $("#LoadingDatetime");
-        var text1 = txtLoadingDatetime.val();
-        text1 = text1.replace('T', ' ');
         if (txtLoadingDatetime.val() == '') {
             alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
             return;
-        }
-        else {
-            var text = txtLoadingDatetime.val();
-            text = text.replace('T', ' ');
-            txtLoadingDatetime = text;
         }
         var txtTerminalLoadingRate = $("#TerminalLoadingRate");
         if (txtTerminalLoadingRate.val() == '') {
@@ -1141,29 +1048,15 @@
             alert("Please enter Balance Quantity Loaded");
             return;
         }
-        var txtEstCompDateTime = $("#EstCompDateTime");
-        var text2 = txtEstCompDateTime.val();
-        text2 = text2.replace('T', ' ');
-        if (txtEstCompDateTime.val() == '') {
-            alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
-            return;
-        }
-        else {
-            var text2 = txtEstCompDateTime.val();
-            text2 = text2.replace('T', ' ');
-            txtEstCompDateTime = text2;
-        }
         var txtActualCompDateTime = $("#ActualCompDateTime");
-        var text1 = txtActualCompDateTime.val();
-        text1 = text1.replace('T', ' ');
         if (txtActualCompDateTime.val() == '') {
             alert("Please Select Actual Comp Date & Time of Cargo " + txtCargoName.val());
             return;
         }
-        else {
-            var text1 = txtActualCompDateTime.val();
-            text1 = text1.replace('T', ' ');
-            txtActualCompDateTime = text1;
+        var txtEstCompDateTime = $("#EstCompDateTime");
+        if (txtEstCompDateTime.val() == '') {
+            alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
+            return;
         }
         //Get the reference of the Table's TBODY element.
         var tBody = $("#tblCargo > TBODY")[0];
@@ -1177,8 +1070,7 @@
         //Add Height cell.
 
         cell = $(row.insertCell(-1));
-        //cell.html(txtLoadingDatetime.val());
-        cell.html(txtLoadingDatetime);
+        cell.html(txtLoadingDatetime.val());
 
         //Add Capacity cell.
         cell = $(row.insertCell(-1));
@@ -1219,21 +1111,21 @@
         cell.html(txtBalanceQuantityLoaded.val() == '' ? '' : txtBalanceQuantityLoaded.val());
 
         cell = $(row.insertCell(-1));
-        //cell.html(txtActualCompDateTime.val());
-        cell.html(txtEstCompDateTime);
+        cell.html(txtEstCompDateTime.val());
 
         cell = $(row.insertCell(-1));
-        cell.html(txtActualCompDateTime);
+        cell.html(txtActualCompDateTime.val());
+
 
         //Add Button cell.
-        cell = $(row.insertCell(-1));
-        var btnRemove = $("<input />");
-        btnRemove.attr("type", "button");
-        btnRemove.attr("id", "CargoRe");
-        btnRemove.attr("class", "btn btn-danger btn-width");
-        btnRemove.attr("onclick", "RemoveCargo(this);");
-        btnRemove.val("Remove");
-        cell.append(btnRemove);
+        //cell = $(row.insertCell(-1));
+        //var btnRemove = $("<input />");
+        //btnRemove.attr("type", "button");
+        //btnRemove.attr("id", "CargoRe");
+        //btnRemove.attr("class", "btn btn-danger btn-width");
+        //btnRemove.attr("onclick", "RemoveCargo(this);");
+        //btnRemove.val("Remove");
+        //cell.append(btnRemove);
 
         //Clear the TextBoxes.
         txtCargoName.val("");
@@ -1275,6 +1167,7 @@
     function EditCountCargo() {
 
 
+        var txtId = $("#Id");
         var txtCargoName = $("#CargoName");
 
         var txtLoadingDatetime = $("#LoadingDatetime");
@@ -1289,8 +1182,8 @@
         var txtShoreLineDistance = $("#ShoreLineDistance");
         var txtQuantityOnboard = $("#QuantityOnboard");
         var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
-        var txtEstCompDateTime = $("#EstCompDateTime");
         var txtActualCompDateTime = $("#ActualCompDateTime");
+        var txtEstCompDateTime = $("#EstCompDateTime");
 
         //Get the reference of the Table's TBODY element.
         var tBody = $("#tblCargo > TBODY")[0];
@@ -1300,6 +1193,10 @@
 
         //Add Name cell.
         var cell = $(row.insertCell(-1));
+
+        cell.html(txtId.val());
+
+        cell = $(row.insertCell(-1));
         cell.html(txtCargoName.val());
         //Add Height cell.
 
@@ -1362,6 +1259,7 @@
         cell.append(btnRemove);
 
         //Clear the TextBoxes.
+        txtId.val("");
         txtCargoName.val("");
         txtLoadingDatetime.val("");
         txtTerminalLoadingRate.val("0");
@@ -1381,7 +1279,7 @@
 
 
 
-    function RemoveCargo1(button) {
+    function RemoveCargo11(button) {
         //Determine the reference of the Row using the Button.
         var row = $(button).closest("TR");
         var name = $("TD", row).eq(0).html();
@@ -1401,15 +1299,50 @@
     $("body").on("click", "#btnAddStoppage", function () {
         //Reference the Name and Country TextBoxes.
 
-        debugger;
 
+        //var rsnA = $("#ReasonforPortCall_A option:selected").text();
+        //var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+        //var legA = $("#LegPort_A option:selected").text();
+        //var legB = $("#LegPort_B option:selected").text();
+
+
+        //if (legA == "") {
+        //    alert("Please Choose Leg Port(A)");
+        //    return;
+        //}
+        //if (rsnA == "") {
+        //    alert("Please Choose Reason for Port Call (A)");
+        //    return;
+        //}
+        //if (legB == "") {
+        //    alert("Please Choose Leg Port(B)");
+        //    return;
+        //}
+        //if (rsnB == "") {
+        //    alert("Please Choose Reason for Port Call (B)");
+        //    return;
+        //}
+
+
+        //var txtLegA = $("#LegPort_A");
+        //var txtRsnA = $("#ReasonforPortCall_A");
+        //var txtLegB = $("#LegPort_B");
+        //var txtRsnB = $("#ReasonforPortCall_B");
+        //var txtDTG = $("#DTG");
+        //var txtCP_SOG = $("#CP_SOG");
+        //var txtCP_Log_Speed = $("#CP_Log_Speed");
 
         var txtStoppage = $("#Stoppage");
         if (txtStoppage.val() == '') {
             alert("Please Enter Stoppage");
             return;
         }
-
+        //var txtReason = $("#Reason");
+        //if (txtReason.val() == '') {
+        //    alert("Please Enter Reason");
+        //    return;
+        //}
         var txtDateTimeFrom = $("#DateTimeFrom");
         var text1 = txtDateTimeFrom.val();
         text1 = text1.replace('T', ' ');
@@ -1420,7 +1353,7 @@
         else {
             var text1 = txtDateTimeFrom.val();
             text1 = text1.replace('T', ' ');
-            //txtDateTimeFrom = text1;
+            // txtDateTimeFrom = text1;
             txtDateTimeFrom.val(text1);
         }
         var txtDateTimeTo = $("#DateTimeTo");
@@ -1433,7 +1366,7 @@
         else {
             var text2 = txtDateTimeTo.val();
             text2 = text2.replace('T', ' ');
-            // txtDateTimeTo = text2;
+            //txtDateTimeTo = text2;
             txtDateTimeTo.val(text2);
         }
         //Get the reference of the Table's TBODY element.
@@ -1478,7 +1411,7 @@
 
     });
 
-    function Remove(button) {
+    function Remove4344(button) {
         //Determine the reference of the Row using the Button.
         var row = $(button).closest("TR");
         var name = $("TD", row).eq(0).html();
@@ -1552,6 +1485,7 @@
 <script>
     function EditStopR() {
 
+        var txtId = $("#Id");
         var txtStoppage = $("#Stoppage");
 
         //var txtReason = $("#Reason");
@@ -1567,6 +1501,10 @@
         var row = tBody.insertRow(-1);
 
         //Add Name cell.
+
+        var cell = $(row.insertCell(-1));
+        cell.html(txtId.val());
+
         var cell = $(row.insertCell(-1));
         cell.html(txtStoppage.val());
         //Add Height cell.
@@ -1603,11 +1541,11 @@
     }
 
 
-    function Remove(button) {
+    function Remove44d(button) {
         //Determine the reference of the Row using the Button.
         var row = $(button).closest("TR");
         var name = $("TD", row).eq(0).html();
-        if (confirm("Do you want to delete: " + name)) {
+        if (confirm("Do you want toddd delete: " + name)) {
             //Get the reference of the Table.
             var table = $("#tblStoppage")[0];
 
@@ -1623,33 +1561,7 @@
 <script>
     function SaveDraftFunction() {
         $("#SaveDraft").prop("checked", true);
-
-        var ReportDateTime = $("#ReportDateTime").val();
-        var VoyageId = $("#VoyageId option:selected").val();
-        var LegId = $("#LegPortId option:selected").val();
-
-        if (VoyageId == "") {
-            $("#messageVoyid").text("Please select Voyage no.");
-            return;
-        }
-        else {
-            $("#messageVoyid").text("");
-        }
-        if (LegId == "") {
-            $("#msgLegPortId").text("Please select Leg");
-            return;
-        }
-        else {
-            $("#msgLegPortId").text("");
-        }
-        if (ReportDateTime == "") {
-            $("#msgReportDateTime").text("Report Date-Time can not be empty.");
-            return;
-        }
-        else {
-            SaveLoadingReportDraft();
-        }
-
+        SaveLoadingReportDraft();
         //var ChkDraft = document.getElementById("SaveDraft");
         //var alt = ChkDraft.value;
         // $('#SaveDraft').val();
@@ -1687,7 +1599,6 @@
         var high_H2S = document.getElementById("High_H2S");
         var lop_High_H2S = high_H2S.options[high_H2S.selectedIndex].value;
 
-        debugger;
 
         _lodingR.Times = lop_Time;
         _lodingR.Rate = lop_Rate;
@@ -1774,49 +1685,11 @@
 
 
         var CargoListing = [];
-        //var table = document.getElementById('tblCargo'),
-        //    rows = table.getElementsByTagName('tr'),
-        //    i, j, cells, customerId;
-
-
-        //for (i = 1, j = rows.length - 1; i < j; ++i) {
-        //    cells = rows[i].getElementsByTagName('td');
-        //    if (!cells.length) {
-        //        continue;
-        //    }
-
-        //    debugger;
-
-        //    var CargoList = {};
-
-
-
-        //    CargoList.CargoName = cells[0].innerHTML;
-        //    CargoList.LoadingDatetime = cells[1].innerHTML;
-        //    CargoList.TerminalLoadingRate = cells[2].innerHTML;
-        //    CargoList.LoadingRateAccepted = cells[3].innerHTML;
-        //    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
-        //    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
-        //    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
-        //    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
-        //    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
-        //    CargoList.ShoreLineDistance = cells[9].innerHTML;
-        //    CargoList.QuantityOnboard = cells[10].innerHTML;
-        //    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
-        //    CargoList.ActualCompDateTime = cells[12].innerHTML;
-
-
-
-        //    CargoListing.push(CargoList);
-
-
-        //}
-
-        debugger;
 
         if (CargoListing == "") {
 
 
+            var txtId = $("#Id");
             var txtCargoName = $("#CargoName");
 
             var chk = txtCargoName.val();
@@ -1882,14 +1755,14 @@
                     alert("Please enter Balance Quantity Loaded");
                     return;
                 }
-                var txtEstCompDateTime = $("#EstCompDateTime");
-                if (txtEstCompDateTime.val() == '') {
-                    alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
-                    return;
-                }
                 var txtActualCompDateTime = $("#ActualCompDateTime");
                 if (txtActualCompDateTime.val() == '') {
                     alert("Please Select Actual Comp Date & Time of Cargo " + txtCargoName.val());
+                    return;
+                }
+                var txtEstCompDateTime = $("#EstCompDateTime");
+                if (txtEstCompDateTime.val() == '') {
+                    alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
                     return;
                 }
                 //Get the reference of the Table's TBODY element.
@@ -1900,6 +1773,7 @@
 
                 //Add Name cell.
                 var cell = $(row.insertCell(-1));
+                cell.html(txtId.val());
                 cell.html(txtCargoName.val());
                 //Add Height cell.
 
@@ -1950,8 +1824,6 @@
                 cell = $(row.insertCell(-1));
                 cell.html(txtActualCompDateTime.val());
 
-
-
                 var table = document.getElementById('tblCargo'),
                     rows = table.getElementsByTagName('tr'),
                     i, j, cells, customerId;
@@ -1963,32 +1835,25 @@
                         continue;
                     }
 
-                    debugger;
-
                     var CargoList = {};
 
-
-
-                    CargoList.CargoName = cells[0].innerHTML;
-                    CargoList.LoadingDatetime = cells[1].innerHTML;
-                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
-                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
-                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
-                    CargoList.ShoreLineDistance = cells[9].innerHTML;
-                    CargoList.QuantityOnboard = cells[10].innerHTML;
-                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
-                    CargoList.EstCompDateTime = cells[12].innerHTML;
-                    CargoList.ActualCompDateTime = cells[13].innerHTML;
-
-
+                    CargoList.Id = cells[0].innerHTML;
+                    CargoList.CargoName = cells[1].innerHTML;
+                    CargoList.LoadingDatetime = cells[2].innerHTML;
+                    CargoList.TerminalLoadingRate = cells[3].innerHTML;
+                    CargoList.LoadingRateAccepted = cells[4].innerHTML;
+                    CargoList.AverageAchievedLoadingRate = cells[5].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[7].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[9].innerHTML;
+                    CargoList.ShoreLineDistance = cells[10].innerHTML;
+                    CargoList.QuantityOnboard = cells[11].innerHTML;
+                    CargoList.BalanceQuantityLoaded = cells[12].innerHTML;
+                    CargoList.EstCompDateTime = cells[13].innerHTML;
+                    CargoList.ActualCompDateTime = cells[14].innerHTML;
 
                     CargoListing.push(CargoList);
-
-
 
 
                 }
@@ -1998,39 +1863,6 @@
         try {
 
             var StoppageListing = [];
-            //var table = document.getElementById('tblStoppage'),
-            //    rows = table.getElementsByTagName('tr'),
-            //    i, j, cells;
-            //// var rCount = table.rows.length;
-
-            //for (i = 1, j = rows.length - 1; i < j; ++i) {
-            //    cells = rows[i].getElementsByTagName('td');
-            //    if (!cells.length) {
-            //        continue;
-            //    }
-
-            //    debugger;
-
-            //    var StoppageList = {};
-
-
-            //    StoppageList.Stoppage = cells[0].innerHTML;
-            //    //StoppageList.Reason  = cells[1].innerHTML;
-
-            //    try {
-            //        StoppageList.DateTimeFrom = cells[1].children[0].value;
-
-            //    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
-
-            //    try {
-            //        StoppageList.DateTimeTo = cells[2].children[0].value;
-
-            //    } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
-
-            //    StoppageListing.push(StoppageList);
-
-
-            //}
 
             if (StoppageListing == "") {
                 var txtStoppage = $("#Stoppage");
@@ -2076,10 +1908,7 @@
                             continue;
                         }
 
-                        debugger;
-
                         var StoppageList = {};
-
 
                         StoppageList.Stoppage = cells[0].innerHTML;
                         //StoppageList.Reason  = cells[1].innerHTML;
@@ -2103,37 +1932,8 @@
             }
         } catch { }
 
-        //var tables = document.getElementById('tblStoppage'),
-        //    rowss = tables.getElementsByTagName('tr');
-
-        //if (rowss.length - 2 == 0) {
-        //    alert("Please Enter Stoppage Detail and Click on Add Button");
-        //    return;
-        //}
-
-        //if (_lodingR.Remarks == "") {
-        //    $("#v-pills-home").removeClass("show active");
-        //    $("#v-pills-home-tab").removeClass("active");
-        //    $("#v-pills-profile").addClass("show active");
-        //    $("#v-pills-profile-tab").addClass("active");
-        //    $("#msgRemarks").text("Remarks can not be empty.");
-        //    return;
-        //}
-        //else {
-        //    $("#msgRemarks").text('');
-        //}
-
         _lodingR.SaveDraft = $('#SaveDraft').is(':checked');
 
-        debugger;
-
-        //var eduInput = _noonR;
-        //for (i = 0; i < 72; i++) {
-        //    if (eduInput[i].value == "") {
-        //        alert('Complete all the fields');
-        //        return false;
-        //    }
-        //}
         $('#cover-spin').show();
 
           var newUrl= '@Url.Action("LoadingRList", "Loading")';
@@ -2164,51 +1964,10 @@
             }
         });
 
-        //var form = $('form'); // change selector your form
-        //if (!form.attr('validated')) {
-        //    if (form.valid()) {
-        //    }
-        //    else {
-        //        alert('not valid');
-        //    }
-
-
 
     }
 
 </script>
-
-
-<script type="text/javascript">
-
-    $(".check-decimal").on("keypress", function (event) {
-        var charCode = (event.which) ? event.which : event.keyCode;
-        var value = $(this).val();
-
-        // Check for '.' and ensure there's only one
-        if (charCode == 46 && value.indexOf('.') != -1) {
-            return false;
-        }
-
-        // Allow only backspace, delete, and numeric values
-        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
-            return false;
-        }
-
-        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
-        var finalValue = value + String.fromCharCode(charCode);
-        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
-
-        if (!validDecimal.test(finalValue)) {
-            return false;
-        }
-
-        return true;
-    });
-
-</script>
-
-
 <script>
     function sleep(milliseconds) {
         const date = Date.now();
@@ -2219,596 +1978,6 @@
     }
 </script>
 
-
-<script type="text/javascript">
-
-    function SaveLoadingReportDraft() {
-
-
-        var _lodingR = {};
-        _lodingR.Id = $('#Id').val();
-        var voy = document.getElementById("VoyageId");
-        var voyid = voy.options[voy.selectedIndex].value;
-
-        var legprt = document.getElementById("LegPortId");
-        var legprtid = legprt.options[legprt.selectedIndex].value;
-
-        var prts = document.getElementById("PortName");
-        var prtSt = prts.options[prts.selectedIndex].value;
-
-        //========= LOP Fields ========
-        var time = document.getElementById("Times");
-        var lop_Time = time.options[time.selectedIndex].value;
-
-        var rate = document.getElementById("Rate");
-        var lop_Rate = rate.options[rate.selectedIndex].value;
-
-        var hose = document.getElementById("Hose_Connection");
-        var lop_Hose_Connection = hose.options[hose.selectedIndex].value;
-
-        var high_H2S = document.getElementById("High_H2S");
-        var lop_High_H2S = high_H2S.options[high_H2S.selectedIndex].value;
-
-        debugger;
-
-        _lodingR.Times = lop_Time;
-        _lodingR.Rate = lop_Rate;
-        _lodingR.Hose_Connection = lop_Hose_Connection;
-        _lodingR.High_H2S = lop_High_H2S;
-
-
-        _lodingR.VoyageId = voyid;
-        if (_lodingR.VoyageId == "") {
-            _lodingR.VoyageId = 0;
-            //$("#messageVoyid").text("Please Choose Voyage Number.");
-            //return;
-        }
-        //else {
-        //    $("#messageVoyid").text('');
-        //}
-        _lodingR.LegPortId = legprtid;
-        if (_lodingR.LegPortId == "") {
-            _lodingR.LegPortId = 0;
-            //$("#msgLegPortId").text("Please Choose Leg.");
-            //return;
-        }
-        //else {
-        //    $("#msgLegPortId").text('');
-        //}
-
-        _lodingR.PortName = prtSt;
-
-        if (_lodingR.PortName == "") {
-            _lodingR.PortName = "";
-            //$("#msgPortName").text("Please Choose Status");
-            //return;
-        }
-        //else {
-        //    $("#msgVesselStatus").text('');
-        //}
-        _lodingR.ReportDateTime = $("#ReportDateTime").val();
-        if (_lodingR.ReportDateTime == "") {
-            _lodingR.ReportDateTime = "";
-            //$("#msgReportDateTime").text("Loading Date-Time can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgReportDateTime").text('');
-        //}
-        _lodingR.ETDDateTime = $("#ETDDateTime").val();
-
-        if (_lodingR.ETDDateTime == "") {
-            _lodingR.ETDDateTime = "";
-            //$("#msgETDDateTime").text("ETD Date-Time can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgETDDateTime").text('');
-        //}
-
-
-
-        _lodingR.DraftFwd = $("#DraftFwd").val();
-        if (_lodingR.DraftFwd == "") {
-            _lodingR.DraftFwd = 0;
-            //$("#msgDraftFwd").text("DraftFwd can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgDraftFwd").text('');
-        //}
-        _lodingR.DraftAft = $("#DraftAft").val();
-        if (_lodingR.DraftAft == "") {
-            _lodingR.DraftAft = 0;
-            //$("#msgDraftAft").text("DraftAft can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgDraftAft").text('');
-        //}
-        _lodingR.DraftMid = $("#DraftMid").val();
-        if (_lodingR.DraftMid == "") {
-            _lodingR.DraftMid = 0;
-            //$("#msgDraftMid").text("DraftMid can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgDraftMid").text('');
-        //}
-
-
-
-        _lodingR.Remarks = $("#Remarks").val();
-
-
-
-        $("#msgTimes").text('');
-        $("#msgRate").text('');
-        $("#msgHose_Connection").text('');
-        $("#msgHigh_H2S").text('');
-
-        var lop = 0;
-        if (_lodingR.Times == "") {
-            $("#v-pills-home").removeClass("show active");
-            $("#v-pills-home-tab").removeClass("active");
-            $("#v-pills-profile").addClass("show active");
-            $("#v-pills-profile-tab").addClass("active");
-            //$("#msgTimes").text("Select Time");
-            //lop = 1;
-        }
-        //else {
-        //    $("#msgTimes").text('');
-        //}
-
-        if (_lodingR.Rate == "") {
-            $("#v-pills-home").removeClass("show active");
-            $("#v-pills-home-tab").removeClass("active");
-            $("#v-pills-profile").addClass("show active");
-            $("#v-pills-profile-tab").addClass("active");
-            //$("#msgRate").text("Please select Rate");
-            //lop = 1;
-        }
-
-        if (_lodingR.Hose_Connection == "") {
-            $("#v-pills-home").removeClass("show active");
-            $("#v-pills-home-tab").removeClass("active");
-            $("#v-pills-profile").addClass("show active");
-            $("#v-pills-profile-tab").addClass("active");
-            //$("#msgHose_Connection").text("Select Hose Connection");
-            //lop = 1;
-        }
-
-        if (_lodingR.High_H2S == "") {
-            $("#v-pills-home").removeClass("show active");
-            $("#v-pills-home-tab").removeClass("active");
-            $("#v-pills-profile").addClass("show active");
-            $("#v-pills-profile-tab").addClass("active");
-            //$("#msgHigh_H2S").text("Please Select High H2S (Letter of Protests)");
-            //lop = 1;
-        }
-
-        //if (lop == 1) {
-        //    return;
-        //}
-
-        var table = document.getElementById('tblCargo'),
-            rows = table.getElementsByTagName('tr');
-
-        //if (rows.length - 2 == 0) {
-        //    alert("Please Enter Cargo Detail and Click on Add Button");
-        //    return;
-        //}
-
-        var tables = document.getElementById('tblStoppage'),
-            rowss = tables.getElementsByTagName('tr');
-
-        //if (rowss.length - 2 == 0) {
-        //    alert("Please Enter Stoppage Detail and Click on Add Button");
-        //    return;
-        //}
-
-        if (_lodingR.Remarks == "") {
-            _lodingR.Remarks = "";
-            $("#v-pills-home").removeClass("show active");
-            $("#v-pills-home-tab").removeClass("active");
-            $("#v-pills-profile").addClass("show active");
-            $("#v-pills-profile-tab").addClass("active");
-            //$("#msgRemarks").text("Remarks can not be empty.");
-            //return;
-        }
-        //else {
-        //    $("#msgRemarks").text('');
-        //}
-
-
-
-        var CargoListing = [];
-        //var table = document.getElementById('tblCargo'),
-        //    rows = table.getElementsByTagName('tr'),
-        //    i, j, cells, customerId;
-        //// var rCount = table.rows.length;
-
-        //for (i = 1, j = rows.length - 1; i < j; ++i) {
-        //    cells = rows[i].getElementsByTagName('td');
-        //    if (!cells.length) {
-        //        continue;
-        //    }
-
-        //    debugger;
-
-        //    var CargoList = {};
-
-
-
-        //    CargoList.CargoName = cells[0].innerHTML;
-        //    //CargoList.LoadingDatetime = cells[1].innerHTML;
-        //    CargoList.LoadingDatetime = cells[1].children[0].value;
-        //    CargoList.TerminalLoadingRate = cells[2].innerHTML;
-        //    CargoList.LoadingRateAccepted = cells[3].innerHTML;
-        //    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
-        //    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
-        //    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
-        //    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
-        //    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
-        //    CargoList.ShoreLineDistance = cells[9].innerHTML;
-        //    CargoList.QuantityOnboard = cells[10].innerHTML;
-        //    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
-        //    //CargoList.ActualCompDateTime = cells[12].innerHTML;
-
-        //    CargoList.ActualCompDateTime = cells[12].children[0].value;
-
-        //    CargoListing.push(CargoList);
-
-
-        //}
-
-        debugger;
-
-        if (CargoListing == "") {
-
-
-            var txtCargoName = $("#CargoName");
-
-            var chk = txtCargoName.val();
-
-            if (chk != "") {
-
-                //if (txtCargoName.val() == '') {
-                //    alert("Please Enter Cargo Grade");
-                //    return;
-                //}
-                var txtLoadingDatetime = $("#LoadingDatetime");
-                if (txtLoadingDatetime.val() == '') {
-                    txtLoadingDatetime.val(null);
-                    //alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
-                    //return;
-                }
-                var txtTerminalLoadingRate = $("#TerminalLoadingRate");
-                //if (txtTerminalLoadingRate.val() == '') {
-                //    alert("Please enter Terminal Loading Rate");
-                //    return;
-                //}
-                var txtLoadingRateAccepted = $("#LoadingRateAccepted");
-                //if (txtLoadingRateAccepted.val() == '') {
-                //    alert("Please enter Loading Rate Accepted");
-                //    return;
-                //}
-                var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
-                //if (txtAverageAchievedLoadingRate.val() == '') {
-                //    alert("Please enter Average Achieved Loading Rate");
-                //    return;
-                //}
-                var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
-                //if (txtNo_Manifold_Hoses_by_Terminal.val() == '') {
-                //    alert("Please enter No Manifold Hoses by Terminal");
-                //    return;
-                //}
-                var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
-                //if (txtSize_of_Manifold_Hoses_by_Terminal.val() == '') {
-                //    alert("Please enter  Size of Manifold Hoses by Terminal");
-                //    return;
-                //}
-                var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
-                //if (txtNo_Manifold_Hoses_by_Vessel.val() == '') {
-                //    alert("Please enter No Manifold Hoses by Vessel");
-                //    return;
-                //}
-                var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
-                //if (txtSize_of_Manifold_Hoses_by_Vessel.val() == '') {
-                //    alert("Please enter Size of Manifold Hoses by Vessel");
-                //    return;
-                //}
-                var txtShoreLineDistance = $("#ShoreLineDistance");
-                //if (txtShoreLineDistance.val() == '') {
-                //    alert("Please enter ShoreLine Distance");
-                //    return;
-                //}
-                var txtQuantityOnboard = $("#QuantityOnboard");
-                //if (txtQuantityOnboard.val() == '') {
-                //    alert("Please enter Quantity Onboard");
-                //    return;
-                //}
-                var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
-                //if (txtBalanceQuantityLoaded.val() == '') {
-                //    alert("Please enter Balance Quantity Loaded");
-                //    return;
-                //}
-                var txtActualCompDateTime = $("#ActualCompDateTime");
-                if (txtActualCompDateTime.val() == '') {
-                    txtActualCompDateTime.val(null);
-                    //alert("Please Select ETC / Actual Comp Date & Time of Cargo " + txtCargoName.val());
-                    //return;
-                }
-                var txtEstCompDateTime = $("#EstCompDateTime");
-                if (txtEstCompDateTime.val() == '') {
-                    txtEstCompDateTime.val(null);
-                    //alert("Please Select ETC / Actual Comp Date & Time of Cargo " + txtCargoName.val());
-                    //return;
-                }
-                //Get the reference of the Table's TBODY element.
-                var tBody = $("#tblCargo > TBODY")[0];
-
-                //Add Row.
-                var row = tBody.insertRow(-1);
-
-                //Add Name cell.
-                var cell = $(row.insertCell(-1));
-                cell.html(txtCargoName.val());
-                //Add Height cell.
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtLoadingDatetime.val());
-
-                //Add Capacity cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtTerminalLoadingRate.val() == '' ? '' : txtTerminalLoadingRate.val());
-
-                //Add Capacity cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtLoadingRateAccepted.val() == '' ? '' : txtLoadingRateAccepted.val());
-
-                //Add Capacity cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtAverageAchievedLoadingRate.val() == '' ? '' : txtAverageAchievedLoadingRate.val());
-
-                //Add DTG cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtNo_Manifold_Hoses_by_Terminal.val());
-
-                //Add CP_SOG cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Terminal.val());
-
-                //Add Log_Speed cell.
-                cell = $(row.insertCell(-1));
-                cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtNo_Manifold_Hoses_by_Vessel.val());
-
-                //-----
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Vessel.val());
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtShoreLineDistance.val() == '' ? '' : txtShoreLineDistance.val());
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtQuantityOnboard.val() == '' ? '' : txtQuantityOnboard.val());
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtBalanceQuantityLoaded.val() == '' ? '' : txtBalanceQuantityLoaded.val());
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtEstCompDateTime.val());
-
-                cell = $(row.insertCell(-1));
-                cell.html(txtActualCompDateTime.val());
-
-
-
-                var table = document.getElementById('tblCargo'),
-                    rows = table.getElementsByTagName('tr'),
-                    i, j, cells, customerId;
-                // var rCount = table.rows.length;
-
-                for (i = 1, j = rows.length - 1; i < j; ++i) {
-                    cells = rows[i].getElementsByTagName('td');
-                    if (!cells.length) {
-                        continue;
-                    }
-
-                    debugger;
-
-                    var CargoList = {};
-
-
-
-                    CargoList.CargoName = cells[0].innerHTML;
-                    CargoList.LoadingDatetime = cells[1].innerHTML;
-                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
-                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
-                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
-                    CargoList.ShoreLineDistance = cells[9].innerHTML;
-                    CargoList.QuantityOnboard = cells[10].innerHTML;
-                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
-                    CargoList.EstCompDateTime = cells[12].innerHTML;
-                    CargoList.ActualCompDateTime = cells[13].innerHTML;
-
-                    CargoListing.push(CargoList);
-
-
-                }
-            }
-
-        }
-
-
-        try {
-
-            var StoppageListing = [];
-            //var table = document.getElementById('tblStoppage'),
-            //    rows = table.getElementsByTagName('tr'),
-            //    i, j, cells;
-            //// var rCount = table.rows.length;
-
-            //for (i = 1, j = rows.length - 1; i < j; ++i) {
-            //    cells = rows[i].getElementsByTagName('td');
-            //    if (!cells.length) {
-            //        continue;
-            //    }
-
-            //    debugger;
-
-            //    var StoppageList = {};
-
-
-            //    StoppageList.Stoppage = cells[0].innerHTML;
-            //    //StoppageList.Reason  = cells[1].innerHTML;
-
-            //    try {
-            //        StoppageList.DateTimeFrom = cells[1].children[0].value;
-
-            //    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
-
-            //    try {
-            //        StoppageList.DateTimeTo = cells[2].children[0].value;
-
-            //    } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
-
-            //    StoppageListing.push(StoppageList);
-
-
-            //}
-
-            if (StoppageListing == "") {
-                var txtStoppage = $("#Stoppage");
-
-                var chk = txtStoppage.val();
-
-
-                if (chk != "") {
-
-                    var txtDateTimeFrom = $("#DateTimeFrom");
-                    var txtDateTimeTo = $("#DateTimeTo");
-                    var tBody = $("#tblStoppage > TBODY")[0];
-
-                    //Add Row.
-                    var row = tBody.insertRow(-1);
-
-                    //Add Name cell.
-                    var cell = $(row.insertCell(-1));
-                    cell.html(txtStoppage.val());
-                    //Add Height cell.
-
-                    //cell = $(row.insertCell(-1));
-                    //cell.html(txtReason.val());
-
-                    //Add Capacity cell.
-                    cell = $(row.insertCell(-1));
-                    cell.html(txtDateTimeFrom.val());
-
-                    //Add Capacity cell.
-                    cell = $(row.insertCell(-1));
-                    cell.html(txtDateTimeTo.val());
-
-
-
-                    var table = document.getElementById('tblStoppage'),
-                        rows = table.getElementsByTagName('tr'),
-                        i, j, cells;
-                    // var rCount = table.rows.length;
-
-                    for (i = 1, j = rows.length - 1; i < j; ++i) {
-                        cells = rows[i].getElementsByTagName('td');
-                        if (!cells.length) {
-                            continue;
-                        }
-
-                        debugger;
-
-                        var StoppageList = {};
-
-
-                        StoppageList.Stoppage = cells[0].innerHTML;
-                        //StoppageList.Reason  = cells[1].innerHTML;
-
-                        try {
-                            StoppageList.DateTimeFrom = cells[1].children[0].value;
-
-                        } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
-
-                        try {
-                            StoppageList.DateTimeTo = cells[2].children[0].value;
-
-                        } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
-
-                        StoppageListing.push(StoppageList);
-
-
-                    }
-                }
-
-            }
-        } catch { }
-
-
-
-
-
-        _lodingR.SaveDraft = $('#SaveDraft').is(':checked');
-
-        debugger;
-
-        //var eduInput = _noonR;
-        //for (i = 0; i < 72; i++) {
-        //    if (eduInput[i].value == "") {
-        //        alert('Complete all the fields');
-        //        return false;
-        //    }
-        //}
-        $('#cover-spin').show();
-
-          var newUrl= '@Url.Action("LoadingRList", "Loading")';
-
-        $.ajax({
-            type: "POST",
-            url: "/Report/Loading/insertLodingR",
-            data: JSON.stringify(_lodingR),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (r) {
-               // alert("Success");
-
-                CargoInsertion();
-                sleep(1000);
-                StoppageInsertion();
-                sleep(1000);
-                BallastPumpInsertion();
-
-                $('#cover-spin').hide();
-
-                alert("Success");
-
-                window.location.href = newUrl;
-            }
-        });
-
-        //var form = $('form'); // change selector your form
-        //if (!form.attr('validated')) {
-        //    if (form.valid()) {
-        //    }
-        //    else {
-        //        alert('not valid');
-        //    }
-
-
-
-    }
-
-</script>
 
 <script type="text/javascript">
 
@@ -2828,7 +1997,7 @@
 <script>
 
 
-    function GetLRCargoEdit(id) {
+    function GetLRCargoEdit(id) {debugger
 
         $.ajax({
             type: 'GET',
@@ -2843,44 +2012,48 @@
                     var LRCargoList = response.lrc;
                     var CountCargo = response.cntlrc;
 
-                    //alert(FtypeList);
-
-                    debugger;
                     var rowCount = CountCargo;
                     let len = rowCount;
                     for (let i = 1; i <= len; i++) {
 
-                     EditCountCargo();
-
+                        EditCountCargo();
 
                     }
 
-                    debugger;
-
                     var count = 0; var ss = ""; var ss1 = "";
                     var table = document.getElementById('tblCargo');
-                    var loginUser = '@StaticHelper.LoginUser';
-                   // alert(loginUser);
+
+                    // alert(loginUser);
 
                     var j = 1; var k = 0;
                     $.each(LRCargoList, function (index, value) {
+                        debugger
                         ss1 = value;
-                        debugger;
 
                         if (k == 0) {
-                           // table.rows[j].cells[k].children[0].value = ss1;
-
+                            // table.rows[j].cells[k].children[0].value = ss1;
+                            //gff
                             table.rows[j].cells[k].innerHTML = ss1;
 
-                              /*  table.rows[j].cells[k].setAttribute("contenteditable", true);*/
+                           // table.rows[j].cells[k].setAttribute("contenteditable", true);
+
                             k++;
                         }
-
                         else if (k == 1) {
 
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                            k++;
+                        }
+                        else if (k == 2) {
+
+                            table.rows[j].cells[k].innerHTML = "";
+
                             table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
 
                             var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            // x.setAttribute("type", "datetime-local");
+                            //x.value = '2022-03-19T11:26:00';
                             x.classList.add("datetimePickerEdit");
 
                             var calendarIcon = document.createElement("SPAN");
@@ -2893,6 +2066,7 @@
                             if (ss1 != null) {
                                 var now = new Date(ss1);
                                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                //alert(ss1.toISOString().slice(0, 16));
                                 x.value = now.toISOString().slice(0, 16);
                                 var DT = x.value;
                                 x.value = DT.replace('T', ' ');
@@ -2913,102 +2087,32 @@
 
                             k++;
                         }
-
-                        else if (k == 5) {
-
-                            table.rows[j].cells[k].innerHTML = ss1;
-
-                            table.rows[j].cells[k].setAttribute("contenteditable", true);
-
-                            table.rows[j].cells[k].addEventListener("input", function (event) {
-                                var inputText = event.target.textContent;
-
-                                var numericText = inputText.replace(/[^0-9]/g, '').substr(0, 7);
-
-                                event.target.textContent = numericText;
-
-                            });
-
-                            k++;
-                        }
-
-                        else if (k == 7) {
-
-                            table.rows[j].cells[k].innerHTML = ss1;
-
-                            table.rows[j].cells[k].setAttribute("contenteditable", true);
-
-                            table.rows[j].cells[k].addEventListener("input", function (event) {
-                                var inputText = event.target.textContent;
-
-                                var numericText = inputText.replace(/[^0-9]/g, '').substr(0, 7);
-
-                                event.target.textContent = numericText;
-
-                            });
-
-                            k++;
-                        }
-
-                        else if (k == 12) {
-
-                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
-
-                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
-                            x.classList.add("datetimePickerEdit");
-
-                            var calendarIcon = document.createElement("SPAN");
-                            calendarIcon.innerHTML = "📅";
-                            calendarIcon.style.cursor = "pointer";
-                            table.rows[j].cells[k].appendChild(calendarIcon);
-
-                            var savedDateValue = '';
-
-                            if (ss1 != null) {
-                                var now = new Date(ss1);
-                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                                x.value = now.toISOString().slice(0, 16);
-                                var DT = x.value;
-                                x.value = DT.replace('T', ' ');
-                                savedDateValue = x.value;
-                            }
-
-                            flatpickr(x, {
-                                enableTime: true,
-                                dateFormat: "Y-m-d H:i",
-                                time_24hr: true,
-                                clickOpens: false,
-                                defaultDate: savedDateValue,
-                            });
-
-                            calendarIcon.addEventListener("click", function () {
-                                x._flatpickr.open();
-                            });
-
-                            k++;
-                        }
-
                         else if (k == 13) {
 
+                            table.rows[j].cells[k].innerHTML = "";
+
+                            /*table.rows[j].cells[k].setAttribute("contenteditable", true);*/
                             table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
 
                             var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            // x.setAttribute("type", "datetime-local");
                             x.classList.add("datetimePickerEdit");
 
-                            var calendarIcon1 = document.createElement("SPAN");
-                            calendarIcon1.innerHTML = "📅";
-                            calendarIcon1.style.cursor = "pointer";
-                            table.rows[j].cells[k].appendChild(calendarIcon1);
+                            var calendarIcon = document.createElement("SPAN");
+                            calendarIcon.innerHTML = "📅";
+                            calendarIcon.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon);
 
-                            var savedDateValue1 = '';
+                            var savedDateValue = '';
 
                             if (ss1 != null) {
-                                var now1 = new Date(ss1);
-                                now1.setMinutes(now1.getMinutes() - now1.getTimezoneOffset());
-                                x.value = now1.toISOString().slice(0, 16);
-                                var DT1 = x.value;
-                                x.value = DT1.replace('T', ' ');
-                                savedDateValue1 = x.value;
+                                var now = new Date(ss1);
+                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                //alert(ss1.toISOString().slice(0, 16));
+                                x.value = now.toISOString().slice(0, 16);
+                                var DT = x.value;
+                                x.value = DT.replace('T', ' ');
+                                savedDateValue = x.value;
                             }
 
                             flatpickr(x, {
@@ -3016,26 +2120,72 @@
                                 dateFormat: "Y-m-d H:i",
                                 time_24hr: true,
                                 clickOpens: false,
-                                defaultDate: savedDateValue1,
+                                defaultDate: savedDateValue,
                             });
 
-                            calendarIcon1.addEventListener("click", function () {
+                            calendarIcon.addEventListener("click", function () {
                                 x._flatpickr.open();
                             });
 
+                            //x.value = ss1.toISOString().slice(0, 16);
                             k++;
+
                         }
 
                         else if (k == 14) {
+
+                            table.rows[j].cells[k].innerHTML = "";
+
+                           // table.rows[j].cells[k].setAttribute("contenteditable", true);
+                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
+
+                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            // x.setAttribute("type", "datetime-local");
+                            x.classList.add("datetimePickerEdit");
+
+                            var calendarIcon = document.createElement("SPAN");
+                            calendarIcon.innerHTML = "📅";
+                            calendarIcon.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon);
+
+                            var savedDateValue = '';
+
+                            if (ss1 != null) {
+                                var now = new Date(ss1);
+                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                //alert(ss1.toISOString().slice(0, 16));
+                                x.value = now.toISOString().slice(0, 16);
+                                var DT = x.value;
+                                x.value = DT.replace('T', ' ');
+                                savedDateValue = x.value;
+                            }
+
+                            flatpickr(x, {
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                clickOpens: false,
+                                defaultDate: savedDateValue,
+                            });
+
+                            calendarIcon.addEventListener("click", function () {
+                                x._flatpickr.open();
+                            });
+
+                            //x.value = ss1.toISOString().slice(0, 16);
+                            k++;
+
+                        }
+
+                        else if (k == 15) {
                             k = 0;
                             j++;
                             table.rows[j].cells[k].innerHTML = ss1;
 
-                                /*table.rows[j].cells[k].setAttribute("contenteditable", true);*/
+                           // table.rows[j].cells[k].setAttribute("contenteditable", true);
 
                             k++;
                         }
-
                         else {
 
                             table.rows[j].cells[k].innerHTML = ss1;
@@ -3045,23 +2195,24 @@
                             table.rows[j].cells[k].addEventListener("input", function (event) {
                                 var inputText = event.target.textContent;
 
-                                var cleanedText = inputText.replace(/[^0-9.]/g, '').substr(0, 7);
+                                var cleanedText = inputText.replace(/[^0-9.]/g, '');
 
                                 if (/^\d*(\.\d{0,3})?$/.test(cleanedText)) {
 
                                     event.target.textContent = cleanedText;
-                                }
-                                else {
+                                } else {
 
                                     event.target.textContent = "";
                                 }
                             });
 
                             k++;
+
                         }
-
-
                     });
+
+
+
 
 
                 }
@@ -3078,11 +2229,7 @@
 
 
 </script>
-
-
-
 <script type="text/javascript">
-
     function requiredValueDFT(arg) {
         // debugger;
         var id = arg.getAttribute('id');
@@ -3103,7 +2250,6 @@
         }
 
     }
-
 </script>
 <script>
 
@@ -3123,32 +2269,16 @@
                     var StopRList = response.stpr;
                     var CountSR = response.cntstopr;
 
-                    // alert(StopRList);
-
-                    debugger;
                     var rowCount = CountSR;
                     let len = rowCount;
                     for (let i = 1; i <= len; i++) {
 
-                        //  $("#btnAdd1").click();
-
                         EditStopR();
 
-                        //var $tableBody = $('#tblCargo').find("tbody"),
-                        //    $trLast = $tableBody.find("tr:last"),
-                        //    $trNew = $trLast.clone();
-
-                        //$trLast.after($trNew);
                     }
-
-
-
 
                     debugger;
 
-                    //for (var i = rowCount - 4; i > 0; i--) {
-                    //    tblFuelC.deleteRow(i);
-                    //}
                     var count = 0; var ss = ""; var ss1 = "";
                     var table = document.getElementById('tblStoppage');
 
@@ -3162,7 +2292,12 @@
                             table.rows[j].cells[k].setAttribute("contenteditable", true);
                             k++;
                         }
-                        else if (k == 3) {
+                        else if (k == 1) {
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+                            k++;
+                        }
+                        else if (k == 4) {
                             k = 0;
                             j++;
                             table.rows[j].cells[k].innerHTML = ss1;
@@ -3171,10 +2306,9 @@
                         }
                         else {
 
+                            table.rows[j].cells[k].innerHTML = "";
+
                             table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
-                            //table.rows[j].cells[k].innerHTML = ss1;
-                            // table.rows[j].cells[k].setAttribute("contenteditable", true);
-                            // table.rows[j].cells[k].setAttribute("class", "datetime-wrapper");
 
                             var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
                             // x.setAttribute("type", "datetime-local");
@@ -3233,7 +2367,6 @@
 
 </script>
 
-
 <script type="text/javascript">
     function charCount() {
         var textEntered = document.getElementById('Remarks').value;
@@ -3250,14 +2383,11 @@
     var el = document.getElementById('Remarks');
     el.addEventListener('keyup', charCount, false);
 </script>
-
-
 <script type="text/javascript">
       function CargoInsertion() {
 
-          var LRId = $("#Id").val();
+          //alert("Check");
 
-          debugger;
           var CargoListing = [];
           var table = document.getElementById('tblCargo'),
                     rows = table.getElementsByTagName('tr'),
@@ -3270,37 +2400,35 @@
                         continue;
                     }
 
-                    debugger;
+
 
                     var CargoList = {};
 
 
-
-                    CargoList.CargoName   = cells[0].innerHTML;
+                    CargoList.Id = cells[0].innerHTML;
+                    CargoList.CargoName   = cells[1].innerHTML;
+                    /*  CargoList.LoadingDatetime  = cells[1].innerHTML;*/
+                    try {
+                        CargoList.LoadingDatetime = cells[2].children[0].value;
+                    } catch { CargoList.LoadingDatetime = cells[2].innerHTML;}
+                    CargoList.TerminalLoadingRate = cells[3].innerHTML;
+                    CargoList.LoadingRateAccepted = cells[4].innerHTML;
+                    CargoList.AverageAchievedLoadingRate = cells[5].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Terminal  = cells[7].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[9].innerHTML;
+                    CargoList.ShoreLineDistance = cells[10].innerHTML;
+                    CargoList.QuantityOnboard = cells[11].innerHTML;
+                    CargoList.BalanceQuantityLoaded = cells[12].innerHTML;
+                    //CargoList.ActualCompDateTime = cells[12].innerHTML;
+                    try {
+                        CargoList.EstCompDateTime = cells[13].children[0].value;
+                    } catch { CargoList.EstCompDateTime = cells[13].innerHTML; }
 
                     try {
-                        CargoList.LoadingDatetime = cells[1].children[0].value;
-                    } catch { CargoList.LoadingDatetime = cells[1].innerHTML; }
-
-                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
-                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
-                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Terminal  = cells[6].innerHTML;
-                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
-                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
-                    CargoList.ShoreLineDistance = cells[9].innerHTML;
-                    CargoList.QuantityOnboard = cells[10].innerHTML;
-                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
-                    try {
-                        CargoList.EstCompDateTime = cells[12].children[0].value;
-                    } catch { CargoList.EstCompDateTime = cells[12].innerHTML; }
-
-                    try {
-                        CargoList.ActualCompDateTime = cells[13].children[0].value;
-                    } catch { CargoList.ActualCompDateTime = cells[13].innerHTML; }
-
-                    CargoList.LRId = LRId;
+                        CargoList.ActualCompDateTime = cells[14].children[0].value;
+                    } catch { CargoList.ActualCompDateTime = cells[14].innerHTML; }
 
 
                     CargoListing.push(CargoList);
@@ -3323,7 +2451,7 @@
                         }
                     },
                     success: function (result) {
-                        debugger;
+
                         window.location.href = result;
                     }
                 });
@@ -3338,10 +2466,8 @@
 <script type="text/javascript">
       function StoppageInsertion() {
 
-          var LRId = $("#Id").val();
-
           //alert("Check");
-          debugger;
+
           var StoppageListing = [];
           var table = document.getElementById('tblStoppage'),
                     rows = table.getElementsByTagName('tr'),
@@ -3354,25 +2480,24 @@
                         continue;
                     }
 
-                    debugger;
+
 
                     var StoppageList = {};
 
 
-                    StoppageList.Stoppage   = cells[0].innerHTML;
+                    StoppageList.Id = cells[0].innerHTML;
+                    StoppageList.Stoppage   = cells[1].innerHTML;
                     //StoppageList.Reason  = cells[1].innerHTML;
 
                     try {
-                        StoppageList.DateTimeFrom = cells[1].children[0].value;
+                        StoppageList.DateTimeFrom = cells[2].children[0].value;
 
-                    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+                    } catch { StoppageList.DateTimeFrom = cells[2].innerHTML; }
 
                     try {
-                        StoppageList.DateTimeTo = cells[2].children[0].value;
+                        StoppageList.DateTimeTo = cells[3].children[0].value;
 
-                    } catch { StoppageList.DateTimeTo = cells[2].innerHTML;}
-
-                    StoppageList.LRId = LRId;
+                    } catch { StoppageList.DateTimeTo = cells[3].innerHTML;}
 
                     StoppageListing.push(StoppageList);
 
@@ -3394,7 +2519,7 @@
                         }
                     },
                     success: function (result) {
-                        debugger;
+
                         window.location.href = result;
                     }
                 });
@@ -3402,10 +2527,10 @@
 </script>
 
 <script type="text/javascript">
-      function BallastPumpInsertion() {
+      function BallastPumpInsertion() {debugger
 
          //alert("Check");
-          debugger;
+          var LR_Id = '@ViewBag.Id';
           var ballasttank = [];
 
 
@@ -3429,12 +2554,33 @@
                   var LR_DCR_PumpsUse = {};
 
 
-                  LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
+                 // LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
+                  try {
+                      LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
 
+                  } catch { LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].innerHTML; }
                   //LR_Ballast_PumpUse.Qty_Vol = table.rows[3].cells[j].children[0].value;
                   //LR_Ballast_PumpUse.HC = table.rows[4].cells[j].children[0].value;
-                  LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
-                  LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+                //  LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
+                  try {
+                      LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
+
+                  } catch { LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].innerHTML; }
+
+                  //LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+                  try {
+                      LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+
+                  } catch { LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].innerHTML; }
+                 // LR_DCR_PumpsUse.Id = table.rows[5].cells[j].children[0].value;
+                  try {
+                      LR_DCR_PumpsUse.Id = table.rows[5].cells[j].children[0].value;
+
+                  } catch { LR_DCR_PumpsUse.Id = table.rows[5].cells[j].innerHTML; }
+
+                  LR_DCR_PumpsUse.LRId = LR_Id;
+
+
                   ballasttank.push(LR_DCR_PumpsUse);
               }
 
@@ -3456,7 +2602,7 @@
                         }
                     },
                     success: function (result) {
-                        debugger;
+
                         window.location.href = result;
                     }
                 });
@@ -3468,7 +2614,7 @@
 
 <script type="text/javascript">
     function requiredValue1(arg) {
-        debugger;
+
         var id = arg.getAttribute('id');
         var value = arg.value;
 
@@ -3491,7 +2637,7 @@
 
 <script type="text/javascript">
     function requiredValue8(arg) {
-        debugger;
+
         var id = arg.getAttribute('id');
         var value = arg.value;
 

@@ -15,11 +15,12 @@ namespace DataBuildingLayer
         public int Id { get; set; }
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm}")]
-        public DateTime? Received_Date { get; set; }
+        public DateTime Received_Date { get; set; }
 
         public string PortName { get; set; }
         public string PortName_others { get; set; }
         public int VesselId { get; set; }
+        public string VesselName { get; set; }
         public string Facility_Name { get; set; }
         public string VendorDetails { get; set; }
 
@@ -39,9 +40,6 @@ namespace DataBuildingLayer
         public string fileExtension { get; set; }
         public string File_Path { get; set; }
         public List<FreshWaterReport> FWReportList { get; set; }
-        // public List<VoyageClass> VoyageNumberList { get; set; }
-
     }
-
 
 }

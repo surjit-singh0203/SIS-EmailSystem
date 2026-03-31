@@ -1,4 +1,5 @@
-﻿@using DataBuildingLayer;
+﻿
+@using DataBuildingLayer;
 @model CharterPartyClass
 
 @{
@@ -9,12 +10,12 @@
 
 
 <div id="idCP">
-
-    <div class="page-heading page-header-flex">
+<div class = "row">
+    <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
         <div>
-            <h1 class="page-title">
+            <h2>
                 Charter Party
-            </h1>
+            </h2>
             @*<ol class="breadcrumb">
                     <li><a href="">Home</a></li>
                     <li><a href="">Form</a></li>
@@ -29,19 +30,46 @@
         {
             <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
         }
-        <div>
+    <div class="col-md button-row-top">
+        @if (StaticHelper.UserRole == "Administrator" || StaticHelper.UserRole == "Superintendent")
+        {
             <a class="btn btn-info" href="@Url.Action("AddCPContract", "CP")">
-                <i class="fa fa-plus-circle mr-2"></i>Add CP Contract
+                Add CP Contract
             </a>
-            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
-
+        }
+            @*<a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>*@
         </div>
     </div>
+	</div>
 
 
     <div class="wrapper wrapper-content">
         <div class="container">
-            <h3 class="card-title">Charter Party List</h3>
+            <div class="inline-content">
+                <div class="col-md">
+                    
+                </div>
+
+                <div class="inline-content">
+                    <div class="col m-1">
+
+                        <input id="idFirst" autocomplete="off" placeholder="search by :cp no./charter party id" class="form-control" type="text">
+                        <span id="messageLat" style="color:red"></span>
+                    </div>
+
+                    <div class="col m-1">
+
+                        <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+                        <span id="messageLat" style="color:red"></span>
+                    </div>
+
+                    <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+
+
+
+
+                </div>
+            </div>
             <div class="form-body">
                 <div class="table-responsive">
                     @*<div>
@@ -50,45 +78,22 @@
                             </a>
                         </div>*@
 
-                    <div class="mb-lg-1 row">
-                        <div style="margin-left:550px" class="col-sm-3">
 
-                            <input id="idFirst" class="form-control" type="text" />
-                            <span id="messageLat" style="color:red"></span>
-                        </div>
-
-                        <div class="col-sm-3">
-
-                            <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
-                            <span id="messageLat" style="color:red"></span>
-                        </div>
-
-
-                        <div class="col-md button-row-top">
-                            <div class="row">
-                                <div class="col">
-                                    <button id="btnSearch" class="function-button submit-button">
-
-                                        <i class="fa fa-plus-circle mr-2"></i>Search
-
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <table class="table">
+                    <table class="GeneratedTable centered-table">
                         <thead>
                             <tr>
                                 <th style="display:none">Id</th>
+                                <th>Vessel Name</th>
                                 <th>Charter Party ID</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 @*<th>Voyage Type</th>*@
                                 <th>View Detail</th>
-                                <th>Action</th>
+
+                                @if (StaticHelper.UserRole == "Administrator" || StaticHelper.UserRole == "Superintendent")
+                                {
+                                    <th>Action</th>
+                                }
 
 
                             </tr>
@@ -100,54 +105,51 @@
                             {
 
 
-                                <tr>
-                                    <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
-                                    <td style="display:none"> @Html.DisplayFor(modelItem => item.VesselID)</td>
-                                    @*<td> @Html.DisplayFor(modelItem => item.VesselID)</td>*@
-                                    <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
-                                    <td>
-                                        @{
-                                            var sdate = item.StartDate.ToString("dd-MMM-yyyy");
-                                            @Html.Raw(sdate);
-                                        }
-                                    </td>
-                                    <td>
-                                        @{
-                                            var Edate = item.EndDate.ToString("dd-MMM-yyyy");
-                                            @Html.Raw(Edate);
-                                        }
-                                    </td>
-                                    @*<td> @Html.DisplayFor(modelItem => item.VoyageType)</td>*@
-                                    <td width="100px">
-                                        <a href="@Url.Action("ViewCPDetail", "CP", new { id = item.Id })" class="btn btn-sm btn-light btn-edit">
-                                            <i class="uil uil-edit-alt mr-2"></i>View Detail
-                                        </a>
-                                    </td>
+                            <tr>
+                                <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                                <td style="display:none"> @Html.DisplayFor(modelItem => item.VesselID)</td>
+                                @*<td> @Html.DisplayFor(modelItem => item.VesselID)</td>*@
+                                <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+                                <td> @Html.DisplayFor(modelItem => item.CPNO)</td>
+                                <td>
+                                    @{
+                                        var sdate = item.StartDate.ToString("dd-MMM-yyyy");
+                                        @Html.Raw(sdate);
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var Edate = item.EndDate.ToString("dd-MMM-yyyy");
+                                        @Html.Raw(Edate);
+                                    }
+                                </td>
+                                @*<td> @Html.DisplayFor(modelItem => item.VoyageType)</td>*@
+                                <td width="100px">
+                                    <a href="@Url.Action("ViewCPDetail", "CP", new { id = item.Id })" class="btn btn-sm btn-light btn-edit">
+                                        <i class="uil uil-edit-alt mr-2"></i>View Detail
+                                    </a>
+                                </td>
 
 
-
+                                @if (StaticHelper.UserRole == "Administrator" || StaticHelper.UserRole == "Superintendent")
+                                {
                                     <td width="300px">
 
                                         <a href="@Url.Action("EditCPContract", "CP", new { id = item.Id })" class="btn btn-sm btn-light btn-edit">
                                             <i class="uil uil-edit-alt mr-2"></i>Edit
                                         </a>
 
-                                        @*<button type="button" class="btn btn-sm btn-light btn-edit">
-            @Html.ActionLink("Edit", "Edit", "VesselPart", new { id = item.Id })
-            <i class="uil uil-edit-alt mr-2"></i>
-        </button>*@
-                                       
-                                                                |
-                                                            <button type="button" class="btn btn-sm btn-light btn-delete">
-                                                                <i class="uil uil-trash-alt mr-2"></i>
-                                                                @Html.ActionLink("Delete", "Delete", "CP", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
 
-                                                            </button>
-                                        
-                                                        </td>
+                                        |
+                                        <button type="button" class="btn btn-sm btn-light btn-delete">
+                                            <i class="uil uil-trash-alt mr-2"></i>
+                                            @Html.ActionLink("Delete", "DeleteCP", "CP", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
 
+                                        </button>
+                                    </td>
+                                }
 
-                                </tr>
+                            </tr>
                             }
 
 
@@ -236,14 +238,14 @@
     $('#Menu3').addClass('active');
     $('#Menu4').removeClass('active');
     $('#Menu5').removeClass('active');
-    $('#Menu6').removeClass('active');
-    $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 
 </script>
-
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
 <script type="text/javascript">
     $(function () {
 
@@ -268,41 +270,58 @@
 <script>
 
     $("#btnSearch").click(function () {
-        //alert(34);
 
         var firstVal = $("#idFirst").val();
         var secondVal = $("#idSecond").val();
 
 
 
-        //var range = $('#idSecond').datarangepicker.getRange();
-        //var startDate = range.start;
-        //var endDate = range.end;
+
 
         var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
         var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
-        //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
-        //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        else {
 
 
 
+            $.ajax({
+                type: 'GET',
+                url: '/CharterParty/CP/index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+                    $("#idCP").html('');
+                    $("#idCP").html(data);
+                },
 
-
-        $.ajax({
-            type: 'GET',
-            url: '/CharterParty/CP/index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
-            datatype: 'json',
-            cache: false,
-            contentType: 'application/json; charset=utf-8',
-            processData: false,
-            success: function (data) {
-                $("#idCP").html('');
-                $("#idCP").html(data);
-            },
-           
-        });
+            });
+        }
 
     });
+
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
 
 </script>

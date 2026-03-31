@@ -28,47 +28,26 @@ namespace DataBuildingLayer
         public string DDT { get; set; }
         public string EDT { get; set; }
         public string ADT { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Terminal_Acceptable_Discharging_Rate { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Discharging_pressure_Requested { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Average_Discharge_Rate_ByVessel { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Average_Discharge_pressure_ByVessel { get; set; }
-        //[DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        //public decimal? No_of_Pumps_Use { get; set; }
+
         public int? No_of_Pumps_Use { get; set; }
-        //[DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        //public decimal? No_Manifold_Hoses_by_Terminal { get; set; }
         public int? No_Manifold_Hoses_by_Terminal { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Size_of_Manifold_Hoses_by_Terminal { get; set; }
-
-        // public int? Size_of_Manifold_Hoses_by_Terminal { get; set; }
-        //[DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        //public decimal? No_Manifold_Hoses_by_Vessel { get; set; }
+        //public int? Size_of_Manifold_Hoses_by_Terminal { get; set; }
         public int? No_Manifold_Hoses_by_Vessel { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Size_of_Manifold_Hoses_by_Vessel { get; set; }
-
         // public int? Size_of_Manifold_Hoses_by_Vessel { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Total_CargoDischarged { get; set; }
+        //public int? Total_CargoDischarged { get; set; }
 
-        // public int? Total_CargoDischarged { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Balance_Cargo_ToBe_Deischarged { get; set; }
-        //public int? Balance_Cargo_ToBe_Deischarged { get; set; }
-
+        // public int? Balance_Cargo_ToBe_Deischarged { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
         public DateTime? EstCompDateTime { get; set; }
 

@@ -16,12 +16,11 @@ namespace DataBuildingLayer
         public int NextLegPortId { get; set; }
         public string DeparturePort { get; set; }
         public string NextPort { get; set; }
-
+        public string VesselName { get; set; }
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-ddTHH:mm:ss}")]
         public DateTime? ETA { get; set; }
 
-        [DataType(DataType.Date, ErrorMessage = "Date only")]
-        //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy/MM/dd}")]
+       // [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy/MM/dd}")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? ReportDate { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -32,6 +31,13 @@ namespace DataBuildingLayer
         public decimal? DraftMid { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Ballast_ROB { get; set; }
+
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        public decimal? FW_Generated { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        public decimal? FW_Consumption { get; set; }
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+        public decimal? FW_ROB { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? SlopsDisposed_Oil { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -78,12 +84,6 @@ namespace DataBuildingLayer
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? RFA_ROB { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? FW_Generated { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? FW_Consumption { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
-        public decimal? FW_ROB { get; set; }
 
 
         public string SeaState { get; set; }
@@ -108,7 +108,7 @@ namespace DataBuildingLayer
         public decimal? LO_HO_Cons_MECC { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? LO_HO_Cons_MECYL { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]  
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? LO_HO_Cons_AECC { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? LO_HO_Cons_HYDR_Oil { get; set; }
@@ -140,7 +140,7 @@ namespace DataBuildingLayer
         public decimal? OT_ROB_ACYT_InUse { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? OT_ROB_ACYT_Empty { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
+
         public decimal? BunkerReceipt { get; set; }
 
         public string CTM { get; set; }
@@ -232,10 +232,8 @@ namespace DataBuildingLayer
         public decimal FRAMO_ACT_BERTH_MGO { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal IGG { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Incinerator { get; set; }
-
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal StopageAtSea { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -252,7 +250,10 @@ namespace DataBuildingLayer
         public decimal Others { get; set; }
 
 
+        //---------------- New Column Add in V2 -- Date 25 May 2022 --------///////////////       
 
+       
+        //-------------------------------------------------------------------/////////
 
 
         public string voyagenumber { get; set; }

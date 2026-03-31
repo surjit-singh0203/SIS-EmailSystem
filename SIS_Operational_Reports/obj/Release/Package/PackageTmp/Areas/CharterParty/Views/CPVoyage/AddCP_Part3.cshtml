@@ -4,7 +4,7 @@
 
 @{
     ViewBag.Title = "AddCP_Part3";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
 }
 
 <h2>Charter Party Other-CONSUMPTION</h2>
@@ -47,7 +47,12 @@
                 <td><input type="text" id="txtOAE_VLSFO" /></td>
                 <td><input type="text" id="txtAE_MDO" /></td>
                 <td><input type="text" id="txtBOILER_MDO" /></td>
-                <td><input type="button" id="btnAdd3" value="Add" /></td>
+                <td>
+                    @if (StaticHelper.UserRole == "Administrator")
+                    {
+                        <input type="button" id="btnAdd3" value="Add" />
+                    }
+                </td>
             </tr>
         </tfoot>
     </table>
@@ -55,8 +60,8 @@
 
     <br />
     <input type="button" id="btnSave" value="Save All" />
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script type="text/javascript" src="~/js/forAdd.js"></script>
+    <script type="text/javascript" src="~/js/forAdd1.js"></script>
 
 
     <script>

@@ -1,0 +1,2148 @@
+﻿@model DataBuildingLayer.DischargingReport
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row" style="margin-top: 10px;">
+
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @onchange = "GetLeg(this)", @required = "true", })
+                <span id="messageVoyid" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">ETD Date & Time</label>
+            <div class="col-sm-8">
+                @*<input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">*@
+                @*@Html.EditorFor(model => model.ETDDateTime, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
+                @Html.EditorFor(model => model.ETDDateTime, "{0:yyyy-MM-ddTHH:mm:ss}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })
+                <span id="msgETDDateTime" style="color:red"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
+            <div class="col-sm-8">
+
+
+                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true", @onchange = "bindport(this);GetCargoList()" })
+                <span id="msgLegPortId" style="color:red"></span>
+
+
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @required = "true" })
+                <span id="msgPortName" style="color:red"></span>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
+            <div class="col-sm-8">
+                @*<input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">*@
+                @Html.EditorFor(model => model.ReportDateTime, "{0:yyyy-MM-ddTHH:mm:ss}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })
+                @*@Html.EditorFor(model => model.ReportDateTime, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
+                <span id="msgReportDateTime" style="color:red"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Fwd</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftFwd, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftFwd" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Mid</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftMid, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftMid" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Aft</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftAft, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue3(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftAft" style="color:red"></span>
+            </div>
+
+        </div>
+
+        <div class="col-md">
+
+            <div class="row">
+                <div class="col">
+                    <button id="btnPrint" class="function-button submit-button" onclick="window.print()">
+                        Print
+                    </button>
+
+                </div>
+                @*<div id="SDraft" class="col">
+                <button onclick="SaveDraftFunction()" class="function-button draft-button">
+                    Save Draft
+                </button>
+                <div hidden="hidden">
+                    @Html.CheckBoxFor(model => model.SaveDraft)
+                </div>
+
+            </div>
+
+            <div class="col">
+                <button class="function-button reset-button">
+                    Reset
+                </button>
+            </div>*@
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+
+                    <table id="tblCargo" class="GeneratedTable" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Cargo</th>
+                                <th>
+                                    Commence Discharge Date & Time
+                                </th>
+                                <th>
+                                    Terminal Acceptable Discharging Rate
+                                </th>
+                                <th>
+                                    Discharging Pressure Requested
+                                </th>
+                                <th> Average Discharge Rate By Vessel </th>
+                                <th> Average Discharge pressure By Vessel </th>
+
+                                <th>No of Pumps in use</th>
+                                <th>No of Manifold / Hoses by Terminal</th>
+                                <th>Size of Manifold / Hoses by Terminal (Inches)</th>
+                                <th>No of Manifold / Hoses by Vessel</th>
+                                <th>Size of Manifold / Hoses by Vessel (Inches)</th>
+
+                                <th>Total Cargo Discharged</th>
+                                <th>Balance Cargo to be Deischarged</th>
+                                <th>ETC / Actual Comp Date & Time</th>
+
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @*@foreach (var BTank in Model.DSCargoLists)
+                                {*@
+                            <tr>
+
+                                <td hidden="hidden">@Html.HiddenFor(model => model.DSCargoClone.CId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+                                <td>@Html.DisplayFor(model => model.DSCargoClone.CargoName, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.DischargeDatetime, "{0:yyyy-MM-ddTHH:mm:ss}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } }) </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Terminal_Acceptable_Discharging_Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Discharging_pressure_Requested, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Average_Discharge_Rate_ByVessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Average_Discharge_pressure_ByVessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.No_of_Pumps_Use, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.No_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Size_of_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.No_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Size_of_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Total_CargoDischarged, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.Balance_Cargo_ToBe_Deischarged, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+
+                                <td>@Html.EditorFor(model => model.DSCargoClone.ActualCompDateTime, "{0:yyyy-MM-ddTHH:mm:ss}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } }) </td>
+
+                            </tr>
+                            @*}*@
+                        </tbody>
+
+                    </table>
+
+                    @*<table id="tblCargo" class="GeneratedTable">
+                            <thead>
+                                <tr>
+                                    <th colspan="15">Cargo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.DisplayFor(model => BTank.CargoName, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <td> Commence Discharge Date & Time</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.DischargeDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } }) </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <td>Terminal Acceptable Discharging Rate</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Terminal_Acceptable_Discharging_Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <td>Discharging Pressure Requested</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Discharging_pressure_Requested, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td> Average Discharge Rate By Vessel</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Average_Discharge_Rate_ByVessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td>Average Discharge pressure By Vessel </td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Average_Discharge_pressure_ByVessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td>No of Pumps in Use</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.No_of_Pumps_Use, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+
+                                <tr>
+                                    <td>No of Manifold / Hoses by Terminal</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.No_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+
+                                <tr>
+                                    <td>Size of Manifold / Hoses by Terminal (Inches)</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Size_of_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+
+                                <tr>
+                                    <td>No of Manifold / Hoses by Vessel</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.No_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+
+                                <tr>
+                                    <td>Size of Manifold / Hoses by Vessel (Inches)</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Size_of_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td>Total Cargo Discharged</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Total_CargoDischarged, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td>Balance Cargo to be Deischarged</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Balance_Cargo_ToBe_Deischarged, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+                                <tr>
+                                    <td>ETC / Actual Comp Date & Time</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } }) </td>
+                                    }
+                                </tr>
+
+                                <tr style="display:none">
+                                    <td>HC</td>
+                                    @foreach (var BTank in Model.DSCargoLists)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Id, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                </tr>
+
+
+
+                            </tbody>
+                        </table>*@
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table id="tblBallastPump" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Ballast Pumps in Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Name</td>
+                                @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                {
+                                    <td>@Html.DisplayFor(model => BTank.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                }
+                                @*<td> @Html.EditorFor(model => model.BallastPumps_Rate1, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                    <td> @Html.EditorFor(model => model.BallastPumps_Rate2, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
+                            </tr>
+                            <tr style="display:none">
+                                <td>PId</td>
+                                @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.PumpId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                }
+                            </tr>
+                            <tr style="display:none">
+                                <td>PId</td>
+                                @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.PumpUseId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table id="tblCargoPump" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="10">Cargo Pumps in Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td>Name</td>
+                                @foreach (var BTank in Model.DC_Cargo_PumpUseList)
+                                {
+                                    <td>@Html.DisplayFor(model => BTank.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                @foreach (var BTank in Model.DC_Cargo_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.Rate, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                }
+                                @*<td> @Html.EditorFor(model => model.BallastPumps_Rate1, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                    <td> @Html.EditorFor(model => model.BallastPumps_Rate2, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
+                            </tr>
+                            <tr style="display:none">
+                                <td>PId</td>
+                                @foreach (var BTank in Model.DC_Cargo_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.PumpId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                }
+                            </tr>
+                            <tr style="display:none">
+                                <td>PId</td>
+                                @foreach (var BTank in Model.DC_Cargo_PumpUseList)
+                                {
+                                    <td>@Html.EditorFor(model => BTank.PumpUseId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table id="tblPowerPacks" class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Power Packs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @*<tr>
+                                    <td>LOP Type</td>
+                                    <td>Issued/ Recd</td>
+                                </tr>*@
+                            <tr>
+                                <td>No of Power Packs onboard</td>
+                                <td>
+                                    @Html.EditorFor(model => model.Power_Packs_onboard, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onkeypress = "return isNumberKey(event)", @step = "any" } })
+                                    <span id="msgPower_Packs_onboard" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>No of Power Packs used</td>
+                                <td>
+                                    @Html.EditorFor(model => model.Power_Packs_Used, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", @maxlength = 6, @onkeypress = "return isNumberKey(event)", @step = "any" } })
+                                    <span id="msgPower_Packs_used" style="color:red"></span>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    @*<table class="GeneratedTable">
+                            <thead>
+                                <tr>
+                                    <th colspan="4">STOPPAGE / DELAYS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td>Reason</td>
+                                    <td>Date &amp; Time from</td>
+                                    <td>Date &amp; Time to</td>
+                                </tr>
+                                <tr>
+                                    <td>Stoppage 1</td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                </tr>
+                                <tr>
+                                    <td>Stoppage 2</td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                </tr>
+                                <tr>
+                                    <td>Stoppage 3</td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                    <td><input type="text" class="table-inputs"></td>
+                                </tr>
+                            </tbody>
+                        </table>*@
+
+                    <table id="tblStoppage" class="GeneratedTable" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Stoppage</th>
+                                <th>Reason</th>
+                                <th width="50px">Date Time From</th>
+                                <th>Date Time To</th>
+
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var Stop in Model.StoppageLists)
+                            {
+                                <tr>
+                                    <td>@Stop.Stoppage</td>
+                                    <td>@Stop.Reason</td>
+                                    <td width="50px">@Stop.DateTimeFrom</td>
+                                    <td>@Stop.DateTimeTo</td>
+
+                                    <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                @*<td> @Html.DropDownListFor(model => model.LegPort_A, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+                                    <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_A, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                    <td> @Html.DropDownListFor(model => model.LegPort_B, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                    <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_B, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                    <td>@Html.EditorFor(model => model.DTG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 8, @max = "9999", @required = "true", @onKeyUp = "requiredValue2(this)" } })</td>
+                                    <td>  @Html.DropDownListFor(model => model.CP_SOG, new SelectList(Model.SpeedStatusList, "Speed", "Speed"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+                                    <td> @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                *@
+                                <td> @Html.EditorFor(model => model.Stoppage, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true" } })</td>
+                                <td> @Html.EditorFor(model => model.Reason, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true" } })</td>
+                                <td> @Html.EditorFor(model => model.DateTimeFrom, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>
+                                <td> @Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>
+                                <td><input class="btn btn-info" type="button" id="btnAddStoppage" value="Add" /></td>
+
+
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Letter of Protests</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @*<tr>
+                                    <td>LOP Type</td>
+                                    <td>Issued/ Recd</td>
+                                </tr>*@
+                            <tr>
+                                <td>Time</td>
+                                <td>
+                                    @Html.DropDownListFor(model => model.Times, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                    <span id="msgTimes" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                <td>
+                                    @Html.DropDownListFor(model => model.Rate, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                    <span id="msgRate" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Hose Connection</td>
+                                <td>
+                                    @Html.DropDownListFor(model => model.Hose_Connection, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                    <span id="msgHose_Connection" style="color:red"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>High H2S</td>
+                                <td>
+                                    @Html.DropDownListFor(model => model.High_H2S, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                    <span id="msgHigh_H2S" style="color:red"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Discharge Report Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Remarks</td>
+                                <td>
+                                    @Html.EditorFor(model => model.Remarks, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 500, @required = "true" } })
+                                    <span id="msgRemarks" style="color:red"></span>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').addClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+
+</script>
+
+
+<script>
+    function GetLeg(t) {
+
+        var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Loading/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    // $('#NextLegPortId').empty();
+                    $('#LegPortId').empty();
+                    //debugger;
+                    //$('#NextLegPortId').append('<option value="">None Selected</option>');
+                    //for (var i = 0; i < response.Data.length; i++) {
+                    //    debugger;
+                    //    var txt = response.Data[i].Text;
+                    //    var valu = response.Data[i].Value;
+                    //    // alert(txt);
+                    //    $('#NextLegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    //}
+
+                    $('#LegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#LegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+<script>
+    function bindport(t) {
+
+        var Id = t.value;
+        var Legid = $("#LegPortId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Loading/BindPort?Legid=' + Legid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#PortName').empty();
+
+
+                    $('#PortName').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#PortName').append('<option value="' + txt + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+
+@*<script type="text/javascript">
+        // $('.datepicker').datepicker();
+        $("#ReportDateTime").datepicker({
+            endDate: 'today',
+            format: 'yyyy-MM-dd',
+        });
+
+        $("#ETDDateTime").datepicker({
+            endDate: 'today',
+            format: 'yyyy-MM-dd',
+        });
+
+    </script>*@
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        //Reference the Name and Country TextBoxes.
+
+
+        //var rsnA = $("#ReasonforPortCall_A option:selected").text();
+        //var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+        //var legA = $("#LegPort_A option:selected").text();
+        //var legB = $("#LegPort_B option:selected").text();
+
+
+        //if (legA == "") {
+        //    alert("Please Choose Leg Port(A)");
+        //    return;
+        //}
+        //if (rsnA == "") {
+        //    alert("Please Choose Reason for Port Call (A)");
+        //    return;
+        //}
+        //if (legB == "") {
+        //    alert("Please Choose Leg Port(B)");
+        //    return;
+        //}
+        //if (rsnB == "") {
+        //    alert("Please Choose Reason for Port Call (B)");
+        //    return;
+        //}
+
+
+        //var txtLegA = $("#LegPort_A");
+        //var txtRsnA = $("#ReasonforPortCall_A");
+        //var txtLegB = $("#LegPort_B");
+        //var txtRsnB = $("#ReasonforPortCall_B");
+        //var txtDTG = $("#DTG");
+        //var txtCP_SOG = $("#CP_SOG");
+        //var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+        var txtCargoName = $("#CargoName");
+        if (txtCargoName.val() == '') {
+            alert("Please Enter Cargo Name");
+            return;
+        }
+        var txtLoadingDatetime = $("#LoadingDatetime");
+        if (txtLoadingDatetime.val() == '') {
+            alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
+            return;
+        }
+        var txtTerminalLoadingRate = $("#TerminalLoadingRate");
+        var txtLoadingRateAccepted = $("#LoadingRateAccepted");
+        var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
+        var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
+        var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
+        var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
+        var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
+        var txtShoreLineDistance = $("#ShoreLineDistance");
+        var txtQuantityOnboard = $("#QuantityOnboard");
+        var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
+        var txtActualCompDateTime = $("#ActualCompDateTime");
+        if (txtActualCompDateTime.val() == '') {
+            alert("Please Select ETC / Actual Comp Date & Time of Cargo " + txtCargoName.val());
+            return;
+        }
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblCargo > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtCargoName.val());
+        //Add Height cell.
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtLoadingDatetime.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtTerminalLoadingRate.val() == '' ? '0' : txtTerminalLoadingRate.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtLoadingRateAccepted.val() == '' ? '0' : txtLoadingRateAccepted.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtAverageAchievedLoadingRate.val() == '' ? '0' : txtAverageAchievedLoadingRate.val());
+
+        //Add DTG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '0' : txtNo_Manifold_Hoses_by_Terminal.val());
+
+        //Add CP_SOG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '0' : txtSize_of_Manifold_Hoses_by_Terminal.val());
+
+        //Add Log_Speed cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '0' : txtNo_Manifold_Hoses_by_Vessel.val());
+
+        //-----
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '0' : txtSize_of_Manifold_Hoses_by_Vessel.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtShoreLineDistance.val() == '' ? '0' : txtShoreLineDistance.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtQuantityOnboard.val() == '' ? '0' : txtQuantityOnboard.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtBalanceQuantityLoaded.val() == '' ? '0' : txtBalanceQuantityLoaded.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtActualCompDateTime.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "CargoRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "RemoveCargo(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtCargoName.val("");
+        txtLoadingDatetime.val("");
+        txtTerminalLoadingRate.val("0");
+        txtLoadingRateAccepted.val("0");
+        txtAverageAchievedLoadingRate.val("0");
+        txtNo_Manifold_Hoses_by_Terminal.val("0");
+        txtSize_of_Manifold_Hoses_by_Terminal.val("0");
+        txtNo_Manifold_Hoses_by_Vessel.val("0");
+        txtSize_of_Manifold_Hoses_by_Vessel.val("0");
+        txtShoreLineDistance.val("0");
+        txtQuantityOnboard.val("0");
+        txtBalanceQuantityLoaded.val("0");
+        txtActualCompDateTime.val("");
+
+    });
+
+    function RemoveCargo(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblCargo")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+</script>
+
+
+<script>
+
+
+    function GetStopR(id) {
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Discharging/GetStopR?DischargingReportId=' + id,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    var StopRList = response.stpr;
+                    var CountSR = response.cntstopr;
+
+                    //alert(FtypeList);
+
+                    debugger;
+                    var rowCount = CountSR;
+                    let len = rowCount;
+                    for (let i = 1; i <= len; i++) {
+
+                        //  $("#btnAdd1").click();
+
+                        EditStopR();
+
+                        //var $tableBody = $('#tblCargo').find("tbody"),
+                        //    $trLast = $tableBody.find("tr:last"),
+                        //    $trNew = $trLast.clone();
+
+                        //$trLast.after($trNew);
+                    }
+
+
+
+
+                    debugger;
+
+                    //for (var i = rowCount - 4; i > 0; i--) {
+                    //    tblFuelC.deleteRow(i);
+                    //}
+                    var count = 0; var ss = ""; var ss1 = "";
+                    var table = document.getElementById('tblStoppage');
+
+
+                    var j = 1; var k = 0;
+                    $.each(StopRList, function (index, value) {
+                        ss1 = value;
+                        debugger;
+                        if (k == 0) {
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            k++;
+                        }
+                        else if (k == 4) {
+                            k = 0;
+                            j++;
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            k++;
+                        }
+                        else {
+
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            //table.rows[j].cells[k].children[0].value = ss1;
+                            k++;
+
+                        }
+                    });
+
+
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+<script>
+    function EditStopR() {
+
+        var txtStoppage = $("#Stoppage");
+
+        var txtReason = $("#Reason");
+
+        var txtDateTimeFrom = $("#DateTimeFrom");
+
+        var txtDateTimeTo = $("#DateTimeTo");
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblStoppage > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtStoppage.val());
+        //Add Height cell.
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtReason.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeFrom.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeTo.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "StopRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtStoppage.val("");
+        txtReason.val("");
+        txtDateTimeFrom.val("");
+        txtDateTimeTo.val("");
+
+
+    }
+
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblStoppage")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+
+</script>
+
+<script>
+    function GetLegEdit(legportid) {
+
+
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Loading/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#LegPortId').empty();
+
+
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#LegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#LegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#LegPortId option[value=" + legportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+<script type="text/javascript">
+    $("body").on("click", "#btnAddStoppage", function () {
+        //Reference the Name and Country TextBoxes.
+
+        debugger;
+        //var rsnA = $("#ReasonforPortCall_A option:selected").text();
+        //var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+        //var legA = $("#LegPort_A option:selected").text();
+        //var legB = $("#LegPort_B option:selected").text();
+
+
+        //if (legA == "") {
+        //    alert("Please Choose Leg Port(A)");
+        //    return;
+        //}
+        //if (rsnA == "") {
+        //    alert("Please Choose Reason for Port Call (A)");
+        //    return;
+        //}
+        //if (legB == "") {
+        //    alert("Please Choose Leg Port(B)");
+        //    return;
+        //}
+        //if (rsnB == "") {
+        //    alert("Please Choose Reason for Port Call (B)");
+        //    return;
+        //}
+
+
+        //var txtLegA = $("#LegPort_A");
+        //var txtRsnA = $("#ReasonforPortCall_A");
+        //var txtLegB = $("#LegPort_B");
+        //var txtRsnB = $("#ReasonforPortCall_B");
+        //var txtDTG = $("#DTG");
+        //var txtCP_SOG = $("#CP_SOG");
+        //var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+        var txtStoppage = $("#Stoppage");
+        if (txtStoppage.val() == '') {
+            alert("Please Enter Stoppage");
+            return;
+        }
+        var txtReason = $("#Reason");
+        if (txtReason.val() == '') {
+            alert("Please Enter Reason");
+            return;
+        }
+        var txtDateTimeFrom = $("#DateTimeFrom");
+        if (txtDateTimeFrom.val() == '') {
+            alert("Please Select Date-Time From of the Stoppage " + txtStoppage.val());
+            return;
+        }
+        var txtDateTimeTo = $("#DateTimeTo");
+        if (txtDateTimeTo.val() == '') {
+            alert("Please Select Date-Time To of the Stoppage " + txtStoppage.val());
+            return;
+        }
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblStoppage > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtStoppage.val());
+        //Add Height cell.
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtReason.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeFrom.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeTo.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "StopRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtStoppage.val("");
+        txtReason.val("");
+        txtDateTimeFrom.val("");
+        txtDateTimeTo.val("");
+
+
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblStoppage")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+   
+</script>
+
+<script>
+    window.onload = function () {
+
+        var loadingid = '@TempData["dischargingReportId"]';
+
+        if (loadingid == "") {
+            $('#SDraft').show();
+            $('#Id').val(0);
+
+        }
+        else {
+            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                $('#SDraft').hide();
+            }
+
+            $('#Id').val(loadingid);
+        }
+    };
+</script>
+
+<script>
+    function SaveDraftFunction() {
+        $("#SaveDraft").prop("checked", true);
+        SaveDischargeingReport();
+       
+    }
+</script>
+
+<script>
+    function SaveDischargeingReport() {
+
+        var _lodingR = {};
+        _lodingR.Id = $('#Id').val();
+        var voy = document.getElementById("VoyageId");
+        var voyid = voy.options[voy.selectedIndex].value;
+
+        var legprt = document.getElementById("LegPortId");
+        var legprtid = legprt.options[legprt.selectedIndex].value;
+
+        var prts = document.getElementById("PortName");
+        var prtSt = prts.options[prts.selectedIndex].value;
+
+        //========= LOP Fields ========
+        var time = document.getElementById("Times");
+        var lop_Time = time.options[time.selectedIndex].value;
+
+        var rate = document.getElementById("Rate");
+        var lop_Rate = rate.options[rate.selectedIndex].value;
+
+        var hose = document.getElementById("Hose_Connection");
+        var lop_Hose_Connection = hose.options[hose.selectedIndex].value;
+
+        var high_H2S = document.getElementById("High_H2S");
+        var lop_High_H2S = high_H2S.options[high_H2S.selectedIndex].value;
+
+        debugger;
+
+        _lodingR.Times = lop_Time;
+        _lodingR.Rate = lop_Rate;
+        _lodingR.Hose_Connection = lop_Hose_Connection;
+        _lodingR.High_H2S = lop_High_H2S;
+
+        _lodingR.Power_Packs_onboard = $("#Power_Packs_onboard").val();
+        _lodingR.Power_Packs_Used = $("#Power_Packs_Used").val();
+
+        _lodingR.VoyageId = voyid;
+        if (_lodingR.VoyageId == "") {
+            $("#messageVoyid").text("Please Choose Voyage Number.");
+            return;
+        }
+        else {
+            $("#messageVoyid").text('');
+        }
+        _lodingR.LegPortId = legprtid;
+        if (_lodingR.LegPortId == "") {
+            $("#msgLegPortId").text("Please Choose Leg.");
+            return;
+        }
+        else {
+            $("#msgLegPortId").text('');
+        }
+
+        _lodingR.PortName = prtSt;
+
+        if (_lodingR.PortName == "") {
+            $("#msgPortName").text("Please Choose Status");
+            return;
+        }
+        else {
+            $("#msgVesselStatus").text('');
+        }
+        _lodingR.ReportDateTime = $("#ReportDateTime").val();
+        if (_lodingR.ReportDateTime == "") {
+            $("#msgReportDateTime").text("Loading Date-Time can not be empty.");
+            return;
+        }
+        else {
+            $("#msgReportDateTime").text('');
+        }
+        _lodingR.ETDDateTime = $("#ETDDateTime").val();
+
+        if (_lodingR.ETDDateTime == "") {
+            $("#msgETDDateTime").text("ETD Date-Time can not be empty.");
+            return;
+        }
+        else {
+            $("#msgETDDateTime").text('');
+        }
+
+
+
+        _lodingR.DraftFwd = $("#DraftFwd").val();
+        if (_lodingR.DraftFwd == "") {
+            $("#msgDraftFwd").text("DraftFwd can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftFwd").text('');
+        }
+        _lodingR.DraftAft = $("#DraftAft").val();
+        if (_lodingR.DraftAft == "") {
+            $("#msgDraftAft").text("DraftAft can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftAft").text('');
+        }
+        _lodingR.DraftMid = $("#DraftMid").val();
+        if (_lodingR.DraftMid == "") {
+            $("#msgDraftMid").text("DraftMid can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftMid").text('');
+        }
+
+
+
+        _lodingR.Remarks = $("#Remarks").val();
+
+        if (_lodingR.Remarks == "") {
+            $("#msgRemarks").text("Remarks can not be empty.");
+            return;
+        }
+        else {
+            $("#msgRemarks").text('');
+        }
+
+        $("#msgTimes").text('');
+        $("#msgRate").text('');
+        $("#msgHose_Connection").text('');
+        $("#msgHigh_H2S").text('');
+
+        var lop = 0;
+        if (_lodingR.Times == "") {
+            $("#msgTimes").text("Select Time");
+            lop = 1;
+        }
+        //else {
+        //    $("#msgTimes").text('');
+        //}
+
+        if (_lodingR.Rate == "") {
+            $("#msgRate").text("Please select Rate");
+            lop = 1;
+        }
+
+        if (_lodingR.Hose_Connection == "") {
+            $("#msgHose_Connection").text("Select Hose Connection");
+            lop = 1;
+        }
+
+        if (_lodingR.High_H2S == "") {
+            $("#msgHigh_H2S").text("Please Select High H2S (Letter of Protests)");
+            lop = 1;
+        }
+
+        if (lop == 1) {
+            return;
+        }
+
+        _lodingR.SaveDraft = $('#SaveDraft').is(':checked');
+        //var table = document.getElementById('tblCargo'),
+        //    rows = table.getElementsByTagName('tr');
+
+        //if (rows.length - 2 == 0) {
+        //    alert("Please Enter Cargo Detail and Click on Add Button");
+        //    return;
+        //}
+
+        var tables = document.getElementById('tblStoppage'),
+            rowss = tables.getElementsByTagName('tr');
+
+        if (rowss.length - 2 == 0) {
+            alert("Please Enter Stoppage Detail and Click on Add Button");
+            return;
+        }
+
+
+        debugger;
+
+        //var eduInput = _noonR;
+        //for (i = 0; i < 72; i++) {
+        //    if (eduInput[i].value == "") {
+        //        alert('Complete all the fields');
+        //        return false;
+        //    }
+        //}
+
+        $.ajax({
+            type: "POST",
+            url: "/Report/Discharging/insertDischareR",
+            data: JSON.stringify(_lodingR),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (r) {
+                alert("Success");
+
+                CargoInsertion();
+                StoppageInsertion();
+                BallastPumpInsertion();
+                CargoPumpInsertion();
+            }
+        });
+
+        //var form = $('form'); // change selector your form
+        //if (!form.attr('validated')) {
+        //    if (form.valid()) {
+        //    }
+        //    else {
+        //        alert('not valid');
+        //    }
+
+
+
+    }
+</script>
+<script type="text/javascript">
+
+
+
+    $("body").on("click", "#btnSave1", function () {
+        $("#SaveDraft").prop("checked", false);
+        SaveDischargeingReport();
+
+    });
+</script>
+
+
+<script type="text/javascript">
+      function CargoInsertion() {
+
+          //alert("Check");
+          debugger;
+          var CargoListing = [];
+          var table = document.getElementById('tblCargo'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 1, j = rows.length; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var DSCargoList = {};
+
+
+                    DSCargoList.CId = cells[0].innerHTML;
+                    DSCargoList.CargoName   = cells[1].innerHTML;
+                    DSCargoList.DischargeDatetime = cells[2].children[0].value;
+
+                    DSCargoList.Terminal_Acceptable_Discharging_Rate = cells[3].children[0].value;
+                    DSCargoList.Discharging_pressure_Requested = cells[4].children[0].value;
+                    DSCargoList.Average_Discharge_Rate_ByVessel = cells[5].children[0].value;
+                    DSCargoList.Average_Discharge_pressure_ByVessel = cells[6].children[0].value;
+
+                    DSCargoList.No_of_Pumps_Use = cells[7].children[0].value;
+                    DSCargoList.No_Manifold_Hoses_by_Terminal = cells[8].children[0].value;
+                    DSCargoList.Size_of_Manifold_Hoses_by_Terminal = cells[9].children[0].value;
+                    DSCargoList.No_Manifold_Hoses_by_Vessel = cells[10].children[0].value;
+                    DSCargoList.Size_of_Manifold_Hoses_by_Vessel = cells[11].children[0].value;
+                    DSCargoList.Total_CargoDischarged = cells[12].children[0].value;
+                    DSCargoList.Balance_Cargo_ToBe_Deischarged = cells[13].children[0].value;
+                    DSCargoList.ActualCompDateTime = cells[14].children[0].value;
+
+
+
+                    CargoListing.push(DSCargoList);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+          CargoListing = JSON.stringify(CargoListing);
+          debugger;
+          $.ajax({
+
+                    url: '@Url.Action("InsertCargoList", "Discharging")',
+                    type: "POST",
+                    data: { 'CargoListing': CargoListing },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+
+<script type="text/javascript">
+      function StoppageInsertion() {
+
+          //alert("Check");
+          debugger;
+          var StoppageListing = [];
+          var table = document.getElementById('tblStoppage'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells;
+                // var rCount = table.rows.length;
+
+                for (i = 1, j = rows.length-1; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var StoppageList = {};
+
+
+                    StoppageList.Stoppage   = cells[0].innerHTML;
+                    StoppageList.Reason  = cells[1].innerHTML;
+                    StoppageList.DateTimeFrom = cells[2].innerHTML;
+                    StoppageList.DateTimeTo = cells[3].innerHTML;
+
+                    StoppageListing.push(StoppageList);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+          StoppageListing = JSON.stringify(StoppageListing);
+
+                $.ajax({
+                    url: '@Url.Action("InsertStoppage", "Discharging")',
+                    type: "POST",
+                    data: { 'StoppageListing': StoppageListing },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+
+<script type="text/javascript">
+      function BallastPumpInsertion() {
+
+         //alert("Check");
+          debugger;
+          var ballasttank = [];
+
+
+          var table = document.getElementById("tblBallastPump");
+
+
+          var kk = 0;
+
+
+          for(let i = 1, row; row = table.rows[i]; i++) {
+              //iterate through rows
+              //rows would be accessed using the "row" variable assigned in the for loop
+
+              if (kk > 1) {
+                  break;
+              }
+
+              for (let j = 1, col; col = row.cells[j]; j++) {
+                  kk++;
+                 // var k = j + 1;
+                  var LR_DCR_PumpsUse = {};
+
+
+                  LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
+
+                  //LR_Ballast_PumpUse.Qty_Vol = table.rows[3].cells[j].children[0].value;
+                  //LR_Ballast_PumpUse.HC = table.rows[4].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+                  ballasttank.push(LR_DCR_PumpsUse);
+              }
+
+              //alert(cargotank);
+          }
+          //------------------------------------------
+
+
+          ballasttank = JSON.stringify(ballasttank);
+
+                $.ajax({
+                    url: '@Url.Action("InsertBllastPumpUse", "Discharging")',
+                    type: "POST",
+                    data: { 'ballasttank': ballasttank },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+
+<script type="text/javascript">
+      function CargoPumpInsertion() {
+
+         //alert("Check");
+          debugger;
+          var CargoPumpsUse = [];
+
+
+          var table = document.getElementById("tblCargoPump");
+
+
+          var kk = 0;
+
+
+          for(let i = 1, row; row = table.rows[i]; i++) {
+              //iterate through rows
+              //rows would be accessed using the "row" variable assigned in the for loop
+
+              if (kk > 1) {
+                  break;
+              }
+
+              for (let j = 1, col; col = row.cells[j]; j++) {
+                  kk++;
+                 // var k = j + 1;
+                  var LR_DCR_PumpsUse = {};
+
+
+                  LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
+
+                  //LR_Ballast_PumpUse.Qty_Vol = table.rows[3].cells[j].children[0].value;
+                  //LR_Ballast_PumpUse.HC = table.rows[4].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+                  CargoPumpsUse.push(LR_DCR_PumpsUse);
+              }
+
+              //alert(cargotank);
+          }
+          //------------------------------------------
+
+
+          CargoPumpsUse = JSON.stringify(CargoPumpsUse);
+
+                $.ajax({
+                    url: '@Url.Action("InsertCargoPumpUse", "Discharging")',
+                    type: "POST",
+                    data: { 'CargoPumpsUse': CargoPumpsUse },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99999.9) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+
+<script>
+
+
+    function GetCargoList() {
+
+        //$("#tblDynamic").css("display", "block");
+
+        //let len = 10;
+
+        //for (let i = 2; i <= len; i++) {
+
+        //    var $tableBody = $('#tblFuelC').find("tbody"),
+        //        $trLast = $tableBody.find("tr:last"),
+        //        $trNew = $trLast.clone();
+
+        //    $trLast.after($trNew);
+        //}
+
+
+
+        var VoyId = $("#VoyageId option:selected").val();
+        var VLeg = $("#LegPortId option:selected").val();
+       // alert(VoyId + " -- " + VLeg);
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Discharging/GetDischargeCargos?VoyId=' + VoyId + '&VLeg=' + VLeg,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    @*var FtypeList =@Html.Raw(Json.Encode(@ViewBag.Ftype));
+                    var CPList =@Html.Raw(Json.Encode(@ViewBag.CPValue));*@
+
+                    var FtypeList = response.ftype;
+
+
+                    debugger;
+                    var rowCount = FtypeList.length;
+
+
+                    let len = rowCount;
+
+        for (let i = 1; i <= len-1; i++) {
+
+            var $tableBody = $('#tblCargo').find("tbody"),
+                $trLast = $tableBody.find("tr:last"),
+                $trNew = $trLast.clone();
+
+            $trLast.after($trNew);
+
+        }
+
+
+                    //$("tblFuelC").find("tr:gt(2)").remove();
+
+                    //$('#tblFuelC tr:gt(0)').remove();
+                    //$('#tblFuelC tr:not(:first-child)').remove();
+
+                    debugger;
+
+                    //rowCount = rowCount + 1;
+                    //for (var i = rowCount - 1; i > 0; i--) {
+                    //    tblCargo.deleteRow(i);
+                    //}
+
+
+
+                   // var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+
+
+                    var table = document.getElementById('tblCargo');
+
+                    var j = 1; var LR_CarogID = ""; var ss = "";
+                    $.each(FtypeList, function (index, value) {
+                        LR_CarogID = value.Id;
+                        ss = value.CargoName;
+                        table.rows[j].cells[0].innerHTML = LR_CarogID;
+                        table.rows[j].cells[1].innerHTML = ss;
+                        j++;
+                    });
+
+
+                    var rowCount1 = FtypeList.length;
+                    if (rowCount1 == 0) {
+                        $("#tblCargo").find("tr:gt(" + rowCount1 + 1 + ")").remove();
+                        debugger;
+
+                        table.rows[1].cells[0].innerHTML = '0';
+                        table.rows[1].cells[1].innerHTML = "";
+                       table.rows[1].cells[2].children[0].value = null;
+                        table.rows[1].cells[3].children[0].value = '0.00';
+                        table.rows[1].cells[4].children[0].value = '0.00';
+                        table.rows[1].cells[5].children[0].value = '0.00';
+                        table.rows[1].cells[6].children[0].value = '0';
+                        table.rows[1].cells[7].children[0].value = '0';
+                        table.rows[1].cells[8].children[0].value = '0';
+                        table.rows[1].cells[9].children[0].value = '0';
+                        table.rows[1].cells[10].children[0].value = '0';
+                        table.rows[1].cells[11].children[0].value = '0';
+                        table.rows[1].cells[12].children[0].value = '0';
+                        table.rows[1].cells[13].children[0].value = '0';
+                        table.rows[1].cells[14].children[0].value = null;
+
+                        //$("#tblCargo").find("tr:gt(1)").attr('disabled', true);
+                        //debugger;
+                        //$("#tblCargo tr").each(function () {
+                        //    $(t.rows[1].cells[0]).text('');
+                        //    //alert(val1);
+                        //    i++;
+                        //});
+                    }
+                    else {
+                        $("#tblCargo").find("tr:gt(" + rowCount1 + ")").remove();
+                    }
+                    //debugger;
+                    //var rowCount1 = FtypeList.length;
+                    ////rowCount1 = rowCount1 + 4;
+                    //var cc = 10 + rowCount1;
+
+                    //try {
+                    //    for (var i = rowCount1 + 4; i > 0; i++) {
+                    //        tblCargo.deleteRow(i);
+                    //    }
+                    //} catch{}
+
+
+
+
+                    //for (var i = tableHeaderRowCount; i > rowCount1; i++) {
+                    //    tblFuelC.deleteRow(tableHeaderRowCount);
+                    //}
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+</script>
+
+
+
+<script>
+
+
+    function GetCargoListEdit(legportid) {
+
+        //$("#tblDynamic").css("display", "block");
+
+        //let len = 10;
+
+        //for (let i = 2; i <= len; i++) {
+
+        //    var $tableBody = $('#tblFuelC').find("tbody"),
+        //        $trLast = $tableBody.find("tr:last"),
+        //        $trNew = $trLast.clone();
+
+        //    $trLast.after($trNew);
+        //}
+
+
+
+        var VoyId = $("#VoyageId option:selected").val();
+        var VLeg = legportid;
+        //alert(VoyId + " -- " + VLeg);
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Discharging/GetDischargeCargosEdit?VoyId=' + VoyId + '&VLeg=' + VLeg,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    @*var FtypeList =@Html.Raw(Json.Encode(@ViewBag.Ftype));
+                    var CPList =@Html.Raw(Json.Encode(@ViewBag.CPValue));*@
+
+                    var FtypeList = response.ftype;
+
+
+                    debugger;
+                    var rowCount = FtypeList.length;
+
+
+                    let len = rowCount;
+
+        for (let i = 1; i <= len-1; i++) {
+
+            var $tableBody = $('#tblCargo').find("tbody"),
+                $trLast = $tableBody.find("tr:last"),
+                $trNew = $trLast.clone();
+
+            $trLast.after($trNew);
+
+        }
+
+
+                    //$("tblFuelC").find("tr:gt(2)").remove();
+
+                    //$('#tblFuelC tr:gt(0)').remove();
+                    //$('#tblFuelC tr:not(:first-child)').remove();
+
+                    debugger;
+
+                    //rowCount = rowCount + 1;
+                    //for (var i = rowCount - 1; i > 0; i--) {
+                    //    tblCargo.deleteRow(i);
+                    //}
+
+
+
+                   // var count = 0; var ss = ""; var ss1 = ""; var ss2 = "";
+
+
+                    var table = document.getElementById('tblCargo');
+
+                    var j = 1; var LR_CarogID = ""; var ss = "";
+                    $.each(FtypeList, function (index, value) {
+                        LR_CarogID = value.Id;
+                        ss = value.CargoName;
+                        table.rows[j].cells[0].innerHTML = LR_CarogID;
+                        table.rows[j].cells[1].innerHTML = ss;
+
+                        //alert(value.DischargeDatetime);
+
+                        //var date = new Date(parseInt(value.DischargeDatetime.substring(6)));
+                        //alert(date) 2021-11-13T11:34:00 
+                        //            2021-11-22T10:00:12.851Z
+
+                        //var d = new Date(parseInt(value.DischargeDatetime.substr(6)));
+                        //alert ("0" + d.getDate()).slice(-2) + '/' + ("0" + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+
+                        //const d = new Date();
+                        //let text = d.toJSON(value.DischargeDatetime);
+                        //alert(value.DischargeDatetime);
+
+                        table.rows[j].cells[2].children[0].value = value.DDT;
+                        table.rows[j].cells[3].children[0].value = value.Terminal_Acceptable_Discharging_Rate;
+                        table.rows[j].cells[4].children[0].value = value.Discharging_pressure_Requested;
+                        table.rows[j].cells[5].children[0].value = value.Average_Discharge_Rate_ByVessel;
+                        table.rows[j].cells[6].children[0].value = value.Average_Discharge_pressure_ByVessel;
+                        table.rows[j].cells[7].children[0].value = value.No_of_Pumps_Use;
+                        table.rows[j].cells[8].children[0].value = value.No_Manifold_Hoses_by_Terminal;
+                        table.rows[j].cells[9].children[0].value = value.Size_of_Manifold_Hoses_by_Terminal;
+                        table.rows[j].cells[10].children[0].value = value.No_Manifold_Hoses_by_Vessel;
+                        table.rows[j].cells[11].children[0].value = value.Size_of_Manifold_Hoses_by_Vessel;
+                        table.rows[j].cells[12].children[0].value = value.Total_CargoDischarged;
+                        table.rows[j].cells[13].children[0].value = value.Balance_Cargo_ToBe_Deischarged;
+                        table.rows[j].cells[14].children[0].value = value.ADT;
+
+                        j++;
+                    });
+
+
+                    var rowCount1 = FtypeList.length;
+                    if (rowCount1 == 0) {
+                        $("#tblCargo").find("tr:gt(" + rowCount1 + 1 + ")").remove();
+                        debugger;
+
+                        table.rows[1].cells[0].innerHTML = '0';
+                        table.rows[1].cells[1].innerHTML = "";
+                       table.rows[1].cells[2].children[0].value = null;
+                        table.rows[1].cells[3].children[0].value = '0.00';
+                        table.rows[1].cells[4].children[0].value = '0.00';
+                        table.rows[1].cells[5].children[0].value = '0.00';
+                        table.rows[1].cells[6].children[0].value = '0';
+                        table.rows[1].cells[7].children[0].value = '0';
+                        table.rows[1].cells[8].children[0].value = '0';
+                        table.rows[1].cells[9].children[0].value = '0';
+                        table.rows[1].cells[10].children[0].value = '0';
+                        table.rows[1].cells[11].children[0].value = '0';
+                        table.rows[1].cells[12].children[0].value = '0';
+                        table.rows[1].cells[13].children[0].value = '0';
+                        table.rows[1].cells[14].children[0].value = null;
+
+                        //$("#tblCargo").find("tr:gt(1)").attr('disabled', true);
+                        //debugger;
+                        //$("#tblCargo tr").each(function () {
+                        //    $(t.rows[1].cells[0]).text('');
+                        //    //alert(val1);
+                        //    i++;
+                        //});
+                    }
+                    else {
+                        $("#tblCargo").find("tr:gt(" + rowCount1 + ")").remove();
+                    }
+                    //debugger;
+                    //var rowCount1 = FtypeList.length;
+                    ////rowCount1 = rowCount1 + 4;
+                    //var cc = 10 + rowCount1;
+
+                    //try {
+                    //    for (var i = rowCount1 + 4; i > 0; i++) {
+                    //        tblCargo.deleteRow(i);
+                    //    }
+                    //} catch{}
+
+
+
+
+                    //for (var i = tableHeaderRowCount; i > rowCount1; i++) {
+                    //    tblFuelC.deleteRow(tableHeaderRowCount);
+                    //}
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+</script>
+
+
+@if (ViewBag.EditStopR != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditStopR)
+    </script>
+}
+@if (ViewBag.GetLegEdit != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.GetLegEdit)
+    </script>
+}
+@if (ViewBag.GetPortEdit != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.GetPortEdit)
+    </script>
+}
+
+@if (ViewBag.EditDisRCargo != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditDisRCargo)
+    </script>
+}

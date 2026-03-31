@@ -50,7 +50,6 @@ namespace DataBuildingLayer
         public decimal? EngineDist { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? TotalDistance { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? StmgTime { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? DistToGo_DTG { get; set; }
@@ -76,6 +75,7 @@ namespace DataBuildingLayer
         public decimal? BHP { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? MCR { get; set; }
+
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? OT_ROB_OXY_Full { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
@@ -209,7 +209,7 @@ namespace DataBuildingLayer
         public decimal IGG { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Incinerator { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]  
+        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal StopageAtSea { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Deviation { get; set; }
@@ -224,15 +224,20 @@ namespace DataBuildingLayer
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Others { get; set; }
 
+        //---------------- New Column Add in V2 -- Date 25 May 2022 --------///////////////       
+
+        
+        //-------------------------------------------------------------------/////////
         public string voyagenumber { get; set; }
 
-
+      
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public bool? IsActive { get; set; }
 
         public int VesselId { get; set; }
 
+        public string VesselName { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Qty_Grade1 { get; set; }
         public decimal Qty_Grade2 { get; set; }
@@ -259,7 +264,6 @@ namespace DataBuildingLayer
         public decimal? FW_ROB { get; set; }
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? Gen_Avg_Speed { get; set; }
-       // [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal? TotalTime { get; set; }
         public int HiddenTotalSum { get; set; }
     }
@@ -285,8 +289,8 @@ namespace DataBuildingLayer
         public decimal Qty_Diff { get; set; }
         public string Reasonfor_Qty_Diff { get; set; }
         public decimal Cargo_Temp { get; set; }
+
         public int VoyId { get; set; }
-        public int Id { get; set; }
 
 
     }
@@ -308,8 +312,8 @@ namespace DataBuildingLayer
         public string CargoName { get; set; }
         public decimal Qty_Grade1 { get; set; }
         public decimal Qty_Grade2 { get; set; }
-        public int BerthingReport_Id { get; set; }
         public int VoyId { get; set; }
+        public int Id { get; set; }
 
     }
     public class DRCargo
@@ -322,7 +326,7 @@ namespace DataBuildingLayer
         public DateTime? Completion_DateT { get; set; }
         public decimal Rate { get; set; }
         public int VoyId { get; set; }
-
         public decimal Cargo_Temp { get; set; }
+        public int Id { get; set; }
     }
 }

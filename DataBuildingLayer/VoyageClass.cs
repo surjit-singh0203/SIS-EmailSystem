@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace DataBuildingLayer
 {
@@ -16,8 +17,6 @@ namespace DataBuildingLayer
 
         public int Id { get; set; }  
         public string VoyageNumber { get; set; }
-
-        public string Conditions { get; set; }
         public int Nor_Conditions { get; set; }
         public int CPId { get; set; }
         //public int VoyageStartPoint { get; set; }
@@ -28,10 +27,7 @@ namespace DataBuildingLayer
         //public decimal CP_Log_Speed { get; set; }
         //public decimal FW { get; set; }
         public int HeavyWeather_BSS { get; set; }
-
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal HeavyWeather_WH { get; set; }
-        [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal HeavyWeather_CV { get; set; }
         public DateTime? CreatedDate { get; set; }       
         public bool? IsActive { get; set; }
@@ -47,13 +43,7 @@ namespace DataBuildingLayer
 
     }
 
-    //public partial class VoyageClass1
-    //{
-    //    public int Id { get; set; }
-    //    public string VoyageNumber { get; set; }
-    //}
-
-        public class VoyageLeg
+    public class VoyageLeg
     {
         //public VoyageLeg()
         //{
@@ -129,16 +119,16 @@ namespace DataBuildingLayer
     {
         public int Id { get; set; }
         public string PortName { get; set; }
-        //public string FacilityName { get; set; }
-    }
+        public string FacilityName { get; set; }
 
+       
+    }
     public class CargoNameClass
     {
         public int Id { get; set; }
         public string Cargo { get; set; }
-        
-    }
 
+    }
     public class FuelClass
     {
         public int Id { get; set; }

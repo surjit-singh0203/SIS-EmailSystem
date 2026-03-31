@@ -83,44 +83,34 @@
 
         </div>
     </div>*@
-
-<div class="row" style="margin-top: 10px;">
-    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
-        <div class="col-md">
-            Vessel Tanks
-        </div>
-
-     
-
-        <div class="col-md button-row-top">
-
-            <div class="row">
-
-
-                @if (ViewBag.VesselName != null)
+@if (ViewBag.VesselName != null)
                 {
-                    <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
+                    <center><h4>Vessel Name :-  <b>@ViewBag.VesselName</b>  </h4></center>
                 }
-
-                <div class="col">
-                    <button name="back" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
-                </div>
-            </div>
+				
+	<div class="row">
+    <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div>
+            <h2>
+                Vessel Tanks
+            </h2>
+        
         </div>
+        		<div class="col-md button-row-top">
+					<button name="back" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+                </div>
     </div>
-</div>
+	</div>
 
 
 <div class="container">
     <div class="row">
-        <div class="col-md">
-            <h4>Vessel Tanks</h4>
-        </div>
+        
 
         <!-- CSS Code: Place this code in the document's head (between the 'head' tags) -->
 
 
-        <table class="GeneratedTable">
+        <table class="GeneratedTable centered-table">
             <thead>
                 <tr>
                     <th style="display:none">Id</th>
@@ -173,33 +163,63 @@
 
                     @if (MaintainROBs == true)
                     {
-                        <td>
-                            <div id="action_@(count)" style="display:block">
-                                <a href="@Url.Action("inserttank", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
-                                    <i class="uil uil-edit-alt mr-2"></i>Add
-                                </a>
-                                |
-                                <a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
-                                    <i class="uil uil-edit-alt mr-2"></i>View
-                                </a>
+                <td>
 
-                            </div>
-                        </td>
+                    @*@if (StaticHelper.UserRole == "Administrator")
+                    {*@
+                        <div id="action_@(count)" style="display:block">
+
+
+
+                            <a href="@Url.Action("inserttank", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>Add
+                            </a>
+                            |
+                            <a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>View
+                            </a>
+
+                        </div>
+                    @*}*@
+                    @*@if (StaticHelper.UserRole != "Administrator")
+                    {*@
+                        @*<div id="action_@(count)" style="display:block">
+
+
+
+                           
+                            <a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>View
+                            </a>
+
+                        </div>*@
+                    @*}*@
+                </td>
                     }
                     else
                     {
-                        <td>
-                            <div id="action_@(count)" style="display:none">
-                                <a href="@Url.Action("inserttank", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
-                                    <i class="uil uil-edit-alt mr-2"></i>Add
-                                </a>
-                                |
-                                <a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
-                                    <i class="uil uil-edit-alt mr-2"></i>View
-                                </a>
+                <td>
+                    @*@if (StaticHelper.UserRole == "Administrator")
+                    {*@
+                        <div id="action_@(count)" style="display:none">
+                            <a href="@Url.Action("inserttank", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>Add
+                            </a>
+                            |
+                            <a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>View
+                            </a>
 
-                            </div>
-                        </td>
+                        </div>
+
+                    @*}*@
+                    @*@if (StaticHelper.UserRole == "Administrator")
+                    {*@
+                        @*<a href="@Url.Action("viewtanks", "VesselTanks", new { typeid = count })" class="btn btn-sm btn-light btn-edit">
+                            <i class="uil uil-edit-alt mr-2"></i>View
+                        </a>*@
+                    @*}*@
+                </td>
                     }
 
 
@@ -215,6 +235,11 @@
     </div>
 </div>
 
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
 <script>
     function updateMaintainROBs(mainID, Id) {
 
@@ -329,10 +354,6 @@
     $('#Menu3').removeClass('active');
     $('#Menu4').addClass('active');
     $('#Menu5').removeClass('active');
-    $('#Menu6').removeClass('active');
-    $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 
 </script>

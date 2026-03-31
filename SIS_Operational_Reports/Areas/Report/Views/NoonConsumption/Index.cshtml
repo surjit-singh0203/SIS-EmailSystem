@@ -1,0 +1,467 @@
+﻿@model DataBuildingLayer.DailyNoonReport
+@{
+
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@if (ViewBag.Message != null)
+{
+    <script type="text/javascript">
+
+            window.onload = function () {
+                alert("@ViewBag.Message");
+            };
+    </script>
+
+}
+<div id="test">
+    <div>
+        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
+            <div class="col-md">
+                <h2>Consumption Pattern based Noon Report</h2>
+            </div>
+        </div>
+    </div>
+    <div id="idMaindiv" class="container">
+        <div>
+
+            @using (Html.BeginForm("index", "NoonConsumption", FormMethod.Get, new { area = "Report" }))
+            {
+
+            <div class="search-row">
+                <div class="col m-1">
+
+                    <input type="text" style="display:none" name="search" id="search" value="@ViewBag.vname" class="form-control" placeholder="Vessel Name" />
+
+                    @Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "GetCP(this)", })
+                </div>
+
+                <div class="col m-6">
+                    @Html.DropDownListFor(model => model.CPID, new SelectList(Model.CPNameList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "GetCPDate(this)", })
+                </div>
+                <div style="display:none" class="col m-1">
+
+                    <input id="idFirst" placeholder="search by : voyage no." autocomplete="off" class="form-control" type="text">
+
+                </div>
+
+                <div class="col m-1">
+
+
+                    <input id="idSecond" autocomplete="off" name="datefilter" style="width:190px" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+
+                </div>
+
+                <button id="btnSearch4" type="submit" class="function-button submit-button m-1">Search</button>
+
+                @*<a href='@Url.Action("DownloadExcel", "NoonConsumption")' class="function-button submit-button m-1">Export</a>*@
+
+                <button style="display:none" id="idExport" class="function-button submit-button m-1">Export</button>
+
+
+
+
+                @*<button onClick="window.location.reload();" class="function-button submit-button m-1">
+                    Reset
+                </button>*@
+
+            <button onclick="window.location.href = '@Url.Action("Index", "NoonConsumption", new { area = "Report" })';" class="function-button submit-button m-1">
+                Reset
+            </button>
+                
+            </div>
+
+
+
+
+            }
+            @if (ViewBag.vname != null)
+            {
+                @Html.Partial("_noonConsumptionR")
+                <div id="message-listbm" class="bms">
+                    <font> @TempData["amit"]</font>
+                </div>
+            }
+
+            @*<table class="GeneratedTable centered-table">
+
+
+                    <thead>
+                    <tr>
+                        <th style="display:none">Id</th>
+
+                        <th>Vessel Name</th>
+                        <th>Voyage Number</th>
+                        <th>Report Date</th>
+                        <th>Laden/Ballast</th>
+                        <th>Sea/Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var item in Model.GetNoonRList)
+                    {
+                        <tr>
+                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                            <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+                            <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
+                            <td>
+                                @{ DateTime? cdt1 = item.Date;
+                                    if (cdt1 != null)
+                                    {
+                                        @Html.Raw(cdt1.Value.ToString("dd-MMM-yyyy")) } }
+                            </td>
+                            <td> @Html.DisplayFor(modelItem => item.VesselStatus)</td>
+                            <td> @Html.DisplayFor(modelItem => item.AtSeaOrPort)</td>
+                        </tr>
+                    }
+
+
+                </tbody>
+                    </table>
+
+
+
+
+                    <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+
+
+                        @{
+                            int totalRecords = 0;
+                            foreach (var item in Model.GetNoonRList)
+                            {
+                                totalRecords = item.TotalCount;
+                                break;
+                            }
+
+
+                            int pageSize = SIS_Operational_Reports.Common.CommonMethods.PAGESIZE;
+
+                            int tot_pages = totalRecords / pageSize;
+                            int remainder = totalRecords % pageSize;
+
+                            tot_pages = remainder > 0 ? (tot_pages + 1) : tot_pages;
+
+                            int currPage = Convert.ToInt32(TempData.Peek("CurrentPage"));
+
+                            if (totalRecords > 0)
+                            {
+                                if (currPage == 0)
+                                {
+                                    currPage = 1;
+                                }
+
+                                if (currPage != 1)
+                                {
+                                    <li class="page-item"><a class="page-link"> @Html.ActionLink("First", "noonRlist", "DailyNoon", new { pageNo = 1 }, null)</a></li>
+                                }
+
+                                if (currPage != tot_pages)
+                                {
+                                    for (int cnt = currPage; cnt < (currPage + tot_pages); cnt++)
+                                    {
+                                        if (cnt == currPage)
+                                        {
+                                            <li class="page-item active"><a class="page-link" href="#">@cnt</a></li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item">@Html.ActionLink(cnt.ToString(), "noonRlist", "DailyNoon", new { pageNo = cnt }, null)</li>
+                                        }
+
+                                        if (cnt == tot_pages)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+
+
+                                if (currPage == tot_pages)
+                                {
+                                    <li class="page-item active"><a class="page-link" href="#">@tot_pages</a></li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">@Html.ActionLink("Last", "noonRlist", "DailyNoon", new { pageNo = tot_pages }, null)</li>
+                                }
+                            }
+                        }
+                    </ul>
+                </nav>*@
+
+        </div>
+    </div>
+
+
+</div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+
+        //var nowDate = new Date();
+        //var today = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 0, 0, 0, 0);
+        ////var today1 = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 0, 0, 0, 0);
+        ////alert(today);
+        //today = new Date('2022-04-01 00:00:00.000');
+
+        //var maxdate = new Date('2023-05-01 00:00:00.000');
+
+        //$('input[name="datefilter"]').daterangepicker({
+        //    autoUpdateInput: false,
+        //    "minDate": today,
+        //    "maxDate": maxdate,
+        //    locale: {
+        //        cancelLabel: 'Clear',
+
+
+
+        //    }
+        //});
+
+
+
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+
+
+<script>
+
+    //Date = new Date(),
+    //    maxDate = new Date(Date.setDate(Date.getDate() + 30)),
+    //    $('#idSecond').daterangepicker({
+    //        minDate: new Date(),
+    //        maxDate: maxDate,
+    //        locale: {
+    //            format: 'YYYY/MM/DD',
+    //            firstDay: 1
+    //        },
+    //    });
+
+    // $('#idSecond').daterangepicker({ maxDate: new Date('03/06/2022') });
+    //var date2 = new Date();
+    //date2.setDate(date2.getDate() - 1);
+    //alert(date2);
+    //$('#idSecond').daterangepicker({
+    //    showDropdowns: false,
+    //    format: 'MM/DD/YYYY',
+    //    maxDate: date2,
+    //    //autoclose: true,
+    //    //autoApply: true,
+
+    //});
+</script>
+
+<script>
+
+    $("#btnSearch").click(function () {
+
+
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+        var vsl = $("#VesselId").val();
+        var cpid = $("#CPID").val();
+
+
+        debugger;
+
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+
+
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "" && vsl == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        //if (vsl == "") {
+        //    alert("Please choose vessel first");
+        //    return;
+        //}
+        else {
+
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/NoonConsumption/Index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT + '&Vessel=' + vsl + '&CPID=' + cpid,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+
+
+                    $("#test").html('');
+                    $("#test").html(data);
+
+
+
+                },
+
+            });
+
+        }
+
+
+
+    });
+
+</script>
+<script>
+    function GetCP(t) {
+
+
+        var Id = t.value;
+        var Vslid = $("#VesselId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/NoonConsumption/BindCP?VesselId=' + Vslid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#CPID').empty();
+
+
+                    // $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#CPID').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#CPID').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    //$("#LegPortId option[value=5]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+
+<script>
+    function GetCPDate(t) {
+
+
+        var Id = t.value;
+        var cpid = $("#CPID option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/NoonConsumption/BindCPDate?Cpid=' + cpid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    //alert(response.StartDate);
+                    var mindate = new Date(response.StartDate);
+                    var maxdate = new Date(response.EndDate);
+
+                    $('input[name="datefilter"]').daterangepicker({
+                        autoUpdateInput: false,
+                        "minDate": mindate,
+                        "maxDate": maxdate,
+                        locale: {
+                            cancelLabel: 'Clear',
+
+
+
+                        }
+                    });
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+<script>
+
+    @*$("#idExport").click(function () {
+
+        var chk = '@Model.GetNoonRList.Count()';
+
+
+        if (chk ==0) {
+            alert("Please search for particular vessel");
+            return;
+        }
+
+        else {
+
+            $.ajax({
+
+                url: '/Report/NoonConsumption/DownloadExcel',
+                success: function () {
+                    window.location = '@Url.Action("DownloadExcel", "NoonConsumption")';
+                }
+            });
+
+
+
+        }
+
+
+
+    });*@
+
+</script>

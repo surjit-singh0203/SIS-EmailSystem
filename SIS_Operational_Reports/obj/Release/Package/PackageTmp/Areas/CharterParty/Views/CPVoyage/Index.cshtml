@@ -6,23 +6,18 @@
     Layout = "~/Views/Shared/_LayoutForms.cshtml";
 }
 
-<script type="text/javascript" src="~/Content/search1.js"></script>
-<script type="text/javascript" src="~/Content/search2.js"></script>
-<script type="text/javascript" src="~/Content/search3.js"></script>
-<link rel="stylesheet" type="text/css" href="~/Content/search.css" />
-
 <div id="idCP">
 
     <div class="page-heading page-header-flex">
 
-        @*<h4 style="text-align:center">
+        <h4 style="text-align:center">
 
 
-                @if (ViewBag.VesselName != null)
-                {
-                    <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
-                }
-            </h4>*@
+            @if (ViewBag.VesselName != null)
+            {
+                <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
+            }
+        </h4>
 
         @*<div>
                 <h1 class="page-title">
@@ -47,50 +42,52 @@
             </div>*@
     </div>
 
-    <div class="row">
-        <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
-            <div>
-                <h2>
-                    Charter Party List
-                </h2>
 
-            </div>
-            @*<div class="col-md button-row-top">
-
-                <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> &lt;&lt; Go Back</a>
-                    </div>*@
-        </div>
-    </div>
     <div class="wrapper wrapper-content">
         <div class="container">
-
+            <h3 class="card-title">Charter Party List</h3>
             <div class="form-body">
-                <div>
+                <div class="table-responsive">
+                    @*<div>
+                            <a href="@Url.Action("AddCPContract", "CP")" class="btn btn-sm btn-light btn-edit">
+                                <i class="uil uil-edit-alt mr-2"></i>Add Vessels
+                            </a>
+                        </div>*@
 
+                    <div class="mb-lg-1 row">
+                        <div style="margin-left:550px" class="col-sm-3">
 
-                    <div class="search-row">
-                        <div class="col m-1">
-
-                            <input id="idFirst" placeholder="search by : cp no/charter party id" autocomplete="off" class="form-control" type="text" />
+                            <input id="idFirst" placeholder="search by : cp no." class="form-control" type="text" />
                             <span id="messageLat" style="color:red"></span>
                         </div>
 
-                        <div class="col m-1">
+                        <div class="col-sm-3">
 
-                            <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+                            <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
                             <span id="messageLat" style="color:red"></span>
                         </div>
 
-                        <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+
+                        <div class="col-md button-row-top">
+                            <div class="row">
+                                <div class="col">
+                                    <button id="btnSearch" class="function-button submit-button">
+
+                                        <i class="fa fa-plus-circle mr-2"></i>Search
+
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
 
-                    <table class="GeneratedTable centered-table">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th style="display:none">Id</th>
                                 <th>Charter Party ID</th>
-                                <th>Charter Party Name</th>
-                                <th>Vessel Name</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Voyage Type</th>
@@ -111,8 +108,6 @@
                                     <td style="display:none"> @Html.DisplayFor(modelItem => item.VesselID)</td>
                                     @*<td> @Html.DisplayFor(modelItem => item.VesselID)</td>*@
                                     <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
-                                    <td> @Html.DisplayFor(modelItem => item.CPName)</td>
-                                    <td> @Html.DisplayFor(modelItem => item.VesselInCP)</td>
                                     <td>
                                         @{
                                             var sdate = item.StartDate.ToString("dd-MMM-yyyy");
@@ -234,9 +229,9 @@
         </div>
     </div>
 
-</div>
+    </div>
 
-<script type="text/javascript">
+    <script type="text/javascript">
         $(function () {
 
             $('input[name="datefilter"]').daterangepicker({
@@ -257,67 +252,75 @@
         });
     </script>
 
-<script>
+    <script>
 
-    $("#btnSearch").click(function () {
+        $("#btnSearch").click(function () {
+            //alert(34);
 
-
-        var firstVal = $("#idFirst").val();
-        var secondVal = $("#idSecond").val();
-
-
-        //var range = $('#idSecond').datarangepicker.getRange();
-        //var startDate = range.start;
-        //var endDate = range.end;
-
-        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
-        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
-
-        //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
-        //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+            var firstVal = $("#idFirst").val();
+            var secondVal = $("#idSecond").val();
 
 
+            //var range = $('#idSecond').datarangepicker.getRange();
+            //var startDate = range.start;
+            //var endDate = range.end;
+
+            var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+            var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+            //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
+            //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+
+            if (secondVal == "") {
+                dateF = "";
+                dateT = "";
+            }
+
+            if (firstVal == "" && secondVal == "") {
+                alert("Please enter atleast 1 value for search.");
+                return;
+            }
+            else {
 
 
+                $.ajax({
+                    type: 'GET',
+                    url: '/CharterParty/CPVoyage/index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                    datatype: 'json',
+                    cache: false,
+                    contentType: 'application/json; charset=utf-8',
+                    processData: false,
+                    success: function (data) {
 
-        $.ajax({
-            type: 'GET',
-            url: '/CharterParty/CPVoyage/index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
-            datatype: 'json',
-            cache: false,
-            contentType: 'application/json; charset=utf-8',
-            processData: false,
-            success: function (data) {
+                        // alert(data);
+                        /* if (response.Result === true) {*/
 
-                // alert(data);
-                /* if (response.Result === true) {*/
+                        //window.location.reload();
 
-                //window.location.reload();
-
-                $("#idCP").html('');
-                $("#idCP").html(data);
+                        $("#idCP").html('');
+                        $("#idCP").html(data);
 
 
-                //;
+                        //;
 
-                // $("#idMaindiv").html('');
+                        // $("#idMaindiv").html('');
 
-                //$("#idMaindiv").html(data);
-                // alert(data);
-                //}
-                //else {
-                //    toastr["error"](response.Message);
-                //}
-            },
-            //failure: function (response) {
-            //    toastr["error"](response.Message);
-            //}
+                        //$("#idMaindiv").html(data);
+                        // alert(data);
+                        //}
+                        //else {
+                        //    toastr["error"](response.Message);
+                        //}
+                    },
+                    //failure: function (response) {
+                    //    toastr["error"](response.Message);
+                    //}
+                });
+
+
+            }
+
+
         });
 
-
-
-
-
-    });
-
-</script>
+    </script>

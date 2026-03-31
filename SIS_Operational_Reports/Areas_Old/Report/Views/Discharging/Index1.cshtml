@@ -1,0 +1,383 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+
+<div class="row" style="margin-top: 10px;">
+
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+            <div class="col-sm-8">
+                <select class="form-control bottom-border-input" id="dropdown-selection">
+                    <option value="volvo">Select1</option>
+                    <option value="saab">Select2</option>
+                    <option value="fiat">Select3</option>
+                    <option value="audi">Select4</option>
+                </select>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">ETD Date & Time</label>
+            <div class="col-sm-8">
+                <input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
+            <div class="col-sm-8">
+                <select class="form-control bottom-border-input" id="dropdown-selection">
+                    <option value="volvo">Select1</option>
+                    <option value="saab">Select2</option>
+                    <option value="fiat">Select3</option>
+                    <option value="audi">Select4</option>
+                </select>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
+            <div class="col-sm-8">
+                <input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Fwd</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control bottom-border-input" placeholder="Select">
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Mid</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control bottom-border-input" placeholder="Select">
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Aft</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control bottom-border-input" placeholder="Select">
+            </div>
+
+        </div>
+
+        <div class="col-md">
+
+            <div class="row">
+                <div class="col">
+                    <button class="function-button submit-button">
+                        Submit
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="function-button draft-button">
+                        Save Draft
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="function-button reset-button">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+      
+<div class="row">
+    <div class="col-md-9">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+                    <table class="GeneratedTable">
+                        <tbody></tbody>
+                        <thead>
+                            <tr>
+                                <th colspan="3">Cargo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td>USLD</td>
+                                <td>LSD</td>
+                            </tr>
+                            <tr>
+                                <td>Commence Discharging Date &amp; Time</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Terminal Acceptable Ddischarging Rate</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Discharging pressure Requested</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Average Discharge Rate by Vessel</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Average Discharge pressure by Vessel</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>No of Manifold / Hoses by Terminal</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Size of Manifold / Hoses by Termina</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>No of Manifold / Hoses by Vessel</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Size of Manifold / Hoses by Vessel</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Shore Line Distance</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Quantity onboard</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Balance Quan4ty to be Loaded</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>ETC / Actual Comp Date &amp; Time</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-xl">
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Ballast Pumps in Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td>No. 1</td>
+                                <td>No. 2</td>
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Cargo Pumps in Use</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td>No. 1</td>
+                                <td>No. 2</td>
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="3">Power Packs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                
+                                <td>No. of Power Packs onboard</td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                               
+                                <td>No. of Power Packs in used</td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="4">STOPPAGE / DELAYS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td>Reason</td>
+                                <td>Date &amp; Time from</td>
+                                <td>Date &amp; Time to</td>
+                            </tr>
+                            <tr>
+                                <td>Stoppage 1</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Stoppage 2</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                            <tr>
+                                <td>Stoppage 3</td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Letter of Protests</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>LOP Type</td>
+                                <td>Issued/ Recd</td>
+                            </tr>
+                            <tr>
+                                <td>Time</td>
+                                <td><input type="text" class="table-inputs"> </td>
+                            </tr>
+                            <tr>
+                                <td>Rate</td>
+                                <td><input type="text" class="table-inputs"> </td>
+                            </tr>
+                            <tr>
+                                <td>Hose Connection</td>
+                                <td><input type="text" class="table-inputs"> </td>
+                            </tr>
+                            <tr>
+                                <td>High H2S</td>
+                                <td><input type="text" class="table-inputs"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+                <div class="row">
+                    <!-- Speed - Distance - Time Table -->
+                    <table class="GeneratedTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Discharging Report Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Test<br>Remarks</td>
+                                <td><input type="text" class="table-inputs"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- table-end -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').addClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+
+</script>

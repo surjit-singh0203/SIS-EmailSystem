@@ -1,7 +1,7 @@
 ﻿@model DataBuildingLayer.BerthingReport
 @{
     ViewBag.Title = "Index";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 @*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -10,17 +10,19 @@
 
 <link href="~/css/flatpickr.min.css" rel="stylesheet" />
 <script src="~/css/flatpickr.js"></script>
+@*<link href="~/css/all.min.css" rel="stylesheet" />*@
 
 <style>
+
 
     .datetime-wrapper {
         position: relative;
         display: inline-block;
     }
 
-    span.datetime-icon {
+    .datetime-icon1 {
         position: absolute;
-        right: 30px;
+        right: 5px;
         top: 45%;
         transform: translateY(-50%);
         pointer-events: none;
@@ -62,19 +64,6 @@
 </style>
 
 <style>
-
-    datetime-wrapper {
-        postion: relative;
-    }
-
-        datetime-wrapper span.datetime-icon {
-            font-size: 15px;
-            margin-right: -10px;
-            position: absolute;
-            z-index: 1;
-            right: 33px;
-            top: 3px;
-        }
 
     #cover-spin {
         position: fixed;
@@ -124,21 +113,42 @@
         -webkit-animation: spin .8s linear infinite;
         animation: spin .8s linear infinite;
     }
-
-    table.GeneratedTable.remarks textarea {
-        border: none;
-    }
-	.row.long-table {
-    max-width: 2800px;
+	select {
+   
+    width: 100%!important;
 }
- table#tblFuelC td {
-        text-align: center;
-        min-width: 100px;
-    }
-table#tblFuelC {
-    overflow-x: scroll;
-    display: block;
-    padding: 0px !important;
+
+.row.long-table {
+overflow-x: scroll;
+}
+table#tblFuelC{
+    width: 2100px!important;
+
+    table-layout: fixed;
+
+}
+tr.small-titles {
+    font-size: 12px!important;
+}
+tr.small-titles td {
+    width: 209px!important;
+    white-space: normal;
+    word-wrap: break-word;
+    min-width: 234px!important;
+    display: table-cell;
+}
+td.datetime-wrapper {
+    width: 100%!important;
+}
+
+span.datetime-icon {
+    position: absolute;
+    right: 35px;
+    z-index: 1;
+    top: 4px;
+}
+td.datetime-wrapper {
+    position: relative;
 }
 </style>
 <div id="cover-spin"></div>
@@ -150,6 +160,7 @@ table#tblFuelC {
             <h2>
                 @{
                     var idcheck = Model.Id.ToString();
+                    var vslname = Model.VesselName;
                     var addEdit = "";
                     if (idcheck == "0")
                     {
@@ -162,7 +173,7 @@ table#tblFuelC {
                 }
 
 
-                @addEdit Berthing Report
+                Berthing Report (@vslname)
             </h2>
 
         </div>
@@ -183,14 +194,14 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", })
+                @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @onchange = "GetLeg(this)", @required = "true", })
                 <span id="messageVoyid" style="color:red"></span>
             </div>
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
             <div class="col-sm-8">
                 @* @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetFacName(this)", @required = "true", })*@
-                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "GetFacName(this)", })
+                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", @onchange = "GetFacName(this)", })
 
                 <span id="msgPortName" style="color:red"></span>
             </div>
@@ -213,7 +224,7 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
             <div class="col-sm-8">
-                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "GetBRCargo();bindport(this);", })
+                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @disabled = true, @onchange = "GetBRCargo();bindport(this);", })
                 <span id="msgLegPortId" style="color:red"></span>
             </div>
 
@@ -223,7 +234,7 @@ table#tblFuelC {
             <label for="inputPassword" class="col-sm-4 col-form-label">Facility Name</label>
             <div class="col-sm-8">
 
-                @Html.DropDownListFor(model => model.FacilityName, new SelectList(Model.FacilityList, "FacilityName", "FacilityName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                @Html.DropDownListFor(model => model.FacilityName, new SelectList(Model.FacilityList, "FacilityName", "FacilityName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @disabled = true, @required = "true", })
                 <span id="msgFacilityName" style="color:red"></span>
 
             </div>
@@ -237,17 +248,7 @@ table#tblFuelC {
 
             <label for="inputPassword" class="col-sm-4 col-form-label">Report Date</label>
             <div class="col-sm-8">
-                @*@Html.EditorFor(model => model.ReportDate, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                @Html.EditorFor(model => model.ReportDate, new
-                {
-                    htmlAttributes = new
-                    {
-                        @autocomplete = "off",
-                        @class = "form-control bottom-border-input ",
-                        @maxlength = 20,
-                        @placeholder = "yyyy-MM-dd",
-                        @max = DateTime.Today.ToString("yyyy-MM-dd"),@*@readonly = "true"*@}
-})
+                @Html.EditorFor(model => model.ReportDate, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })
                 <span id="msgReportDate" style="color:red"></span>
             </div>
 
@@ -287,12 +288,8 @@ table#tblFuelC {
         <div class="col-md">
 
             <div class="row report-actions">
-                <div class="col">
-                    <button id="btnSave" class="function-button submit-button">
-                        Submit
-                    </button>
-                </div>
-                <div id="SDraft" class="col">
+
+                <div style="display:none" id="SDraft" class="col">
                     <button onclick="SaveDraftFunction()" class="function-button draft-button">
                         Save Draft
                     </button>
@@ -301,15 +298,22 @@ table#tblFuelC {
                     </div>
 
                 </div>
-                @if (Model.SaveDraft != true)
+
+                <div style="display:none" class="col">
+                    <button onClick="window.location.reload();" class="function-button reset-button">
+                        Reset
+                    </button>
+                </div>
+                @if (StaticHelper.UserRole == "Administrator")
                 {
-                    <div class="col">
-                        <button onClick="window.location.reload();" class="function-button reset-button">
-                            Reset
+                    <div style="margin-left:250px" class="col">
+                        <button id="btnSave" class="function-button submit-button">
+                            Submit
                         </button>
                     </div>
                 }
             </div>
+
 
 
         </div>
@@ -529,7 +533,7 @@ table#tblFuelC {
                                 <tbody>
                                     <tr>
                                         <td>Berthing Report Remarks</td>
-                                        <td> @Html.TextAreaFor(model => model.Remarks, new { @style = "width:370px", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", } })  <span id="msgRemarks" style="color:red"></span> </td>
+                                        <td> @Html.TextAreaFor(model => model.Remarks, new { @style = "width:100%", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true", } })  <span id="msgRemarks" style="color:red"></span> </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -769,19 +773,19 @@ table#tblFuelC {
 
                                     <tr>
                                         <td>SBE</td>
-                                        <td style="width:100%" class="datetime-wrapper">
+                                        <td class="datetime-wrapper">
                                             @*@Html.EditorFor(model => model.SBE_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                                            @* @Html.EditorFor(model => model.SBE_DateT, new
-                                          {
-                                              htmlAttributes = new
-                                              {
-                                                  @autocomplete = "off",
-                                                  @class = "form-control bottom-border-input",
-                                                  @type = "datetime-local"
-        }
-                                          })*@
-                                            @Html.EditorFor(model => model.SBE_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
-
+                                            @*@Html.EditorFor(model => model.SBE_DateT, new
+                                                                                  {
+                                                                                      htmlAttributes = new
+                                                                                      {
+                                                                                          @autocomplete = "off",
+                                                                                          @class = "form-control bottom-border-input",
+                                                                                          @type = "datetime-local"
+                                                }
+                                                                                  })*@
+                                            @Html.EditorFor(model => model.SBE_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })
+                                            <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
                                             <span id="msgSBE_DateT" style="color:red"></span>
 
                                         </td>
@@ -789,18 +793,19 @@ table#tblFuelC {
                                     </tr>
                                     <tr>
                                         <td>FWE</td>
-                                        <td style="width:100%" class="datetime-wrapper">
+                                        <td class="datetime-wrapper">
                                             @*@Html.EditorFor(model => model.SBE_DateT, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
-                                            @* @Html.EditorFor(model => model.RFA_DateT, new
-                                          {
-                                              htmlAttributes = new
-                                              {
-                                                  @autocomplete = "off",
-                                                  @class = "form-control bottom-border-input",
-                                                  @type = "datetime-local"
-        }
-                                          })*@
-                                            @Html.EditorFor(model => model.RFA_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                                            @*@Html.EditorFor(model => model.RFA_DateT, new
+                                                                                  {
+                                                                                      htmlAttributes = new
+                                                                                      {
+                                                                                          @autocomplete = "off",
+                                                                                          @class = "form-control bottom-border-input",
+                                                                                          @type = "datetime-local"
+                                                }
+                                                                                  })*@
+                                            @Html.EditorFor(model => model.RFA_DateT, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span>
+
                                             <span id="msgRFA_DateT" style="color:red"></span>
 
                                         </td>
@@ -873,7 +878,7 @@ table#tblFuelC {
                         <tbody>
                             <tr>
                                 <td colspan="6">Main Engine</td>
-                                <td colspan="5">Aux Engine</td>
+                                <td colspan="5">Aux Eng</td>
                                 <td colspan="4">Boiler</td>
                                 <td colspan="4">Framo System</td>
                                 <td colspan="1">IGG</td>
@@ -1134,7 +1139,7 @@ table#tblFuelC {
 
                                     <td> Qty(MT)</td>
                                     <td style="display:none"> Qty - Grade 2</td>
-                                    <td hidden></td>
+                                    <td style="display:none"></td>
 
 
                                 </tr>
@@ -1143,8 +1148,9 @@ table#tblFuelC {
 
 
                                     <td>@Html.EditorFor(model => model.Qty_Grade1, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @maxlength = 9, @required = "true", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    <td style="display:none">@Html.EditorFor(model => model.Qty_Grade2, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 9, @required = "true", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
-                                    <td hidden>@Html.EditorFor(model => model.Id, new {  }) </td>
+                                    <td style="display:none">@Html.EditorFor(model => model.Qty_Grade2, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 9, @required = "true", @onKeyUp = "requiredValue2(this)", @type = "number", @min = "0", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })   </td>
+                                    <td style="display:none">@Html.EditorFor(model => model.Id, new { htmlAttributes = new { } })</td>
+
                                 </tr>
 
                             </tbody>
@@ -1176,7 +1182,7 @@ table#tblFuelC {
                                 <tr>
                                     <td>ROB (MT)</td>
                                     <td>
-                                        @Html.EditorFor(model => model.FW_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 9, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue4(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                                        @Html.EditorFor(model => model.FW_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 9, @required = "true", @type = "number", @min = "0", @onKeyUp = "requiredValue2(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
                                         <span id="msgFW_ROB" style="color:red"></span>
                                     </td>
                                 </tr>
@@ -1194,7 +1200,7 @@ table#tblFuelC {
                             <tbody>
                                 <tr>
                                     <td> ROB</td>
-                                    <td> @Html.EditorFor(model => model.Ballast_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @onKeyUp = "requiredValue4(this)", @type = "number", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
+                                    <td> @Html.EditorFor(model => model.Ballast_ROB, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @maxlength = 20, @required = "true", } })  <span id="msgBallast_ROB" style="color:red"></span> </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1233,6 +1239,52 @@ table#tblFuelC {
 
     </div>
 </div>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePickerEdit", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            //defaultDate: new Date()
+        });
+    });
+
+</script>
+
+<script>
+
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/;
+
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        if (finalValue.length > 7) {
+            return false;
+        }
+
+        return true;
+    });
+
+</script>
+
 <script type="text/javascript">
     function requiredValueDFT(arg) {
         // debugger;
@@ -1256,60 +1308,15 @@ table#tblFuelC {
     }
 </script>
 
-<script type="text/javascript">
-
-    $(".check-decimal").on("keypress", function (event) {
-        var charCode = (event.which) ? event.which : event.keyCode;
-        var value = $(this).val();
-
-        // Check for '.' and ensure there's only one
-        if (charCode == 46 && value.indexOf('.') != -1) {
-            return false;
-        }
-
-        // Allow only backspace, delete, and numeric values
-        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
-            return false;
-        }
-
-        var finalValue = value + String.fromCharCode(charCode);
-
-        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
-
-        if (!validDecimal.test(finalValue)) {
-            return false;
-        }
-
-        if (finalValue.length > 7) {
-            return false;
-        }
-
-        return true;
-    });
-
-</script>
-
-<script>
-
-    document.addEventListener("DOMContentLoaded", function () {
-        flatpickr(".datetimePickerEdit", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            time_24hr: true,
-            //defaultDate: new Date()
-        });
-    });
-
-</script>
-
 
 <script>
     /*function BindPrtEdit(legportid) {*/
     function BindPrtEdit(Voyid) {
 
+
         $.ajax({
             type: 'GET',
-            /*url: '/Report/Berthing/BindPortEdit?Legid=' + legportid,*/
+            /* url: '/Report/Berthing/BindPortEdit?Legid=' + legportid,*/
             url: '/Report/Berthing/BindPort_Edit?Voyid=' + Voyid,
             cache: false,
             contentType: false,
@@ -1425,6 +1432,7 @@ table#tblFuelC {
 </script>
 
 <script type="text/javascript">
+
     function requiredValue1(arg) {
         debugger;
         var id = arg.getAttribute('id');
@@ -1445,9 +1453,11 @@ table#tblFuelC {
         }
 
     }
+
 </script>
 
 <script type="text/javascript">
+
     function requiredValue11(arg) {
         debugger;
         var id = arg.getAttribute('id');
@@ -1457,7 +1467,7 @@ table#tblFuelC {
         if (dec.includes(".")) {
             var res = dec.substring(dec.indexOf(".") + 1);
             var kl = res.split("");
-            if (kl.length > 2) {
+            if (kl.length > 1) {
                 document.getElementById(id).value = (parseInt(dec * 100) /
                     100).toFixed(2);
             }
@@ -1468,10 +1478,11 @@ table#tblFuelC {
         }
 
     }
+
 </script>
 
 <script>
-    function AddMainTotalInFC() {
+    function AddMainTotalInFC() {debugger
         var id1 = $("#Id1").val();
         var id2 = $("#Id2").val();
         var id3 = $("#Id3").val();
@@ -1544,7 +1555,7 @@ table#tblFuelC {
 
     }
 
-    function AddMainTotalInFC1() {
+    function AddMainTotalInFC1() {debugger
         var id1 = $("#Id25").val();
         var id2 = $("#Id26").val();
         var id3 = $("#Id27").val();
@@ -1702,11 +1713,11 @@ table#tblFuelC {
 
 <script type="text/javascript">
     // $('.datepicker').datepicker();
-    //$("#ReportDate").datepicker({
-    //    //endDate: 'today',
-    //    format: 'yyyy-MM-dd',
-    //    autoHide: true
-    //});
+    $("#ReportDate").datepicker({
+        //endDate: 'today',
+        format: 'yyyy-MM-dd',
+        autoHide: true
+    });
 
     $("#ETA").datepicker({
         //startDate: 'today',
@@ -1958,53 +1969,56 @@ table#tblFuelC {
 
     function myFunction1() {
         var x = document.getElementById("IdFirst");
+
+        //alert(x.value);
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.first').prop("disabled", true)
-        }
+        /*if (x.value != '') {*/
+        $('.first').prop("disabled", false);
+        //}
     }
     function myFunction2() {
         var x = document.getElementById("IdSecond");
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.second').prop("disabled", true)
-        }
+        /* if (x.value != '') {*/
+        $('.second').prop("disabled", false);
+        //}
     }
     function myFunction3() {
         var x = document.getElementById("IdThird");
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.third').prop("disabled", true)
-        }
+        /*  if (x.value != '') {*/
+        $('.third').prop("disabled", false);
+        // }
     }
     function myFunction4() {
         var x = document.getElementById("IdFourth");
+        //alert(x.value);
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.fourth').prop("disabled", true)
-        }
+        /* if (x.value != '') {*/
+        $('.fourth').prop("disabled", false);
+        //}
     }
     function myFunction5() {
         var x = document.getElementById("IdFifth");
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.fifth').prop("disabled", true)
-        }
+        /* if (x.value != '') {*/
+        $('.fifth').prop("disabled", false);
+        //}
     }
     function myFunction6() {
         var x = document.getElementById("IdSixth");
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.sixth').prop("disabled", true)
-        }
+        /*  if (x.value != '') {*/
+        $('.sixth').prop("disabled", false);
+        //}
     }
 
     function myFunction7() {
         var x = document.getElementById("IdSeventh");
         //x.value = x.value.toUpperCase();
-        if (x.value == '') {
-            $('.seventh').prop("disabled", true)
-        }
+        /*   if (x.value != '') {*/
+        $('.seventh').prop("disabled", false);
+        // }
     }
 
 
@@ -2037,7 +2051,7 @@ table#tblFuelC {
         var value = arg.value;
         debugger;
         if (value == "") {
-            $("#" + id + "").val('0.000');
+            $("#" + id + "").val('0.00');
         }
     }
 </script>
@@ -2063,41 +2077,10 @@ table#tblFuelC {
 
     }
 </script>
-
 <script>
     function SaveDraftFunction() {
         $("#SaveDraft").prop("checked", true);
-
-        var VoyageId = $("#VoyageId option:selected").val();
-
-        if (VoyageId == "") {
-            $("#messageVoyid").text("Please Choose Voyage Number.");
-            return;
-        }
-        else {
-            $("#messageVoyid").text("");
-        }
-
-        var LegId = $("#LegPortId option:selected").val();
-
-        if (LegId == "") {
-            $("#msgLegPortId").text("Please Choose Departure Leg.");
-            return;
-        }
-        else {
-            $("#msgLegPortId").text("");
-        }
-
-        var ReportDate = $("#ReportDate").val();
-        if (ReportDate == "") {
-            ReportDate = "";
-            $("#msgReportDate").text("Please Choose Report Date.");
-            return;
-        }
-        else {
-            SaveBerthingReportDraft();
-            $("#msgReportDate").text("");
-        }
+        SaveBerthingReportDraft();
 
     }
 </script>
@@ -2533,7 +2516,7 @@ table#tblFuelC {
         $("#" + id + "").css('color', 'black');
         if (value > 100) {
 
-            $("#" + id + "").val('0.000');
+            $("#" + id + "").val('0.00');
             $("#msgMCR").text("MCR not more than 100%");
         }
         else {
@@ -3365,6 +3348,9 @@ table#tblFuelC {
 
         debugger;
 
+
+       // alert(54545);
+
           var newUrl= '@Url.Action("berthinglist", "Berthing")';
 
         $.ajax({
@@ -3380,6 +3366,7 @@ table#tblFuelC {
                 sleep(1000);
                 FuelROBInsertion();
                 sleep(1000);
+              //  alert('111');
                 BRCargoInsertion();
                 sleep(1000);
                 NonRoutineInsertion();
@@ -3403,6 +3390,8 @@ table#tblFuelC {
 
 
     $("body").on("click", "#btnSave", function () {
+        debugger;
+
         $("#SaveDraft").prop("checked", false);
         SaveBerthingReport();
 
@@ -3410,110 +3399,110 @@ table#tblFuelC {
 </script>
 
 
-<script>
+@*<script>
 
-      var loginUser = '@StaticHelper.LoginUser';
-    if (loginUser == "cheng") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', false);
-        $("#v-pills-messages :input").prop('disabled', true);
+          var loginUser = '@StaticHelper.LoginUser';
+        if (loginUser == "cheng") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', false);
+            $("#v-pills-messages :input").prop('disabled', true);
 
-        $("#SlopsROB_Total").prop('disabled', true);
+            $("#SlopsROB_Total").prop('disabled', true);
 
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
 
-
-    }
-    if (loginUser == "choff") {
-        $("#v-pills-home :input").prop('disabled', true);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#v-pills-messages :input").prop('disabled', false);
-
-        $("#SlopsROB_Total").prop('disabled', true);
-
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
-    }
-    if (loginUser == "2off") {
-        $("#v-pills-home :input").prop('disabled', false);
-        $("#v-pills-profile :input").prop('disabled', true);
-        $("#v-pills-messages :input").prop('disabled', true);
-
-        $("#SlopsROB_Total").prop('disabled', true);
-
-        $("#ME_Subtotal").prop('disabled', true);
-        $("#AE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea").prop('disabled', true);
-        $("#Deviation").prop('disabled', true);
-        $("#SlowSteaming").prop('disabled', true);
-        $("#BadWeather").prop('disabled', true);
-        $("#COTPrep").prop('disabled', true);
-        $("#CargoHeating").prop('disabled', true);
-        $("#BWExchange").prop('disabled', true);
-        $("#MDOME_Subtotal").prop('disabled', true);
-        $("#MDOAE_Subtotal").prop('disabled', true);
-        $("#StopageAtSea1").prop('disabled', true);
-        $("#Deviation1").prop('disabled', true);
-        $("#SlowSteaming1").prop('disabled', true);
-        $("#BadWeather1").prop('disabled', true);
-        $("#COTPrep1").prop('disabled', true);
-        $("#CargoHeating1").prop('disabled', true);
-        $("#BWExchange1").prop('disabled', true);
-    }
-
-
-    window.onload = function () {
-
-        var loadingid = '@TempData["berthingReportId"]';
-
-        debugger;
-        if (loadingid == "") {
-            $('#SDraft').show();
-            $('#Id').val(0);
 
         }
-        else {
-            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
-                $('#SDraft').hide();
+        if (loginUser == "choff") {
+            $("#v-pills-home :input").prop('disabled', true);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#v-pills-messages :input").prop('disabled', false);
+
+            $("#SlopsROB_Total").prop('disabled', true);
+
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
+        }
+        if (loginUser == "2off") {
+            $("#v-pills-home :input").prop('disabled', false);
+            $("#v-pills-profile :input").prop('disabled', true);
+            $("#v-pills-messages :input").prop('disabled', true);
+
+            $("#SlopsROB_Total").prop('disabled', true);
+
+            $("#ME_Subtotal").prop('disabled', true);
+            $("#AE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea").prop('disabled', true);
+            $("#Deviation").prop('disabled', true);
+            $("#SlowSteaming").prop('disabled', true);
+            $("#BadWeather").prop('disabled', true);
+            $("#COTPrep").prop('disabled', true);
+            $("#CargoHeating").prop('disabled', true);
+            $("#BWExchange").prop('disabled', true);
+            $("#MDOME_Subtotal").prop('disabled', true);
+            $("#MDOAE_Subtotal").prop('disabled', true);
+            $("#StopageAtSea1").prop('disabled', true);
+            $("#Deviation1").prop('disabled', true);
+            $("#SlowSteaming1").prop('disabled', true);
+            $("#BadWeather1").prop('disabled', true);
+            $("#COTPrep1").prop('disabled', true);
+            $("#CargoHeating1").prop('disabled', true);
+            $("#BWExchange1").prop('disabled', true);
+        }
+
+
+        window.onload = function () {
+
+            var loadingid = '@TempData["berthingReportId"]';
+
+            debugger;
+            if (loadingid == "") {
+                $('#SDraft').show();
+                $('#Id').val(0);
+
             }
+            else {
+                if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                    $('#SDraft').hide();
+                }
 
-            $('#Id').val(loadingid);
-        }
-    };
-</script>
+                $('#Id').val(loadingid);
+            }
+        };
+    </script>*@
 
 
 <script>
@@ -3524,10 +3513,7 @@ table#tblFuelC {
         var Id = t.value;
         var Voyid = $("#VoyageId option:selected").val();
         //alert(portName);
-        if ($("#Id").val() == 0) {
-            $("#ReportDate").val('');
-            $("#ReportDate").prop("disabled", true);
-        }
+
 
         $.ajax({
             type: 'GET',
@@ -3618,7 +3604,7 @@ table#tblFuelC {
 
 
 <script type="text/javascript">
-     function FConsumptionInsertion() {
+      function FConsumptionInsertion() {
 
           //alert("Check");
 
@@ -3969,6 +3955,7 @@ table#tblFuelC {
                     var k = 2;
                     $.each(FtypeList, function (index, value) {
                         ss1 = value;
+                        ss1 = ss1.toFixed(3);
                         table1.rows[k].cells[0].innerHTML = ss1;
                         k++;
                     });
@@ -4063,7 +4050,8 @@ table#tblFuelC {
                         second = 0;
                     }
 
-
+                    //first = first.toFixed(3);
+                    //second = second.toFixed(3);
                     FuelROB.SBE_ROB = first;
                     FuelROB.RFA_ROB = second;
 
@@ -4160,6 +4148,7 @@ table#tblFuelC {
                             if (k == 10) {
                                 k++;
                             }
+                            ss1 = ss1.toFixed(3);
 
                             if (k == 20) {
                                 inc = k;
@@ -4187,7 +4176,6 @@ table#tblFuelC {
                                 k = 1;
                                 j++;
                             }
-
                             //table.rows[j].cells[k].children[0].value = ss1;
                             //k++;
                             //if (k >= 28) {
@@ -4206,6 +4194,7 @@ table#tblFuelC {
                         ss = value;
                         //alert(ss);
                         debugger;
+                        // ss = ss.toFixed(3);
                         table1.rows[j].cells[k].children[0].value = ss;
                         j++;
                     });
@@ -4215,12 +4204,12 @@ table#tblFuelC {
                         ss2 = value;
                         //alert(ss);
                         debugger;
+                        // ss2 = ss2.toFixed();
                         table1.rows[j].cells[k].children[0].value = ss2;
                         j++;
                     });
 
-
-
+                    debugger;
                     AddinSubTotalEdit();
                     AddinSubTotalEdit1();
                     AddinSubTotalEdit2();
@@ -4228,6 +4217,7 @@ table#tblFuelC {
 
                     AddMainTotalInFC();
                     AddMainTotalInFC1();
+
                     //var j = 4;
                     //$.each(CPList, function (index, value) {
                     //    ss = value;
@@ -4255,15 +4245,11 @@ table#tblFuelC {
         });
     }
 
-
-
 </script>
 
 <script>
     function AddinSubTotalEdit() {
         debugger;
-
-
 
         var id1 = $("#Id1").val();
         var id2 = $("#Id2").val();
@@ -4327,7 +4313,10 @@ table#tblFuelC {
         ttl = ttl.toFixed(3);
         $("#MDOAE_Subtotal").val(ttl);
     }
+
+
 </script>
+
 
 <script>
     function GetFacNameEdit(portname) {
@@ -4335,13 +4324,14 @@ table#tblFuelC {
 
         //alert(portname);
         //var Id = t.value;
-        //var portname = $("#PortName option:selected").val();
+        var B_Name = "";
+        B_Name = $("#BerthName").val();
 
 
 
         $.ajax({
             type: 'GET',
-            url: '/Report/Berthing/BindFacility?portname=' + portname,
+            url: '/Report/Berthing/BindFacility?portname=' + portname + '&Berth_Name=' + B_Name,
             cache: false,
             contentType: false,
             processData: false,
@@ -4435,13 +4425,7 @@ table#tblFuelC {
 
 <script>
 
-    $(document).ready(function () {
-        $("#ReportDate").prop("disabled", true);
-    });
 
-</script>
-
-<script>
 
 
     function GetBRCargo() {
@@ -4449,14 +4433,9 @@ table#tblFuelC {
         var LegId = $("#LegPortId option:selected").val();
         var VoyageId = $("#VoyageId option:selected").val();
 
-        if ($("#Id").val() == 0) {
-            $("#ReportDate").val('');
-            $("#ReportDate").prop("disabled", false);
-        }
-
         $.ajax({
             type: 'GET',
-            /* url: '/Report/Berthing/GetBRCargo?LegId=' + LegId + '&VoyageId=' + VoyageId,*/
+            /*url: '/Report/Berthing/GetBRCargo?LegId=' + LegId + '&VoyageId=' + VoyageId,*/
             url: '/Report/Berthing/GetBR_Cargo?LegId=' + LegId + '&VoyageId=' + VoyageId,
             cache: false,
             contentType: false,
@@ -4482,10 +4461,9 @@ table#tblFuelC {
 
                         //ss = value;
                         table.rows[2].cells[0].innerHTML = "";
-                        table.rows[2].cells[1].children[0].value = '0.000';
-                        table.rows[2].cells[2].children[0].value = '0.000';
+                        table.rows[2].cells[1].children[0].value = '0.00';
+                        table.rows[2].cells[2].children[0].value = '0.00';
                         table.rows[2].cells[3].innerHTML = "";
-
 
 
                     }
@@ -4554,7 +4532,6 @@ table#tblFuelC {
 
                                 return true;
                             });
-
                         }
 
                     } else {
@@ -4600,57 +4577,81 @@ table#tblFuelC {
 </script>
 
 
-<script type="text/javascript">
-      function BRCargoInsertion() {
+<script>
 
-               var VoyId = $("#VoyageId option:selected").val();
+    function BRCargoInsertion() {
+        //alert('Q1');
+        debugger;
 
-                var brcargo = [];
-                var table = document.getElementById('tblCargo'),
-                    rows = table.getElementsByTagName('tr'),
-                    i, j, cells, customerId;
-                // var rCount = table.rows.length;
+        var VoyId = $("#VoyageId option:selected").val();
 
-                for (i = 2, j = rows.length; i < j; ++i) {
-                    cells = rows[i].getElementsByTagName('td');
-                    if (!cells.length) {
-                        continue;
-                    }
+       var brcargo = [];
+       var table = document.getElementById('tblCargo'),
+           rows = table.getElementsByTagName('tr'),
+           i, j, cells, customerId;
 
-                    debugger;
+       for (i = 2, j = rows.length; i < j; ++i) {
+           cells = rows[i].getElementsByTagName('td');
 
-                    var BRCargo = {};
+           if (!cells.length) {
+               continue;
+           }
 
-                    BRCargo.CargoName = cells[0].innerHTML;
-                    BRCargo.Qty_Grade1 = cells[1].children[0].value;
-                    BRCargo.Qty_Grade2 = cells[2].children[0].value;
-                    BRCargo.VoyId = VoyId;
-                    BRCargo.LR_Cargo_Id = cells[3].children[0].value;
+           debugger;
 
-                    brcargo.push(BRCargo);
+         
+           var BRCargo = {};
 
-                }
+          // BRCargo.CargoName = cells[0].innerHTML;
+           try {
+               BRCargo.CargoName = cells[0].children[0].value;
 
-                //alert(fuelconsumptions);
+           } catch { BRCargo.CargoName = cells[0].innerHTML; }
 
-          brcargo = JSON.stringify(brcargo);
+           try {
+               BRCargo.Qty_Grade1 = cells[1].children[0].value;
 
-                $.ajax({
-                    url: '@Url.Action("InsertBRCargo", "Berthing")',
-                    type: "POST",
-                    data: { 'brcargo': brcargo },
-                    dataType: "json",
-                    beforeSend: function (x) {
-                        if (x && x.overrideMimeType) {
-                            x.overrideMimeType("application/j-son;charset=UTF-8");
-                        }
-                    },
-                    success: function (result) {
-                        debugger;
-                        window.location.href = result;
-                    }
-                });
-            }
+           } catch { BRCargo.Qty_Grade1 = cells[1].innerHTML; }
+
+           try {
+               BRCargo.Qty_Grade2 = cells[2].children[0].value;
+
+           } catch { BRCargo.Qty_Grade2 = cells[2].innerHTML; }
+
+           BRCargo.VoyId = VoyId;
+
+           try {
+               BRCargo.LR_Cargo_Id = cells[3].children[0].value;
+
+           } catch { BRCargo.LR_Cargo_Id = cells[3].innerHTML; }
+            // BRCargo.Qty_Grade2 = cells[2].children[0].value;
+             //BRCargo.Qty_Grade2 = '0.000';
+
+           brcargo.push(BRCargo);
+
+       }
+
+
+       brcargo = JSON.stringify(brcargo);
+
+       $.ajax({
+           url: '@Url.Action("InsertBRCargo", "Berthing")',
+           type: "POST",
+           data: { 'brcargo': brcargo },
+           dataType: "json",
+           beforeSend: function (x) {
+               if (x && x.overrideMimeType) {
+                   x.overrideMimeType("application/j-son;charset=UTF-8");
+               }
+           },
+           success: function (result) {
+               debugger;
+               window.location.href = result;
+           }
+       });
+
+    }
+
 </script>
 
 <script>
@@ -4740,9 +4741,31 @@ table#tblFuelC {
                             k++;
                         }
                         else {
-                            table.rows[j].cells[k].children[0].value = ss1;
+
+                            // table.rows[j].cells[k].children[0].value = ss1;
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+
+                            table.rows[j].cells[k].addEventListener("input", function (event) {
+                                var inputText = event.target.textContent;
+
+                                var cleanedText = inputText.replace(/[^0-9.]/g, '');
+
+                               // if (/^\d*(\.\d{0,3})?$/.test(cleanedText)) {
+                                if (/^\d{0,7}(\.\d{0,3})?$/.test(cleanedText)) {
+
+                                    event.target.textContent = cleanedText;
+
+                                } else {
+
+                                    event.target.textContent = "";
+                                }
+                            });
+
                             k++;
                         }
+
                     });
 
 
@@ -4781,9 +4804,9 @@ table#tblFuelC {
 }
 @if (ViewBag.EditFacName != null)
 {
-    <script type="text/javascript">
-                @Html.Raw(ViewBag.EditFacName)
-    </script>
+<script type="text/javascript">
+       @Html.Raw(ViewBag.EditFacName)
+</script>
 }
 @if (ViewBag.EditBRCargoEdit != null)
 {
@@ -4813,7 +4836,5 @@ table#tblFuelC {
     $('#Menu5').addClass('active');
     $('#Menu6').removeClass('active');
     $('#Menu7').removeClass('active');
-    $('#Menu8').removeClass('active');
-    $('#Menu9').removeClass('active');
 
 </script>

@@ -8,7 +8,9 @@
 
 
 <h2>@ViewBag.Title</h2>
+
 <div class="row">
+   
     <div class="col-md-8">
         <section id="loginForm">
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
@@ -22,29 +24,29 @@
 
 
                 @*<div class="form-group">
-                    <label for="inputPassword" class="col-md-2 control-label">User Type</label>
-                    <div class="col-md-10">
-                        <input onclick="eventTwo()" type="radio" id="Sea" name="location-status" value="CSS">
-                        <label onclick="eventTwo()" for="Sea">Vessel</label><br>
-                        <input onclick="eventOne()" type="radio" id="Port" name="location-status" value="JavaScript">
-                        <label onclick="eventOne()" for="Port">Office</label>
-                        <span id="msgAtSeaOrPort" style="color:red"></span>
-                        <div style="display:none;">
-                            @Html.TextBoxFor(m => m.UserType)
+                        <label for="inputPassword" class="col-md-2 control-label">User Type</label>
+                        <div class="col-md-10">
+                            <input onclick="eventTwo()" type="radio" id="Sea" name="location-status" value="CSS">
+                            <label onclick="eventTwo()" for="Sea">Vessel</label><br>
+                            <input onclick="eventOne()" type="radio" id="Port" name="location-status" value="JavaScript">
+                            <label onclick="eventOne()" for="Port">Office</label>
+                            <span id="msgAtSeaOrPort" style="color:red"></span>
+                            <div style="display:none;">
+                                @Html.TextBoxFor(m => m.UserType)
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="vsllist" style="display:none" class="form-group">
-                    <label for="inputPassword" class="col-md-2 control-label">Vessel List</label>
-                    <div class="col-md-10">
-                        @Html.DropDownListFor(model => model.VesselIMO, new SelectList(Model.VesselList, "IMONo", "Name"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input",  @required = "true", })
-                        <span id="msgLegPortId" style="color:red"></span>
-                    </div>
-                </div>*@
+                    <div id="vsllist" style="display:none" class="form-group">
+                        <label for="inputPassword" class="col-md-2 control-label">Vessel List</label>
+                        <div class="col-md-10">
+                            @Html.DropDownListFor(model => model.VesselIMO, new SelectList(Model.VesselList, "IMONo", "Name"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input",  @required = "true", })
+                            <span id="msgLegPortId" style="color:red"></span>
+                        </div>
+                    </div>*@
 
-               
-             
+
+
 
 
                 <div class="form-group">
@@ -75,20 +77,20 @@
                     </div>
                 </div>
                 @*<p>
-                @Html.ActionLink("Register as a new user", "Register")
-            </p>
-             Enable this once you have account confirmation enabled for password reset functionality
-                <p>
-                    @Html.ActionLink("Forgot your password?", "ForgotPassword")
-                </p>*@
+                        @Html.ActionLink("Register as a new user", "Register")
+                    </p>
+                     Enable this once you have account confirmation enabled for password reset functionality
+                        <p>
+                            @Html.ActionLink("Forgot your password?", "ForgotPassword")
+                        </p>*@
             }
         </section>
-        </div>
+    </div>
     @*<div class="col-md-4">
-        <section id="socialLoginForm">
-            @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
-        </section>
-    </div>*@
+            <section id="socialLoginForm">
+                @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
+            </section>
+        </div>*@
 </div>
 
 <script type="text/javascript">

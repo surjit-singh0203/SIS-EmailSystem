@@ -1,0 +1,379 @@
+﻿@model DataBuildingLayer.UserDetail
+@{
+    /**/
+
+    /**/
+
+    ViewBag.Title = "AddUser";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@*<link href="~/css/bootstrap.min.css" rel="stylesheet">*@
+@*<script src="~/js/CommonScriptFunctions.js"></script>*@
+
+
+@*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css" />
+
+<style type="text/css">
+    .multiselect-container > li > a > label.checkbox {
+        width: 250px;
+    }
+
+    .dropdown-menu-custom-settings {
+        top: 0% !important;
+        left: 230px !important;
+        width: 100% !important;
+        background-color: #0f3976;
+    }
+</style>*@
+
+<h2>Add User</h2>
+@using (Html.BeginForm("AddUser", "User", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="page-heading page-header-flex">
+        <div>
+
+            @*<ol class="breadcrumb">
+                    <li><a href="">Home</a></li>
+                    <li><a href="">Form</a></li>
+                    <li><a>Create</a></li>
+                </ol>*@
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <p class="alert alert-danger" id="errorMessage"></p>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <p class="alert alert-success" id="successMessage"></p>
+        }
+
+        <div class="form-actions">
+            <button name="Submit" type="submit" class="btn btn-success btn-width"><i class="uil uil-check mr-2"></i>Submit</button>
+            <button name="Reset" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
+            @*<button name="back" style="display:none" id="btnBack" onclick="goBack()" class="btn btn-danger btn-width"> << Back</button>*@
+            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content">
+        <div class="container">
+
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-8 mx-auto">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+
+
+
+
+                        <div class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">User Type<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-4">
+
+                                <input type="radio" id="Laden" onclick="eventOne1()" name="location-status1" required value="CSS">
+                                <label onclick="eventOne1()" for="Laden">Vessel</label><br>
+                                <input type="radio" id="Ballast" onclick="eventTwo1()" name="location-status1" value="JavaScript">
+                                <label onclick="eventTwo1()" for="Ballast">Office</label>
+                                <span id="msgVesselStatus" style="color:red"></span>
+                                <div style="display:none;">
+                                    @Html.TextBoxFor(m => m.UserType)
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">User Role<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-8">
+                                @Html.DropDownListFor(model => model.DepId, new SelectList(Model.DepartmentWiseUserRole, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                <div class="error"></div>
+                            </div>
+                        </div>
+                        @*<div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">User Name<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+
+                                    @Html.DropDownListFor(model => model.UserName, new SelectList(Model.RankList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                    <div class="error"></div>
+                                </div>
+                            </div>*@
+                        @*<div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">Rank<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+
+                                    @Html.DropDownListFor(model => model.RankId, new SelectList(Model.RankList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+                                    <div class="error"></div>
+                                </div>
+                            </div>*@
+                        <div class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">User Email<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.UserEmail, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @required = "true", @maxlength = 100 } })
+                                @*<div class="error"></div>*@
+                                <span id="messageDia"></span>
+                            </div>
+                        </div>
+                        @*<div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">Email / User name<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    @Html.EditorFor(model => model.UserEmail, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @required = "true", @type = "email" } })
+                                    @Html.ValidationMessageFor(model => model.UserEmail, "", new { @class = "text-danger" })
+                                </div>
+                            </div>*@
+
+                        <div class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">Password<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @type = "Password", @class = "form-control", @required = "true" } })
+                                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                                <span id="messageDia"></span>
+                            </div>
+                        </div>
+                        <div class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">Confirm Password<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.ConfirmPassword, new { htmlAttributes = new { @type = "Password", @class = "form-control", @required = "true" } })
+                                @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })
+                                <span id="messageDia"></span>
+                            </div>
+                        </div>
+                        @*<div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">User Type<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+
+                                    @Html.DropDownListFor(model => model.UserType, new SelectList(Model.UserTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+
+
+                                </div>
+                            </div>*@
+                        <div id="idOffice" class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">Assign Vessel<sup>*</sup></label>
+                            </label>
+                            <div class="col-sm-8">
+
+                                @Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"),"", new { @class = "form-control select2",  })
+
+
+                            </div>
+
+
+                        </div>
+
+                        <div id="idVessel" style="display:none" class="row form-group ">
+                            <label class="col-sm-4 col-form-label">
+                                <label class="control-label">Assign Vessel<sup>*</sup></label>
+                            </label>
+
+                            <div class="col-sm-8">
+
+                                @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control select2",  })
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        function eventOne1() {
+            $("#UserType").val("Vessel");
+
+            //$("#idVessel").show();
+            //$("#idOffice").hide();
+
+        };
+        function eventTwo1() {
+            $("#UserType").val("Office");
+            //$("#idVessel").hide();
+            //$("#idOffice").show();
+        };
+    </script>
+
+    <script>
+        function GetRanks(t) {
+            debugger;
+            var Id = t.value;
+            var portName = $("#DepId option:selected").val();
+            //alert(portName);
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/UserManagement/User/GetRanks?Did=' + portName,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+
+                    if (response.Result === true) {
+                        $('#UserName').empty();
+                        //alert(433);
+                        debugger;
+                        $('#UserName').append('<option value="">None Selected</option>');
+                        for (var i = 0; i < response.Data.length; i++) {
+                            debugger;
+                            var txt = response.Data[i].Text;
+                            var valu = response.Data[i].Value;
+                            // alert(txt);
+                            $('#UserName').append('<option value="' + valu + '">' + txt + '</option>');
+
+                        }
+                        // $('#RankId').append('<option value="">Other</option>');
+
+                    }
+                    else {
+                        toastr["error"](response.Message);
+                    }
+                },
+                failure: function (response) {
+                    toastr["error"](response.Message);
+                }
+            });
+
+            //$.ajax({
+            //    //type: 'GET',
+            //    //url: '/UserManagement/User/GetRanks?Did=' + portName,
+            //    //cache: false,
+            //    //contentType: false,
+            //    //processData: false,
+            //    type: 'GET',
+            //    dataType: 'json',
+            //    url: '/UserManagement/User/GetRanks',
+            //    data: { 'Did': Id },
+            //    success: function (response) {
+            //        if (response.Result === true) {
+            //            $('#RankId').empty();
+
+            //            $('#RankId').append('<option value="">None Selected</option>');
+            //            for (var i = 0; i < response.Data.length; i++) {
+            //                $('#RankId').append('<option value="' + response.Data[i].Value + '">' + response.Data[i].Text + '</option>');
+
+            //            }
+
+            //            //$('#FacilityName').append('<option value="">Other</option>');
+
+            //        }
+            //        else {
+            //            toastr["error"](response.Message);
+            //        }
+            //    },
+            //    failure: function (response) {
+            //        toastr["error"](response.Message);
+            //    }
+            //});
+        };
+    </script>
+
+    <script>
+        $(function () {
+            $('#VesselIDs').multiselect({
+                includeSelectAllOption: true,
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                filterPlaceholder: 'Search for something...'
+            });
+        });
+    </script>
+
+    <script>
+
+        $('#Menu1').addClass('active');
+        $('#Menu2').removeClass('active');
+        $('#Menu3').removeClass('active');
+        $('#Menu4').removeClass('active');
+        $('#Menu5').removeClass('active');
+
+
+    </script>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+
+    @*<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+    <script>
+
+        $('#VesselIDs').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            maxHeight: 350,
+            numberDisplayed: 1,
+            onSelectAll: function () {
+            }
+        });
+    </script>
+
+
+    <script>
+
+        $('.importexport').multiselect({
+            includeSelectAllOption: false,
+            enableCaseInsensitiveFiltering: true,
+            maxHeight: 350,
+            numberDisplayed: 1,
+            onChange: function (option, checked) {
+                // Get selected options.
+                var selectedOptions = $('.importexport option:selected');
+
+                if (selectedOptions.length >= 1) {
+                    // Disable all other checkboxes.
+                    var nonSelectedOptions = $('.importexport option').filter(function () {
+                        return !$(this).is(':selected');
+                    });
+
+                    nonSelectedOptions.each(function () {
+                        var input = $('input[value="' + $(this).val() + '"]');
+                        input.prop('disabled', true);
+                        input.parent('li').addClass('disabled');
+                    });
+                }
+                else {
+                    // Enable all checkboxes.
+                    $('.importexport option').each(function () {
+                        var input = $('input[value="' + $(this).val() + '"]');
+                        input.prop('disabled', false);
+                        input.parent('li').addClass('disabled');
+                    });
+                }
+            }
+        });
+
+    </script>*@
+
+
+}

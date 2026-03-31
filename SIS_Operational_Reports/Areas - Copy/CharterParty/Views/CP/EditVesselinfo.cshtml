@@ -1,0 +1,104 @@
+﻿@using DataBuildingLayer;
+@model CPVessel
+@{
+    ViewBag.Title = "EditVesselinfo";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+@using (Html.BeginForm("EditVesselinfo", "CP"))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(e => e.Id)
+
+    <div id="page-wrapper" class="content">
+
+        <div class="page-heading page-header-flex">
+            <div>
+                <h1 class="page-title">
+                    Edit Vessel info
+                </h1>
+                @*<ol class="breadcrumb">
+                        <li><a href="">Home</a></li>
+                        <li><a href="">Form</a></li>
+                        <li><a>Create</a></li>
+                    </ol>*@
+            </div>
+            <div class="form-actions">
+                @*<button name="Submit" type="submit" class="btn btn-success btn-width" onclick="this.form.submit();this.disabled = true; this.value = 'Submit...';"><i class="uil uil-check mr-2"></i>Submit</button>*@
+                <button name="Submit" type="submit" class="btn btn-success btn-width"><i class="uil uil-check mr-2"></i>Submit</button>
+                <button name="Reset" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
+                <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+            </div>
+        </div>
+        <div class="wrapper wrapper-content">
+            <div class="container">
+                <div class="form-body">
+                    <div class="row">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        <div style="display:none">
+                            @Html.TextBoxFor(model => model.Id, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 50, @required = "true", } })
+
+                        </div>
+
+                        <div style="display:none">
+                            @Html.TextBoxFor(model => model.CPId, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 50, @required = "true", } })
+                            <div class="error"></div>
+                        </div>
+
+                        <div class="col-md-8 mx-auto">
+                            <div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">Vessel<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList1, "Value", "Text", Model.Svid), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                                    <div class="error"></div>
+                                </div>
+                            </div>
+
+
+                            <div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">Start Date<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    @Html.TextBoxFor(model => model.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })
+                                    <span id="messageImo"></span>
+                                </div>
+                            </div>
+                            <div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">End Date<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    @Html.TextBoxFor(model => model.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })
+                                    <span id="messageImo"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+<script>
+
+        $('#Menu1').removeClass('active');
+        $('#Menu2').removeClass('active');
+        $('#Menu3').addClass('active');
+        $('#Menu4').removeClass('active');
+        $('#Menu5').removeClass('active');
+
+
+</script>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>

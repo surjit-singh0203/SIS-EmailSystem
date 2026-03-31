@@ -1,6 +1,39 @@
 ﻿@model DataBuildingLayer.ArrivalReport
 
 
+
+
+@*<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />*@
+
+
+@*<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        $('.mdb-select').materialSelect();
+    });
+</script>
+
+<link href="~/css/select2.min.css" rel="stylesheet">
+    <script src="~/js/select2.full.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $(".select2").select2({
+                placeholder: "Select an option",
+                allowClear: false
+            });
+            $(".select-control").select2({
+                minimumResultsForSearch: -1,
+                allowClear: false
+            });
+        });
+    </script>*@
+
 <div id="arrival">
 
     <div>
@@ -12,18 +45,18 @@
 
 
 
-            <div class="col-md button-row-top">
-                <div class="row">
-                    <div class="col">
-                        <button class="function-button submit-button">
-                            <a class="function-button submit-button" href="@Url.Action("Index", "Arrival")">
-                                <i class="fa fa-plus-circle mr-2"></i>Add Arrival Report
-                            </a>
-                        </button>
-                    </div>
+            @*<div class="col-md button-row-top">
+                    <div class="row">
+                        <div class="col">
+                            <button class="function-button submit-button">
+                                <a class="function-button submit-button" href="@Url.Action("Index", "Arrival")">
+                                    <i class="fa fa-plus-circle mr-2"></i>Add Arrival Report
+                                </a>
+                            </button>
+                        </div>
 
-                </div>
-            </div>
+                    </div>
+                </div>*@
 
         </div>
 
@@ -41,8 +74,13 @@
 
             <div class="search-row">
                 <div class="col m-1">
+                    @*@Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control importexport", @multiple = "multiple", })*@
 
-                    <input id="idFirst" placeholder="saerch by : voyage no." autocomplete="off" class="form-control" type="text">
+                    @Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                </div>
+                <div class="col m-1">
+
+                    <input id="idFirst" placeholder="search by : voyage no." autocomplete="off" class="form-control" type="text">
                     <span id="messageLat" style="color:red"></span>
                 </div>
 
@@ -64,11 +102,11 @@
                         <th>EOSP</th>
 
                         <th>Status</th>
-                        <th>Downlaod Report</th>
+                        <th>Vessel Name</th>
                         @*<th>Submit Date</th>*@
-                        <th>Sync To Emial</th>
-                        <th>Action</th>
 
+                        <th>Action</th>
+                        <th>Download</th>
 
                     </tr>
 
@@ -79,98 +117,61 @@
                     {
 
 
-                        <tr>
-                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
-                            <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
-                            <td> @Html.DisplayFor(modelItem => item.Place)</td>
-                            @*<td> @Html.DisplayFor(modelItem => item.EOSP)</td>*@
-                            @*<td>
-                                    @{ DateTime? cdt1 = item.EOSP;
-                                        if (cdt1 != null)
-                                        {
-                                            @Html.Raw(cdt1.Value.ToString("dd-MMM-yyyy")) } }
-                                </td>*@
-
-                            @if (item.EOSP.ToString() == "0001-01-01 00:00:00" || item.EOSP.ToString() == "01-01-0001 00:00:00")
-                            {
-                                <td></td>
-                            }
-                            else
-                            {
+                    <tr>
+                        <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                        <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
+                        <td> @Html.DisplayFor(modelItem => item.Place)</td>
+                        @*<td> @Html.DisplayFor(modelItem => item.EOSP)</td>*@
+                        <td>
+                            @{ DateTime? cdt1 = item.EOSP;
+                                if (cdt1 != null)
                                 {
-                                    DateTime? cdt1 = item.EOSP;
-
-                                    <td> @Html.Raw(cdt1.Value.ToString("dd-MMM-yyyy"))</td>
-                                }
-                            }
-                            <td>
-
-                                @{ var svd = item.SaveDraft;
-                                    if (svd == true)
-                                    {
-                                        @Html.Raw("In Draft") }
-                                    else
-                                    {
-                                        @Html.Raw("Submitted") } }
-                            </td>
+                                    @Html.Raw(cdt1.Value.ToString("dd-MMM-yyyy")) } }
+                        </td>
 
 
-                            <td>
-                                @if (svd == true)
+                        <td>
+
+                            @{ var svd = item.SaveDraft;
+                                if (svd == true)
                                 {
-                                    <span>N/A</span>
-                                }
+                                    @Html.Raw("In Draft") }
                                 else
                                 {
+                                    @Html.Raw("Submitted") } }
+                        </td>
+                        @*<td>
+            @{ DateTime? cdt = item.CreatedDate;
+                if (cdt != null)
+                {
+                    @Html.Raw(cdt.Value.ToString("dd-MMM-yyyy")) } }
+        </td>*@
+
+                        <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+                        <td>
+
+                            <div class="row button-row">
+                                <div class="col table-button-container">
                                     <button type="button" class="function-button table-button">
-                                        @Html.ActionLink("Download", "SyncReportDownload", "Arrival",
-                                        new { VoyageId = item.VoyageId, Id = item.Id, ReportDate = item.EOSP }, null)
+                                        @Html.ActionLink("View/Edit", "Edit", "Arrival", new { id = item.Id, vesselid = item.VesselId }, new { onclick = "" })
                                     </button>
-                                }
-
-
-                            </td>
-                            <td>
-
-                                @if (svd == true)
-                                {
-                                    <span>N/A</span>
-                                }
-                                else
-                                {
-                                    <button type="button" class="function-button table-button" onclick="openEmail('@item.VoyageId','@item.Id','@item.EOSP','@item.Place')">
-                                        SYNC
-                                    </button>
-                                }
-                            </td>
-                            @*<td>
-                                    @{ DateTime? cdt = item.CreatedDate;
-                                        if (cdt != null)
-                                        {
-                                            @Html.Raw(cdt.Value.ToString("dd-MMM-yyyy")) } }
-                                </td>*@
-                            <td>
-
-                                <div class="row button-row">
-                                    <div class="col table-button-container">
-                                        <button type="button" class="function-button table-button">
-                                            @Html.ActionLink("Edit", "Edit", "Arrival", new { id = item.Id }, new { onclick = "" })
-                                        </button>
-                                    </div>
-                                    @if (StaticHelper.LoginUser == "master")
-                                    {
-                                        <div class="col table-button-container">
-                                            <button type="button" class="function-button table-button">
-                                                @Html.ActionLink("Delete", "Delete", "Arrival", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
-                                            </button>
-                                        </div>
-                                    }
                                 </div>
+                                @*<div class="col table-button-container">
+                    <button type="button" class="function-button table-button">
+                        @Html.ActionLink("Delete", "Delete", "Arrival", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
+                    </button>
+                </div>*@
+                            </div>
 
-                            </td>
+                        </td>
 
+                        <td>
+                            <button type="button" class="function-button table-button">
+                                @Html.ActionLink("Download Report", "DownloadExcel", "Arrival", new { id = item.Id, vesselid = item.VesselId, actionName = "FCons" }, new { onclick = "" })
+                            </button>
+                        </td>
 
-                        </tr>
+                    </tr>
                     }
 
 
@@ -210,61 +211,6 @@
 
 <script>
 
-    function openEmail(VoyageId, Id, reportDate, AtSeaPort) {
-        debugger
-        $.ajax({
-            url: '/DailyNoon/SyncReportToGetEmail',
-            type: 'GET',
-            data: {
-                VoyageId: VoyageId,
-                Id: Id,
-                ReportDate: reportDate
-            },
-            success: function (response) {
-
-                var to = response.data[0].EmailTo;
-                var cc = response.data[0].EmailCC;
-
-
-                var subject = "Daily Noon Report Sync";
-
-                var fileLink = window.location.origin + response.fileUrl;
-
-                var body =
-                    "Hello,%0D%0A%0D%0A" +
-
-                    "The Arrival-Report has been generated.%0D%0A%0D%0A" +
-
-                    "Report Details:%0D%0A" +
-                    "----------------------------------%0D%0A" +
-                    "Voyage Id : " + VoyageId + "%0D%0A" +
-                    "EOSP : " + reportDate + "%0D%0A" +
-                    "Place : " + AtSeaPort + "%0D%0A" +
-                    "----------------------------------%0D%0A%0D%0A" +
-
-
-
-                    "Regards,%0D%0A" +
-                    "Reporting System";
-
-
-
-                var url = "mailto:" + to +
-                    "?cc=" + cc +
-                    "&subject=" + encodeURIComponent(subject) +
-                    "&body=" + body;
-
-
-                window.location.href = url;
-            }
-        });
-
-    }
-
-</script>
-
-<script>
-
     $('#Menu1').removeClass('active');
     $('#Menu2').addClass('active');
     $('#Menu3').removeClass('active');
@@ -274,6 +220,7 @@
     $('#Menu7').removeClass('active');
     $('#Menu8').removeClass('active');
     $('#Menu9').removeClass('active');
+    $('#Menu10').removeClass('active');
 
 </script>
 
@@ -305,6 +252,7 @@
 
         var firstVal = $("#idFirst").val();
         var secondVal = $("#idSecond").val();
+        var vsl = $("#VesselId").val();
 
         var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
         var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
@@ -314,14 +262,18 @@
             dateT = "";
         }
 
-        if (firstVal == "" && secondVal == "") {
+        if (firstVal == "" && secondVal == "" && vsl == "") {
             alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        if (vsl == "") {
+            alert("Please choose vessel first");
             return;
         }
         else {
             $.ajax({
                 type: 'GET',
-                url: '/Report/Arrival/arrivallist?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                url: '/Report/Arrival/arrivallist?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT + '&Vessel=' + vsl,
                 datatype: 'json',
                 cache: false,
                 contentType: 'application/json; charset=utf-8',
@@ -340,3 +292,5 @@
     });
 
 </script>
+
+

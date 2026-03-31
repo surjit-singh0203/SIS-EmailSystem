@@ -1,0 +1,533 @@
+﻿
+
+@using DataBuildingLayer;
+@model List<DataBuildingLayer.TanksAndHolds>
+
+@{
+    ViewBag.Title = "inserttank";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row" style="margin-top: 5px; border-bottom: solid 1px #676969; margin-bottom: 10px;">
+
+    <div class="inline-content">
+        <div class="col">
+
+            @{
+                var tankstype = "";
+                var checktypeid = Request.QueryString["typeid"];
+                if (checktypeid == "1")
+                {
+                    tankstype = "Add Cargo Tanks";
+                }
+                if (checktypeid == "2")
+                {
+                    tankstype = "Add Cargo Holds";
+                }
+                if (checktypeid == "3")
+                {
+                    tankstype = "Add Ballast Tanks";
+                }
+                if (checktypeid == "4")
+                {
+                    tankstype = "Add Void Spaces";
+                }
+                if (checktypeid == "5")
+                {
+                    tankstype = "Add Bunker Tanks";
+                }
+                if (checktypeid == "6")
+                {
+                    checktypeid = "Add Lube Oil Tanks";
+                }
+                if (checktypeid == "7")
+                {
+                    tankstype = "Add Fresh Water Tanks";
+                }
+                if (checktypeid == "8")
+                {
+                    tankstype = "Add Other Tanks";
+                }
+                if (checktypeid == "9")
+                {
+                    tankstype = "Add Other Spaces";
+                }
+
+            }
+            <h2>@tankstype</h2>
+        </div>
+        <div>
+            <input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />
+            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width m-1"> &lt;&lt; Go Back</a>
+        </div>
+    </div>
+
+
+
+
+
+
+</div>
+
+</div>
+
+@*<table id="tbltanksAndholds" class="table" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+
+                <th id="thName" style="width:250px">Name</th>
+                <th id="thHeight" style="width:250px">Height</th>
+                <th id="thCapacity" style="width:250px">Capacity</th>
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TanksAndHolds tanks in Model)
+            {
+                <tr>
+                    <td>@tanks.Name</td>
+                    <td>@tanks.Height</td>
+                    <td>@tanks.Capacity</td>
+                    <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><input maxlength="50" width="250" type="text" id="txtName" /></td>
+                <td><input maxlength="5" width="250" type="text" id="txtHeight" /></td>
+                <td><input maxlength="5" width="250" type="text" id="txtCapacity" /></td>
+                <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+            </tr>
+        </tfoot>
+    </table>
+    <br />
+    <input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />*@
+
+
+<div class="container">
+    <table id="tbltanksAndholds" class="GeneratedTable" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+
+                <th id="thName">Name</th>
+                <th id="thHeight">Height</th>
+                <th id="thCapacity">Capacity</th>
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TanksAndHolds tanks in Model)
+            {
+                <tr>
+                    <td>@tanks.Name</td>
+                    <td>@tanks.Height</td>
+                    <td>@tanks.Capacity</td>
+                    <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><input type="text" class="form-control bottom-border-input" maxlength="50" width="250" id="txtName" /></td>
+                <td><input type="text" class="form-control bottom-border-input" onKeyUp="requiredValue1(this)" onkeypress="return isNumberKey(event)" maxlength="8" width="250" id="txtHeight" /></td>
+                <td><input type="text" class="form-control bottom-border-input" onKeyUp="requiredValue2(this)" onkeypress="return isNumberKey(event)" maxlength="9" width="250" id="txtCapacity" /></td>
+                <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br />
+@*<input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />*@
+
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        //Reference the Name and Country TextBoxes.
+        var txtName = $("#txtName");
+        var txtHeight = $("#txtHeight");
+        var txtCapacity = $("#txtCapacity");
+
+        //alert(txtName.val());
+
+        if (txtName.val() == "") {
+            alert("Name can not be blank !");
+            return;
+        }
+        if (txtHeight.val() == "") {
+            alert("Height can not be blank !");
+            return;
+        }
+        if (txtCapacity.val() == "") {
+            alert("Capacity can not be blank !");
+            return;
+        }
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tbltanksAndholds > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtName.val());
+
+        //Add Height cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtHeight.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtCapacity.val());
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtName.val("");
+        txtHeight.val("");
+        txtCapacity.val("");
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tbltanksAndholds")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+    $("body").on("click", "#btnSave", function () {
+        //Loop through the Table rows and build a JSON array.
+
+        //var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        //var urlparam = url[0].split('=');
+        var result = getUrlVars()["typeid"];
+
+        debugger;
+
+        var tankAndholds = new Array();
+        var check = 0;
+        $("#tbltanksAndholds TBODY TR").each(function () {
+            var row = $(this);
+            var tankH = {};
+            check = 1;
+            tankH.Name = row.find("TD").eq(0).html();
+            tankH.Height = row.find("TD").eq(1).html();
+            tankH.Capacity = row.find("TD").eq(2).html();
+            tankH.TanksTypeId = result;
+            tankAndholds.push(tankH);
+        });
+
+        if (check == 0) {
+
+            var txtName = $("#txtName");
+            var txtHeight = $("#txtHeight");
+            var txtCapacity = $("#txtCapacity");
+
+            //alert(txtName.val());
+
+            if (txtName.val() == "") {
+                alert("Name can not be blank !");
+                return;
+            }
+            if (txtHeight.val() == "") {
+                alert("Height can not be blank !");
+                return;
+            }
+            if (txtCapacity.val() == "") {
+                alert("Capacity can not be blank !");
+                return;
+            }
+
+            //Get the reference of the Table's TBODY element.
+            var tBody = $("#tbltanksAndholds > TBODY")[0];
+
+            //Add Row.
+            var row = tBody.insertRow(-1);
+
+            //Add Name cell.
+            var cell = $(row.insertCell(-1));
+            cell.html(txtName.val());
+
+            //Add Height cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtHeight.val());
+
+            //Add Capacity cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtCapacity.val());
+
+
+            var tankAndholds1 = new Array();
+           
+            $("#tbltanksAndholds TBODY TR").each(function () {
+                var row = $(this);
+                var tankH = {};
+                check = 1;
+                tankH.Name = row.find("TD").eq(0).html();
+                tankH.Height = row.find("TD").eq(1).html();
+                tankH.Capacity = row.find("TD").eq(2).html();
+                tankH.TanksTypeId = result;
+                tankAndholds1.push(tankH);
+            });
+
+            var origin = window.location.origin;
+            // alert(origin);
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+
+                url: "/VesselParticulars/VesselTanks/inserttankandholds",
+                data: JSON.stringify(tankAndholds1),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (r) {
+                    //alert(r + " record(s) inserted.");
+
+                    if (r != 0) {
+                        window.location = origin + "/VesselParticulars/VesselTanks/viewtanks?typeid=" + r + "";
+                    }
+                    else {
+
+                        alert('Tank already exist !');
+                        //window.location = origin + "/VesselParticulars/VesselTanks/viewtanks?typeid=" + r + "";
+                    }
+                }
+
+
+            });
+
+        } else {
+
+            var origin = window.location.origin;
+            // alert(origin);
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+
+                url: "/VesselParticulars/VesselTanks/inserttankandholds",
+                data: JSON.stringify(tankAndholds),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (r) {
+                    //alert(r + " record(s) inserted.");
+
+                    if (r != 0) {
+                        window.location = origin + "/VesselParticulars/VesselTanks/viewtanks?typeid=" + r + "";
+                    }
+                    else {
+
+                        alert('Tank already exist !');
+                        //window.location = origin + "/VesselParticulars/VesselTanks/viewtanks?typeid=" + r + "";
+                    }
+                }
+
+
+            });
+        }
+
+
+
+        //tankAndholds = JSON.stringify(tankAndholds);
+
+        //if (tankAndholds == "[]") {
+        //    var tBody = $("#tbltanksAndholds > TBODY")[0];
+
+        //    debugger;
+
+        //    //Add Row.
+        //    var row = tBody.insertRow(-1);
+
+        //    //Add Name cell.
+        //    var cell = $(row.insertCell(-1));
+        //    cell.html(txtName.val());
+
+        //    //Add Height cell.
+        //    cell = $(row.insertCell(-1));
+        //    cell.html(txtHeight.val());
+
+        //    //Add Capacity cell.
+        //    cell = $(row.insertCell(-1));
+        //    cell.html(txtCapacity.val());
+        //    return;
+        //}
+        //else {
+        //    alert(2);
+        //    return;
+        //}
+
+        //alert(tankAndholds);
+
+
+       
+    });
+</script>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script>
+
+    var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    //alert(url);
+
+    if (url == "typeid=1") {
+
+        $("#thName").html("Cargo Tanks Name*");
+        $("#thHeight").html("Cargo Tanks Height in meters*");
+        $("#thCapacity").html("Cargo Tanks Capacity in m3*");
+    }
+    if (url == "typeid=2") {
+
+        $("#thName").html("Cargo Holds Name*");
+        $("#thHeight").html("Cargo Holds Height in meters*");
+        $("#thCapacity").html("Cargo Holds Capacity in m3*");
+    }
+    if (url == "typeid=3") {
+
+        $("#thName").html("Ballast Tanks Name*");
+        $("#thHeight").html("Ballast Tanks Height in meters*");
+        $("#thCapacity").html("Ballast Tanks Capacity in m3*");
+    }
+    if (url == "typeid=4") {
+
+        $("#thName").html("Void Spaces Name*");
+        $("#thHeight").html("Void Spaces Height in meters");
+        $("#thCapacity").html("Void Spaces Capacity in m3*");
+    }
+    if (url == "typeid=5") {
+
+        $("#thName").html("Bunker Tanks Name*");
+        $("#thHeight").html("Bunker Tanks Height in meters*");
+        $("#thCapacity").html("Bunker Tanks Capacity in m3*");
+    }
+    if (url == "typeid=6") {
+
+        $("#thName").html("Lube Oil Tanks Name*");
+        $("#thHeight").html("Lube Oil Tanks Height in meters*");
+        $("#thCapacity").html("Lube Oil Tanks Capacity in m3*");
+    }
+    if (url == "typeid=7") {
+
+        $("#thName").html("Fresh Water Tanks Name*");
+        $("#thHeight").html("Fresh Water Tanks Height in meters*");
+        $("#thCapacity").html("Fresh Water Tanks Capacity in m3*");
+    }
+    if (url == "typeid=8") {
+
+        $("#thName").html("Other Tanks Name*");
+        $("#thHeight").html("Other Tanks Height in meters*");
+        $("#thCapacity").html("Other Tanks Capacity in m3*");
+    }
+    if (url == "typeid=9") {
+
+
+        $("#thName").html("Other Spaces Name*");
+        $("#thHeight").html("Other Spaces Height in meters*");
+        $("#thCapacity").html("Other Spaces Capacity in m3*");
+    }
+
+</script>
+
+<script>
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(3);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue2(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(3);
+            }
+        }
+        if (value > 999999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').addClass('active');
+    $('#Menu5').removeClass('active');
+
+
+</script>

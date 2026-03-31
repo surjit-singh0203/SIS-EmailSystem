@@ -13,9 +13,8 @@ namespace DataBuildingLayer
         public ExportPeram()
         {
             VoyageNumberList = voyageNList2(); //LoadingReport.voyageNList();
-            VoyageIds = new List<int>();
         }
-        public List<int> VoyageIds { get; set; }
+        public int VoyageId { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
 

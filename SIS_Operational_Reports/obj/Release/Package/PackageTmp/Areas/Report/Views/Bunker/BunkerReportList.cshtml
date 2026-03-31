@@ -1,7 +1,7 @@
 ﻿@model DataBuildingLayer.BunkerReport
 @{
     ViewBag.Title = "BukerReportlist";
-    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 <script type="text/javascript" src="~/Content/search1.js"></script>
@@ -28,18 +28,18 @@
                 <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
             }
 
-            <div class="col-md button-row-top">
-                    <div class="row">
-                        <div class="col">
-                            <button class="function-button submit-button">
-                                <a class="function-button submit-button" href="@Url.Action("Add1", "Bunker")">
-                                   Add Bunker Report
-                                </a>
-                            </button>
-                        </div>
-
+            @*<div class="col-md button-row-top">
+                <div class="row">
+                    <div class="col">
+                        <button class="function-button submit-button">
+                            <a class="function-button submit-button" href="@Url.Action("Add1", "Bunker")">
+                                Add Bunker Report
+                            </a>
+                        </button>
                     </div>
+
                 </div>
+            </div>*@
 
         </div>
     </div>
@@ -55,10 +55,7 @@
                 <div class="inline-content">
                     <div class="search-row">
 
-                        <!--<div class="col m-1">-->
-                        @*@Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control importexport", @multiple = "multiple", })*@
-
-                        @*@Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })*@
+                        @Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
                     </div>
 
                     <div class="col m-1">
@@ -69,28 +66,29 @@
 
                     @*<div class="col m-1">
 
-                    <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
-                    <span id="messageLat" style="color:red"></span>
-                </div>*@
+                            <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+                            <span id="messageLat" style="color:red"></span>
+                        </div>*@
 
                     <button id="btnSearch" class="function-button submit-button m-1">Search</button>
                 </div>
 
             </div>
-
-
-            <div style="overflow:auto; height:auto;">
-                <ul>
-                    <li style="list-style: none; margin-top:20px">
-
-                        @Html.Partial("_BunkerReport")
-
-                    </li>
-                </ul>
-            </div>
         </div>
 
+        <div style="overflow:auto; height:auto;">
+            <ul>
+                <li style="list-style: none; margin-top:20px">
+
+                    @Html.Partial("_BunkerReport")
+
+                </li>
+            </ul>
+        </div>
+
+
     </div>
+</div>
 </div>
 
 <script>
@@ -121,6 +119,7 @@
     $('#Menu7').addClass('active');
     $('#Menu8').removeClass('active');
     $('#Menu9').removeClass('active');
+    $('#Menu10').removeClass('active');
 
 </script>
 
@@ -131,8 +130,8 @@
         debugger
 
         var firstVal = $("#idFirst").val();
-        /*var secondVal = $("#idSecond").val();*/
-        /*var vsl = $("#VesselId").val();*/
+       /* var secondVal = $("#idSecond").val();*/
+        var vsl = $("#VesselId").val();
 
         if (firstVal == "" && vsl == "") {
             alert("Please enter atleast 1 value for search.");
@@ -148,7 +147,7 @@
 
             $.ajax({
                 type: 'GET',
-                url: '/Report/Bunker/_BunkerReport?pageNo=1&firstVal=' + firstVal ,
+                url: '/Report/Bunker/_BunkerReport?pageNo=1&firstVal=' + firstVal + '&Vessel=' + vsl,
                 datatype: 'json',
                 cache: false,
                 contentType: 'application/json; charset=utf-8',
@@ -158,12 +157,10 @@
                        // $("#tblBunkerReport").fadeIn("fast");
                         $("#test").html("");
                         $("#test").html(data);
-                        
-                       
                     }
                     else {
                         $("#test").html("");
-                      //  $("#tblBunkerReport").html('<div class="text-danger card-avatar text-center"><img class="imgnorecord" src="../Include/Admin/img/norecord.png"/><br/>no record found</div>');
+                       // $("#tblBunkerReport").html('<div class="text-danger card-avatar text-center"><img class="imgnorecord" src="../Include/Admin/img/norecord.png"/><br/>no record found</div>');
                     }
                 },
                 error: function (data) {
