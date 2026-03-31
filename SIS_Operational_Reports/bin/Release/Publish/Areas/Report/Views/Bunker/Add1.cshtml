@@ -1,0 +1,1447 @@
+﻿@model DataBuildingLayer.BunkerReport
+@{
+    ViewBag.Title = "Add";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+
+@*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">*@
+
+<link href="~/css/flatpickr.min.css" rel="stylesheet" />
+<script src="~/css/flatpickr.js"></script>
+
+
+<style>
+
+    .form-control:disabled, .form-control {
+        background-color: white !important;
+    }
+
+    .datetime-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .datetime-icon {
+        position: absolute;
+        right: 30px;
+        top: 35%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .fa, .fas {
+        font-weight: 100 !important;
+    }
+
+    .remove-here {
+        margin-left: 10px;
+    }
+
+
+    textarea {
+        width: 100%;
+        /*height: 100%;*/
+    }
+
+    .page-heading.page-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .second {
+        display: flex;
+    }
+
+    label {
+        display: inline-block;
+    }
+
+    .herefild input {
+        width: 75%;
+    }
+
+    input {
+        width: 100%;
+    }
+
+    a#FormatforPrint {
+        background: black !important;
+        color: white !important;
+        border: none;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+    }
+
+    button#Submit {
+        background: transparent !important;
+        color: #676969 !important;
+        border: solid 1px #676969 !important;
+        padding: 6px 27px !important;
+        font-size: 12px !important;
+        border-radius: 0.25rem;
+    }
+
+    select#sel1 {
+        height: 34px;
+        border-radius: 0px !important;
+    }
+
+    .import-here.mt-4 {
+        border: 1px solid #ced4da;
+        margin-top: 32px !important;
+        padding-top: 18px;
+        padding-bottom: 27px;
+        border-radius: 4px;
+    }
+
+    button.add-here {
+        border: 1px solid #676969;
+        padding: 4px 38px;
+    }
+
+    .right-aligned {
+        float: right;
+        margin-left: 10px; /* Adds space between the elements when aligned to the right */
+    }
+	.datetime-icon {
+    position: absolute;
+    right: 30px;
+    top: 24%;
+	}
+	a#FormatforPrint{
+	display:none;
+	}
+</style>
+
+<div id="cover-spin"></div>
+
+<div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+    <div>
+        @if (Model.Id == 0)
+        {
+            <h2>
+                Add Bunker Report
+            </h2>
+        }
+        else
+        {
+            <h2>
+                Edit Bunker Report
+            </h2>
+        }
+
+
+    </div>
+    <div class="button-row-top">
+
+        <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> &lt;&lt; Go Back</a>
+    </div>
+</div>
+@*@using (Html.BeginForm("InsertBunkerReport", "Bunker", FormMethod.Post, new { onsubmit = "ValidateBunkerReport();", area = "Report", enctype = "multipart/form-data" }))
+    {*@
+@Html.HiddenFor(x => x.Id)
+@Html.HiddenFor(x => x.LabAnalysisReport_Name)
+
+<div class="inner-report">
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Voy No.</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                        <span id="messageVoyid" style="color:red"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Port Name</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                        <span id="msgPortName" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Supplier</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.TextAreaFor(model => model.Supplier, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @required = "true", @onBlur = "CheckValidation(this)", @step = "any" } })
+                        <span id="msgSupplier" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Barge Alongside</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @*@{
+            var cD = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+        }*@
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgBargeAlongside" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- second -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Bunker Hose Connected</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgBunkerHoseConnected" style="color:red"></span>
+                    </div>
+                </div>
+
+
+
+            </div>
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Commenced Bunkering</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgCommencedBunkering" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Bunkering Completed</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgBunkeringCompleted" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class=" col-form-label">Bunker Hose disconnected</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgBunkerHosedisconnected" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- third -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Barge Cast Off</label>
+                    </div>
+                    <div class="col-md-8 datetime-wrapper">
+                        @if (Model.Id != 0)
+                        {
+                            @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _" } })
+                            @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                            <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                        }
+                        <span id="msgBargeCastOff" style="color:red"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Barge Name</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.TextAreaFor(model => model.BargeName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })
+                        <span id="msgBargeName" style="color:red"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Master Name</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(model => model.FirstName, new { @placeholder = "Master Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                        <span id="msgMasterName" style="color:red"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="inputPassword" class="col-form-label">Chief Engineer</label>
+                    </div>
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(model => model.LastName, new { @placeholder = "Chief Engineer", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                        <span id="msgChiefEngineer" style="color:red"></span>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-2">	<label for="inputPassword" class="col-form-label p-0">Master Name</label></div>
+
+                    <div class="col-md-5">-->
+                        @*@Html.EditorFor(model => model.FirstName, new { @placeholder = "First Name", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })*@
+                        <!--@Html.TextBoxFor(model => model.FirstName, new { @placeholder = "First Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                        <span id="msgFirstName" style="color:red"></span>
+                    </div>
+
+                    <div class="col-md-2">	<label for="inputPassword" class="col-form-label p-0">Chief Engineer</label></div>
+                    <div class="col-md-5">-->
+                        @*@Html.EditorFor(model => model.LastName, new { @placeholder = "Last Name", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })*@
+                        <!--@Html.TextBoxFor(model => model.LastName, new { @placeholder = "Last Name", @autocomplete = "off", @class = "form-control bottom-border-input alpha", @maxlength = 100 })
+                        <span id="msgLastName" style="color:red"></span>
+                    </div>
+
+                </div>
+            </div>-->
+
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-right mt-3">
+                <a name="FormatforPrint" id="FormatforPrint" style="" onclick="FormatforPrint()" class="btn btn-primary right-aligned">Format for Print</a>
+                <button type="Submit" id="Submit" style="margin-right:5px" class="function-button submit-button right-aligned">Submit</button>
+            </div>
+        </div>
+        <div class="inner-table mt-3">
+
+            <table id="tblfuelbunkerReport" class="table">
+                <thead style="background: #676969 ;color:white;padding-top: 8px;padding-bottom: 10px;font-weight: 700;font-size: 14px;margin-bottom: 8px;">
+                    <tr>
+                        <th>Fuel Type</th>
+                        <th>Quantity Received(MT)</th>
+                        <th>BDN Number</th>
+                        <th>Fuel Density(Kg/m3)</th>
+                        <th>Sulphur content(%)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.B_FuelLists != null)
+                    {
+                        foreach (var item in Model.B_FuelLists)
+                        {
+                            <tr>
+                                <td hidden>@item.Id</td>
+                                <td>@Html.DropDownListFor(model => item.Fuel_type_Id, new SelectList(Model.BunkerFuelTypeList, "Value", "Text", item.Fuel_type_Id), htmlAttributes: new { @class = "mdb-select bottom-border-input", @required = "true" })</td>
+                                <td>@Html.EditorFor(model => item.BDN, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                <td>@Html.EditorFor(model => item.BDN_Number, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-AlphaNumeric", @maxlength = 50, } })</td>
+                                <td>@Html.EditorFor(model => item.Fuel_Density, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                <td>@Html.EditorFor(model => item.Sulphur_content, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 15, @onpaste = "return false;" } })</td>
+                                <td><input class="btn btn-danger btn-width" type="button" value="Remove" onclick="RemoveBFT(this)" /></td>
+                            </tr>
+                        }
+                    }
+
+
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td hidden>0</td>
+                        <td>@Html.DropDownListFor(model => model.Fuel_type_Id, new SelectList(Model.BunkerFuelTypeList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })</td>
+                        <td>@Html.EditorFor(model => model.BDN, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 15, @onpaste = "return false;" } })</td>
+                        <td>@Html.EditorFor(model => model.BDN_Number, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input ", @maxlength = 50, } })</td>
+                        <td>@Html.EditorFor(model => model.Fuel_Density, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 15, @onpaste = "return false;" } })</td>
+                        <td>@Html.EditorFor(model => model.Sulphur_content, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 15, @onpaste = "return false;" } })</td>
+                        <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+                    </tr>
+                </tfoot>
+
+            </table>
+
+        </div>
+
+        <div class="report mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="remarks">
+                        <label style="color: #676969;"><b>Remarks</b></label>
+                        @Html.TextAreaFor(model => model.Remarks, new { @placeholder = "Remarks Here", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", } })
+                        <span id="msgRemarks" style="color:red"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <label for="inputPassword" class="col-sm-4 col-form-label">BDN Report</label>
+                        @* <input type="file" name="LabAnalysisReport" accept="application/pdf" onchange="checkFileSize(this)" />*@
+                        <input type="file" name="LabAnalysisReport" accept=".pdf, .doc, .docx, .xls, .xlsx, .csv, .jpg, .jpeg, .png" onchange="checkFileSize(this)" />
+
+                        @if (Model.Id != 0)
+                        {
+                            <a href="@Url.Action("OpenPDF", "Bunker" , new { fileName = Model.LabAnalysisReport_Name, fileExtension = Model.fileExtension   })" target="_blank" id="uploadedFileName"><b>@Model.LabAnalysisReport_Name</b></a>
+                            @*<span id="uploadedFileName"></span>*@
+                        }
+                        <span id="msgPDFfile" style="color:red"></span>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@*}*@
+
+<div class="modal fade" id="Bunker_model" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    Port Name:  @Html.EditorFor(m => m.PortName_others, new { @class = "form-control bottom-border-input", })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="close" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="submit" class="btn btn-primary pull-right">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function RemoveBFT(btn) {
+        debugger
+
+        var $row = $(btn).closest('tr');
+
+        var Id = $row.find('td:first').text();
+
+         var Max_RId = $("#Id").val();
+
+          @*var baseUrl = '@Url.Action("Edit", "Bunker")';*@
+
+        //var newUrl = baseUrl + "?id=" + Max_RId;
+
+        var formData = new FormData();
+        formData.append("Id", Id);
+
+
+        $.ajax({
+            type: "POST",
+            url: "/Report/Bunker/DeleteBunkerFuelType",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {debugger
+
+                alert("Success");
+
+                window.location.reload(true);
+
+            }
+        });
+
+    }
+
+</script>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script>
+
+    //  Add
+
+    $("#Supplier").on("input", function () {
+        if ($(this).val().length > 200) {
+            $(this).val($(this).val().substring(0, 200));
+            alert('Only 200 characters are allowed.');
+            return;
+        }
+    });
+
+    $("#BargeName").on("input", function () {
+        if ($(this).val().length > 100) {
+            $(this).val($(this).val().substring(0, 100));
+            alert('Only 100 characters are allowed.');
+            return;
+        }
+    });
+
+    $("#Remarks").on("input", function () {
+        if ($(this).val().length > 500) {
+            $(this).val($(this).val().substring(0, 500));
+            alert('Only 500 characters are allowed.');
+            return;
+        }
+    });
+
+    $(".alpha").on("input", function () {
+        this.value = this.value.replace(/[^a-zA-Z\s]/g, "");
+    });
+
+    $('#BDN').on('input', function () {
+        debugger
+        var value = $(this).val();
+        if (!/^\d*\.?\d{0,3}$/.test(value)) {
+            $(this).val(value.substring(0, value.length - 1));
+        }
+    });
+
+    $('#Fuel_Density').on('input', function () {
+        debugger
+        var value = $(this).val();
+        if (!/^\d*\.?\d{0,3}$/.test(value)) {
+            $(this).val(value.substring(0, value.length - 1));
+        }
+    });
+
+    $('#Sulphur_content').on('input', function () {
+        debugger
+        var value = $(this).val();
+        if (!/^\d*\.?\d{0,3}$/.test(value)) {
+            $(this).val(value.substring(0, value.length - 1));
+        }
+    });
+
+    //$('#BDN_Number').on('input', function () {
+    //    this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+    //});
+
+    $("#BDN_Number").on('input', function () {
+        var value = $(this).val();
+        var newValue = value.replace(/[^a-zA-Z0-9!@@#$%^&*(),.?":{}|<>]/g, '');
+        $(this).val(newValue);
+    });
+
+
+    //  Edit
+
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        // Check for '.' and ensure there's only one
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        // Allow only backspace, delete, and numeric values
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        return true;
+    });
+
+
+    $(".check-AlphaNumeric").on("input", function () {
+        this.value = this.value.replace(/[^a-zA-Z0-9!@@#$%^&*(),.?":{}|<>]/g, '');
+    });
+
+
+</script>
+
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').addClass('active');
+    $('#Menu8').removeClass('active');
+    $('#Menu9').removeClass('active');
+
+</script>
+
+<script type="text/javascript">
+
+    $("#PortName").change(function () {
+        debugger
+        if ($(this).val() == "Others") {
+            $(this).blur();
+            $('#Bunker_model').modal('show');
+        }
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('.close').click(function () {
+        debugger
+        $('#Bunker_model').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#close').click(function () {
+        debugger
+        $('#Bunker_model').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#submit').click(function () {
+        debugger
+        var PortName_others = $('#PortName_others').val();
+        if (PortName_others) {
+            $('select[name="PortName"]').append($('<option>', {
+                value: PortName_others,
+                text: PortName_others,
+                selected: true
+            }));
+        }
+        $('#Bunker_model').modal('hide');
+
+    });
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $('input[name="PortName_others"]').attr('maxlength', '100');
+
+        var fileName = $('#LabAnalysisReport_Name').val();
+
+        document.getElementById("uploadedFileName").innerText = fileName;
+
+    });
+
+</script>
+
+
+<script>
+
+    function checkFileSize(input) {
+        debugger
+
+        if (input.files.length > 0) {
+            const fileSize = input.files[0].size; // in bytes
+            const maxSize = 200 * 1024; // 200KB in bytes
+            const fileType = input.files[0].type;
+
+            if (fileSize > maxSize) {
+                alert("File size exceeds 200KB. Please select a smaller file.");
+                input.value = ""; // Clear the input
+            }
+
+            const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv", "image/jpeg", "image/jpg", "image/png"];
+
+            if (!allowedTypes.includes(fileType)) {
+                alert("Only PDF, Word, Excel, JPG, and PNG files are allowed. Please select a valid file.");
+                input.value = "";
+                return;
+            }
+
+        }
+    }
+
+</script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePicker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+           // defaultDate: new Date()
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePickerEdit", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            //defaultDate: new Date()
+        });
+    });
+
+</script>
+
+
+<script type="text/javascript">
+
+    $("body").on("click", "#btnAdd", function () {
+        debugger;
+
+        var Fuel_type = $("#Fuel_type_Id option:selected").text();
+        var Fuel_typeV = $("#Fuel_type_Id");
+        //var Fuel_type = $("#Fuel_type_Id");
+        if (Fuel_type == '----Select----') {
+            alert("Please Select Fuel Type");
+            return;
+        }
+        var BDN = $("#BDN");
+        if (BDN.val() == '') {
+            alert("Please Enter Qty Litted MI(BDN fig)");
+            return;
+        }
+        var BDN_Number = $("#BDN_Number");
+        if (BDN_Number.val() == '') {
+            alert("Please Enter BDN Number");
+            return;
+        }
+        var Fuel_Density = $("#Fuel_Density");
+        if (Fuel_Density.val() == '') {
+            alert("Please Enter Fuel Density");
+            return;
+        }
+        var Sulphur_content = $("#Sulphur_content");
+        if (Sulphur_content.val() == '') {
+            alert("Please Enter Sulphur content");
+            return;
+        }
+
+        var tBody = $("#tblfuelbunkerReport > TBODY")[0];
+
+        var row = tBody.insertRow(-1);
+
+        var cell = $(row.insertCell(-1));
+        cell.html("0");
+        cell.css("display", "none");
+
+        cell = $(row.insertCell(-1));
+        cell.html(Fuel_type);
+
+        cell = $(row.insertCell(-1));
+        cell.html(BDN.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(BDN_Number.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(Fuel_Density.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(Sulphur_content.val());
+
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "StopRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Id.val("");
+        Fuel_typeV.val("");
+        BDN.val("");
+        BDN_Number.val("");
+        Fuel_Density.val("");
+        Sulphur_content.val("");
+
+    });
+
+    function Remove(button) {
+
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+
+            var table = $("#tblfuelbunkerReport")[0];
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+</script>
+
+
+<script type="text/javascript">
+
+    $("body").on("click", "#Submit", function () {
+
+        SaveBunkerReport();
+
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    function SaveBunkerReport() {
+
+        var formData = new FormData();
+
+        var _BunkerR = {};
+        _BunkerR.Id = $('#Id').val();
+        var voy = document.getElementById("VoyageId");
+        var voyid = voy.options[voy.selectedIndex].value;
+
+        debugger;
+
+        _BunkerR.VoyageId = voyid;
+        if (_BunkerR.VoyageId == "") {
+            $("#messageVoyid").text("Please Choose Voyage Number.");
+            return;
+        }
+        else {
+            $("#messageVoyid").text('');
+        }
+
+        _BunkerR.PortName = $('#PortName option:selected').text();
+        if (_BunkerR.PortName == "") {
+            $("#msgPortName").text("Please Choose Port Name");
+            return;
+        }
+        else {
+            $("#msgPortName").text('');
+        }
+
+        _BunkerR.Supplier = $("#Supplier").val();
+        if (_BunkerR.Supplier == "") {
+            $("#msgSupplier").text("Supplier can not be empty.");
+            return;
+        }
+        else {
+            $("#msgSupplier").text('');
+        }
+
+        _BunkerR.BargeAlongside = $("#BargeAlongside").val();
+        if (_BunkerR.BargeAlongside == "") {
+            $("#msgBargeAlongside").text("Barge Alongside can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBargeAlongside").text('');
+        }
+
+        _BunkerR.BunkerHoseConnected = $("#BunkerHoseConnected").val();
+        if (_BunkerR.BunkerHoseConnected == "") {
+            $("#msgBunkerHoseConnected").text("Bunker Hose Connected can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBunkerHoseConnected").text('');
+        }
+
+        _BunkerR.CommencedBunkering = $("#CommencedBunkering").val();
+        if (_BunkerR.CommencedBunkering == "") {
+            $("#msgCommencedBunkering").text("Commenced Bunkering can not be empty.");
+            return;
+        }
+        else {
+            $("#msgCommencedBunkering").text('');
+        }
+
+        _BunkerR.BunkeringCompleted = $("#BunkeringCompleted").val();
+        if (_BunkerR.BunkeringCompleted == "") {
+            $("#msgBunkeringCompleted").text("Bunkering Completed can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBunkeringCompleted").text('');
+        }
+
+        _BunkerR.BunkerHosedisconnected = $("#BunkerHosedisconnected").val();
+        if (_BunkerR.BunkerHosedisconnected == "") {
+            $("#msgBunkerHosedisconnected").text("Bunker Hose disconnected can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBunkerHosedisconnected").text('');
+        }
+
+        _BunkerR.BargeCastOff = $("#BargeCastOff").val();
+        if (_BunkerR.BargeCastOff == "") {
+            $("#msgBargeCastOff").text("Barge CastOff can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBargeCastOff").text('');
+        }
+
+        _BunkerR.BargeName = $("#BargeName").val();
+        if (_BunkerR.BargeName == "") {
+            $("#msgBargeName").text("Barge Name can not be empty.");
+            return;
+        }
+        else {
+            $("#msgBargeName").text('');
+        }
+
+        _BunkerR.FirstName = $("#FirstName").val();
+        if (_BunkerR.FirstName == "") {
+            $("#msgMasterName").text("Master Name can not be empty.");
+            return;
+        }
+        else {
+            $("#msgMasterName").text('');
+        }
+
+        _BunkerR.LastName = $("#LastName").val();
+        if (_BunkerR.LastName == "") {
+            $("#msgChiefEngineer").text("Chief Engineer can not be empty.");
+            return;
+        }
+        else {
+            $("#msgChiefEngineer").text('');
+        }
+
+
+        _BunkerR.Remarks = $("#Remarks").val();
+
+      //  if (_BunkerR.Id == "0") {
+
+            var fileInput = $('input[name="LabAnalysisReport"]');
+            var filePath = fileInput.val();;
+
+            if (filePath) {
+                $("#msgPDFfile").text('');
+                var fileInput = document.querySelector('input[name="LabAnalysisReport"]');
+                if (fileInput.files.length > 0) {
+                    formData.append("LabAnalysisReport", fileInput.files[0]);
+                    const fileSize = fileInput.files[0].size;
+                    formData.append("fileSize", fileInput.files[0]);
+
+                }
+
+            }
+            else {
+
+                if (_BunkerR.Id == "0") {
+                    $("#msgPDFfile").text("Please attached Lab Analysis Report");
+                    return;
+                }
+
+            }
+       // }
+
+        formData.append("Id", _BunkerR.Id);
+        formData.append("VoyageId", _BunkerR.VoyageId);
+        formData.append("PortName", _BunkerR.PortName);
+        formData.append("Supplier", _BunkerR.Supplier);
+        formData.append("BargeAlongside", _BunkerR.BargeAlongside);
+        formData.append("BunkerHoseConnected", _BunkerR.BunkerHoseConnected);
+        formData.append("CommencedBunkering", _BunkerR.CommencedBunkering);
+        formData.append("BunkeringCompleted", _BunkerR.BunkeringCompleted);
+        formData.append("BunkerHosedisconnected", _BunkerR.BunkerHosedisconnected);
+        formData.append("BargeCastOff", _BunkerR.BargeCastOff);
+        formData.append("BargeName", _BunkerR.BargeName);
+        formData.append("FirstName", _BunkerR.FirstName);
+        formData.append("LastName", _BunkerR.LastName);
+        formData.append("Remarks", _BunkerR.Remarks);
+
+        @* debugger;
+
+        try {
+
+            var data = [];
+
+            if (data == "") {
+                var Fuel_type = $("#Fuel_type_Id option:selected").text();
+
+                if (Fuel_type != "") {
+                 var Fuel_typeV = $("#Fuel_type_Id");
+                  var BDN = $("#BDN");
+                  var BDN_Number = $("#BDN_Number");
+                  var Fuel_Density = $("#Fuel_Density");
+                  var Sulphur_content = $("#Sulphur_content");
+                    var tBody = $("#tblfuelbunkerReport > TBODY")[0];
+
+                    var rowCount = $("#tblfuelbunkerReport > tbody > tr").length;
+                    var lastRowFirstCellVal = $("#tblfuelbunkerReport > tbody > tr:last > td:first").text();
+
+                  var row = tBody.insertRow(-1);
+
+                    var cell = $(row.insertCell(-1));
+                   // cell.html(Fuel_type);
+                    cell.html("0");
+                    cell.css("display", "none");
+
+                    cell = $(row.insertCell(-1));
+                    cell.html(Fuel_type);
+
+                    cell = $(row.insertCell(-1));
+                    cell.html(BDN.val());
+
+                    cell = $(row.insertCell(-1));
+                    cell.html(BDN_Number.val());
+
+                    cell = $(row.insertCell(-1));
+                    cell.html(Fuel_Density.val());
+
+                    cell = $(row.insertCell(-1));
+                    cell.html(Sulphur_content.val());*@
+
+                    var cont = true;
+                    var data = [];
+                    var table = document.getElementById('tblfuelbunkerReport'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells;
+
+                    for (i = 1, j = rows.length ; i < j; ++i) {
+                        cells = rows[i].getElementsByTagName('td');
+                        if (!cells.length) {
+                            continue;
+                        }
+
+                        var result = true;
+
+                        debugger;
+
+                        var List = {};
+
+                        try {
+                            List.Id = cells[0].children[0].value;
+
+                        } catch { List.Id = cells[0].innerHTML; }
+
+                        try {
+                            List.Fuel_type = cells[1].children[0].value;
+
+                        } catch { List.Fuel_type = cells[1].innerHTML; }
+
+                        try {
+                            List.BDN = cells[2].children[0].value;
+
+                        } catch { List.BDN = cells[2].innerHTML; }
+
+                        try {
+                            List.BDN_Number = cells[3].children[0].value;
+
+                        } catch { List.BDN_Number = cells[3].innerHTML; }
+
+                        try {
+                            List.Fuel_Density = cells[4].children[0].value;
+
+                        } catch { List.Fuel_Density = cells[4].innerHTML; }
+
+                        try {
+                            List.Sulphur_content = cells[5].children[0].value;
+
+                        } catch { List.Sulphur_content = cells[5].innerHTML; }
+						
+						  if (i == 1) {
+
+                            if (List.Fuel_type == "" || List.BDN == "" || List.BDN_Number == "" || List.Fuel_Density == "" || List.Sulphur_content == "") {
+                                result = false;
+                            }
+                          }
+
+                        if (List.Fuel_type != "" || List.BDN != "" || List.BDN_Number != "" || List.Fuel_Density != "" || List.Sulphur_content != "") {
+                            result = false;
+                        }
+
+                        if (result == false) {
+
+                            if (List.Fuel_type != "" && List.BDN != "" && List.BDN_Number != "" && List.Fuel_Density != "" && List.Sulphur_content != "") {
+                                result = true;
+                            }
+                            else {
+
+                                if (List.Fuel_type == "") {
+                                    alert("Please Select Fuel_type");
+                                    result = false;
+                                }
+                                else if (List.BDN == "") {
+                                    alert("Please Enter BDN");
+                                    result = false;
+                                }
+                                else if (List.BDN_Number == "") {
+                                    alert("Please Enter BDN_Number");
+                                    result = false;
+                                }
+                                else if (List.Fuel_Density == "") {
+                                    alert("Please Enter Fuel_Density");
+                                    result = false;
+                                }
+                                else if (List.Sulphur_content == "") {
+                                    alert("Please Enter Sulphur_content");
+                                    result = false;
+                                }
+
+                            }
+                        }
+
+
+                        if (result == true) {
+
+                            data.push(List);
+                        }
+                        else {
+                            cont = result;
+                        }
+
+                    }
+        //        }
+
+
+        //    }
+        //} catch { }
+
+       // BunkerFuelInsertion();
+        if (data.length > 0 && cont == true) {
+
+            debugger;
+
+            var newUrl = '@Url.Action("BunkerReportList", "Bunker")';
+
+            $.ajax({
+                type: "POST",
+                url: "/Report/Bunker/InsertBunkerReport",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (r) {
+
+                    BunkerFuelInsertion();
+                    /* sleep(1000);*/
+
+                    $('#cover-spin').hide();
+
+                    alert("Success");
+
+                    window.location.href = newUrl;
+
+
+                }
+            });
+
+        }
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    function BunkerFuelInsertion() {
+        debugger
+
+        var array = [];
+        var table = document.getElementById('tblfuelbunkerReport'),
+            rows = table.getElementsByTagName('tr'),
+            i, j, cells;
+
+        var Id = $('#Id').val();
+        var cont = true;
+
+        if (Id == "0") {
+
+            for (i = 1, j = rows.length; i < j; ++i) {
+                debugger
+                cells = rows[i].getElementsByTagName('td');
+                if (!cells.length) {
+                    continue;
+                }
+
+                var result = true;
+                var List = {};
+
+                try {
+                    List.Id = cells[0].children[0].value;
+
+                } catch { List.Id = cells[0].innerHTML; }
+
+                try {
+                    List.Fuel_type = cells[1].children[0].value;
+
+                } catch { List.Fuel_type = cells[1].innerHTML; }
+
+                try {
+                    List.BDN = cells[2].children[0].value;
+
+                } catch { List.BDN = cells[2].innerHTML; }
+
+                try {
+                    List.BDN_Number = cells[3].children[0].value;
+
+                } catch { List.BDN_Number = cells[3].innerHTML; }
+
+                try {
+                    List.Fuel_Density = cells[4].children[0].value;
+
+                } catch { List.Fuel_Density = cells[4].innerHTML; }
+
+                try {
+                    List.Sulphur_content = cells[5].children[0].value;
+
+                } catch { List.Sulphur_content = cells[5].innerHTML; }
+
+                try {
+                    List.MaxR_Id = Id;
+
+                } catch { List.MaxR_Id = Id }
+
+                if (List.Fuel_type != "") {
+
+                    if (List.BDN == "") {
+                        alert("Please Enter BDN");
+                        result = false;
+                    }
+                }
+
+                if (List.BDN != "") {
+
+                    if (List.BDN_Number == "") {
+                        alert("Please Enter BDN_Number");
+                        result = false;
+                    }
+                }
+
+                if (List.BDN_Number != "") {
+
+                    if (List.Fuel_Density == "") {
+                        alert("Please Enter Fuel_Density");
+                        result = false;
+                    }
+                }
+
+                if (List.Fuel_Density != "") {
+
+                    if (List.Sulphur_content == "") {
+                        alert("Please Enter Sulphur_content");
+                        result = false;
+                    }
+                }
+
+                if (result == true) {
+                    array.push(List);
+                }
+                else {
+                    cont = result;
+                }
+
+            }
+        }
+        if (Id != "0") {
+
+            for (i = 1, j = rows.length; i < j; ++i) {
+                debugger
+                cells = rows[i].getElementsByTagName('td');
+                if (!cells.length) {
+                    continue;
+                }
+
+                var result = true;
+                var List = {};
+
+                try {
+                    List.Id = cells[0].children[0].value;
+
+                } catch { List.Id = cells[0].innerHTML; }
+
+                try {
+                    List.Fuel_type = cells[1].children[0].value;
+
+                } catch { List.Fuel_type = cells[1].innerHTML; }
+
+                try {
+                    List.BDN = cells[2].children[0].value;
+
+                } catch { List.BDN = cells[2].innerHTML; }
+
+                try {
+                    List.BDN_Number = cells[3].children[0].value;
+
+                } catch { List.BDN_Number = cells[3].innerHTML; }
+
+                try {
+                    List.Fuel_Density = cells[4].children[0].value;
+
+                } catch { List.Fuel_Density = cells[4].innerHTML; }
+
+                try {
+                    List.Sulphur_content = cells[5].children[0].value;
+
+                } catch { List.Sulphur_content = cells[5].innerHTML; }
+
+                try {
+                    List.MaxR_Id = Id;
+
+                } catch { List.MaxR_Id = Id }
+
+                if (List.Fuel_type != "") {
+
+                    if (List.BDN == "") {
+                        alert("Please Enter BDN");
+                        result = false;
+                    }
+                }
+
+                if (List.BDN != "") {
+
+                    if (List.BDN_Number == "") {
+                        alert("Please Enter BDN_Number");
+                        result = false;
+                    }
+                }
+
+                if (List.BDN_Number != "") {
+
+                    if (List.Fuel_Density == "") {
+                        alert("Please Enter Fuel_Density");
+                        result = false;
+                    }
+                }
+
+                if (List.Fuel_Density != "") {
+
+                    if (List.Sulphur_content == "") {
+                        alert("Please Enter Sulphur_content");
+                        result = false;
+                    }
+                }
+
+                if (result == true) {
+                    array.push(List);
+                }
+                else {
+                    cont = result;
+                }
+
+            }
+        }
+
+
+        if (array.length > 0 && cont == true) {
+
+            array = JSON.stringify(array);
+
+            $.ajax({
+                url: '@Url.Action("InsertBunkerFuelType", "Bunker")',
+                type: "POST",
+                data: { 'BunkerFuelTypeList': array },
+                dataType: "json",
+                beforeSend: function (x) {
+                    if (x && x.overrideMimeType) {
+                        x.overrideMimeType("application/j-son;charset=UTF-8");
+                    }
+                },
+                success: function (result) {
+                    debugger;
+                    window.location.href = result;
+                }
+            });
+        }
+    }
+</script>
+
+
+
+
+
+
+

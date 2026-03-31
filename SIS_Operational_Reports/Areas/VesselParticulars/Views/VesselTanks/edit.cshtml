@@ -1,0 +1,267 @@
+﻿@model DataBuildingLayer.TanksAndHolds
+@{
+    ViewBag.Title = "edit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@*@using (Html.BeginForm("edit", "VesselTanks"))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(e => e.Id)
+
+        <div id="page-wrapper" class="content">
+            @{
+                var tankstype = "";
+                var checktypeid = Model.TanksTypeId;
+                if (checktypeid == 1)
+                {
+                    tankstype = "Cargo Tanks";
+                }
+                if (checktypeid == 2)
+                {
+                    tankstype = "Cargo Holds";
+                }
+                if (checktypeid == 3)
+                {
+                    tankstype = "Ballast Tanks";
+                }
+                if (checktypeid == 4)
+                {
+                    tankstype = "Void Spaces";
+                }
+                if (checktypeid == 5)
+                {
+                    tankstype = "Bunker Tanks";
+                }
+                if (checktypeid == 6)
+                {
+                    tankstype = "Lube Oil Tanks";
+                }
+                if (checktypeid == 7)
+                {
+                    tankstype = "Fresh Water Tanks";
+                }
+                if (checktypeid == 8)
+                {
+                    tankstype = "Other Tanks";
+                }
+                if (checktypeid == 9)
+                {
+                    tankstype = "Other Spaces";
+                }
+            }
+
+            <div class="page-heading page-header-flex">
+                <div>
+                    <h1 class="page-title">
+                        Edit @tankstype
+                    </h1>
+
+                </div>
+                <div class="form-actions">
+
+                    <button name="Submit" type="submit" class="btn btn-success btn-width"><i class="uil uil-check mr-2"></i>Submit</button>
+                    <button name="Reset" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>
+                    <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+                </div>
+            </div>
+            <div class="wrapper wrapper-content">
+                <div class="container">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-8 mx-auto">
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Name<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 50, @required = "true", } })
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Height<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.EditorFor(model => model.Height, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @min = "0", @max = "9999999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+
+                                        <span id="messageImo"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Capacity<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.EditorFor(model => model.Capacity, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @min = "0", @max = "9999999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+
+                                <div style="display:none" class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Capacity<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.EditorFor(model => model.TanksTypeId)
+
+                                        <div class="error"></div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }*@
+
+
+
+@using (Html.BeginForm("edit", "VesselTanks"))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(e => e.Id)
+<div class="row" style="margin-top: 10px;">
+
+    @{
+        var tankstype = "";
+        var checktypeid = Model.TanksTypeId;
+        if (checktypeid == 1)
+        {
+            tankstype = "Cargo Tanks";
+        }
+        if (checktypeid == 2)
+        {
+            tankstype = "Cargo Holds";
+        }
+        if (checktypeid == 3)
+        {
+            tankstype = "Ballast Tanks";
+        }
+        if (checktypeid == 4)
+        {
+            tankstype = "Void Spaces";
+        }
+        if (checktypeid == 5)
+        {
+            tankstype = "Bunker Tanks";
+        }
+        if (checktypeid == 6)
+        {
+            tankstype = "Lube Oil Tanks";
+        }
+        if (checktypeid == 7)
+        {
+            tankstype = "Fresh Water Tanks";
+        }
+        if (checktypeid == 8)
+        {
+            tankstype = "Other Tanks";
+        }
+        if (checktypeid == 9)
+        {
+            tankstype = "Other Spaces";
+        }
+    }
+
+    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div class="col-md">
+            <h2> Edit @tankstype</h2>
+        </div>
+
+        <div class="col-md button-row-top">
+            <div class="row">
+                <div class="col">
+
+                    <button name="Submit" type="submit" class="function-button submit-button"><i class="uil uil-check mr-2"></i>Submit</button>
+                </div>
+                <div class="col">
+
+                    <button name="Reset" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
+                </div>
+                <div class="col">
+
+                    <button name="back" type="button" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+                    @*<a name="back" id="btnBack" onclick="goBack()" class="function-button go-back"> << Go Back</a>*@
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <div class="mb-3 row">
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Name</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @required = "true", } })
+                        <div class="error"></div>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Height</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.Height, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 8, @required = "true", @onKeyUp = "requiredValue(this)" } })
+
+                        <span id="messageImo"></span>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Capacity</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.Capacity, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 8, @required = "true", @onKeyUp = "requiredValue(this)" } })
+
+                        <div class="error"></div>
+                    </div>
+
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').addClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+    $('#Menu8').removeClass('active');
+    $('#Menu9').removeClass('active');
+
+
+</script>

@@ -1,0 +1,103 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    //Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+    
+}
+
+<style>
+input#Export{
+padding: 8px 26px!important;
+}
+input#Import{
+padding: 8px 26px!important;
+}
+a.btn.btn-sm.btn-light.btn-edit {
+padding: 8px 26px!important;
+}
+a.btn.btn-sm.btn-light.btn-edit {
+    padding: 6px 26px!important;
+	margin:0px!important;
+}
+
+table.GeneratedTable thead th {
+   
+    padding: 10px!important;
+}
+</style>
+
+<div class="content-wrapper">
+    <section class="content-header">
+       
+    </section>
+    <section class="content">
+		<div class= "container" style="box-shadow: 0px 0px 10px -3px rgb(0 0 0 / 50%);padding:40px;">
+        <h4 style="text-align:center">
+
+
+            @if (ViewBag.VesselName != null)
+            {
+                <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
+            }
+        </h4>
+        <div class="row">
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <div>
+                            @using (Html.BeginForm("Index", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
+                            {
+                                <div class="col-md-6">
+                                    @Html.Partial("_Export")
+                                </div>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <div>
+                            @using (Html.BeginForm("Index", "ImportExport", FormMethod.Post, new { area = "ImportExport", enctype = "multipart/form-data" }))
+                            {
+                                <div class="col-md-6">
+                                    @Html.Partial("_import")
+                                </div>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+		</div>
+    </section>
+</div>
+
+<link href="~/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/dist/js/bootstrap-multiselect.js"></script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>

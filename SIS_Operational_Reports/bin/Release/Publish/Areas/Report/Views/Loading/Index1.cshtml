@@ -1,0 +1,3568 @@
+﻿@model DataBuildingLayer.LoadingReport
+@{
+    ViewBag.Title = "Index";
+    int Id = Model.Id;
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+@*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">*@
+
+<link href="~/css/flatpickr.min.css" rel="stylesheet" />
+<script src="~/css/flatpickr.js"></script>
+
+<style>
+
+    td.datetime-wrapper {
+        border: none !important;
+    }
+
+        td.datetime-wrapper .datetime-icon {
+            margin-right: -51px !important;
+            top: 15px;
+        }
+
+    input.datetimePickerEdit.flatpickr-input {
+        border: none !important;
+    }
+
+    .datetime-wrapper2 {
+        position: relative;
+        /*display: inline-block;*/
+    }
+
+    .datetime-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .datetime-icon {
+        position: absolute;
+        right: 30px;
+        top: 35%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .datetime-icon1 {
+        position: absolute;
+        right: 5px;
+        top: 45%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .fa, .fas {
+        font-weight: 100 !important;
+    }
+
+    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        background-color: #676969 !important;
+    }
+
+    .nav-link {
+        color: #676969;
+        border: solid 1px #676969 !important;
+        margin: 5px;
+    }
+
+        .nav-link:hover {
+            background-color: #676969 !important;
+            color: white !important;
+        }
+
+    .tab-content {
+        margin: 5px !important;
+        box-shadow: 0px 16px 40px 0px #00000026 !important;
+        width: 100% !important;
+        padding: 10px;
+    }
+
+    .nav-link.active {
+        font-weight: normal;
+    }
+
+    .tab-content .row .col-md .GeneratedTable {
+        margin: 15px 4.8px;
+    }
+
+    .col-form-label {
+        padding: 0px !important;
+        padding-top: 10px !important;
+    }
+
+    textarea#Remarks {
+        border: none;
+    }
+
+    td.datetime-wrapper {
+        width: 100% !important;
+    }
+
+        td.datetime-wrapper .datetime-icon {
+            margin-right: 0px !important;
+            top: 15px;
+        }
+
+    .datetime-icon {
+        top: 42% !important;
+    }
+
+</style>
+
+<style>
+
+    #cover-spin {
+        position: fixed;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.7);
+        z-index: 9999;
+        display: none;
+    }
+
+    @@-webkit-keyframes spin {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+
+        to {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    #cover-spin::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 48%;
+        top: 40%;
+        width: 40px;
+        height: 40px;
+        border-style: solid;
+        border-color: black;
+        border-top-color: transparent;
+        border-width: 4px;
+        border-radius: 50%;
+        -webkit-animation: spin .8s linear infinite;
+        animation: spin .8s linear infinite;
+    }
+
+    div#divIDheader input {
+       /* border: 1px solid #aaaaaa !important;*/
+        border-radius: 3px;
+    }
+
+    .col-form-label {
+        padding: 0px !important;
+        padding-top: 0px !important;
+        margin-bottom: 0px !important;
+    }
+
+    input#btnAddStoppage {
+        width: 100% !important;
+    }
+
+    table#tblStoppage td {
+        padding-left: 0px !important;
+    }
+
+    table.GeneratedTable td {
+        border-width: 1px;
+        border-color: #676969;
+        border-style: solid;
+        padding-left: 8px !important;
+    }
+
+    span.datetime-icon {
+        margin-right: 0px !important;
+    }
+
+    input#btnAdd {
+        padding: 6px 23px !important;
+    }
+
+    input#StopRe {
+        width: 100%;
+    }
+
+    div#divIDheader .col-sm-8.datetime-wrapper {
+        border: 1px solid #aaa !important;
+        border-radius: 3px;
+        height: 34px;
+        /* margin-left: -1px; */
+        width: 63%;
+    }
+
+    .col-form-label {
+        padding: 0px !important;
+        padding-top: 0px !important;
+        margin-bottom: 0px !important;
+    }
+
+
+
+
+</style>
+
+
+<div id="cover-spin"></div>
+<div class="row">
+    <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div>
+
+
+            <h2>
+                @{
+                    var idcheck = Model.Id.ToString();
+                    var addEdit = "";
+                    if (idcheck == "0")
+                    {
+                        addEdit = "Add";
+                    }
+                    else
+                    {
+                        addEdit = "Edit";
+                    }
+                }
+
+
+                @addEdit Loading Report
+            </h2>
+
+        </div>
+        <div class="col-md button-row-top">
+
+            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> &lt;&lt; Go Back</a>
+        </div>
+    </div>
+</div>
+
+@Html.HiddenFor(e => e.Id)
+<div id="divIDheader" class="row" style="margin-top: 10px;">
+
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            @if (Id == 0)
+            {
+                <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+                <div class="col-sm-8">
+                    @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", })
+                    <span id="messageVoyid" style="color:red"></span>
+                </div>
+            }
+            else
+            {
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Voy No.</label>
+                <div class="col-sm-8">
+                    @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", @disabled = "disabled" })
+                    <span id="messageVoyid" style="color:red"></span>
+                </div>
+
+            }
+
+            <label for="inputPassword" class="col-sm-4 col-form-label mt-3">ETD Date & Time</label>
+            <div class="col-sm-8 datetime-wrapper mt-3">
+                @*<input type="datetime-local" class="form-control bottom-border-input" placeholder="Select">*@
+                @*@Html.EditorFor(model => model.ETDDateTime, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true", @readonly = true, @placeholder = "yyyy-mm-dd" } })*@
+                @* @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })*@
+                @if (Model.Id != 0)
+                {
+                    @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", } })
+                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                }
+                else
+                {
+                    @Html.EditorFor(model => model.ETDDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePicker", @placeholder = "yyyy-mm-dd  _ : _ : _", } })
+                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                }
+                <span id="msgETDDateTime" style="color:red"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Leg</label>
+            <div class="col-sm-8">
+
+                @Html.DropDownListFor(model => model.LegPortId, new SelectList(Model.LegPortList, "Id", "Leg"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "bindport(this)", })
+                <span id="msgLegPortId" style="color:red"></span>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
+            <div class="col-sm-8">
+                @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "Id", "Port"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                <span id="msgPortName" style="color:red"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md">
+
+        @if (Id == 0)
+        {
+            <div class="mb-3 row">
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
+                <div class="col-sm-8 datetime-wrapper">
+                    @* @{
+                            var currentDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                        }
+                        @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @max = currentDate } })*@
+                    @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerT", @placeholder = "YYYY-MM-DD  -- : -- : --", } })
+                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                    <span id="msgReportDateTime" style="color:red"></span>
+                </div>
+
+            </div>
+        }
+        else
+        {
+            <div class="mb-3 row">
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Report Date & Time</label>
+                <div class="col-sm-8 datetime-wrapper">
+                    @* @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @disabled = "disabled" } })*@
+                    @Html.EditorFor(model => model.ReportDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @disabled = "disabled" } })
+                    @*<i class="fas fa-calendar-alt datetime-icon"></i>*@
+                    <span class="datetime-icon" style="font-size: 15px; margin-right:-10px">&#128197;</span>
+                    <span id="msgReportDateTime" style="color:red"></span>
+                </div>
+
+            </div>
+        }
+
+
+    </div>
+
+    <div class="col-md">
+
+        <div class="mb-3 row">
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Fwd</label>
+            <div class="col-sm-8">
+                @*@Html.EditorFor(model => model.DraftFwd, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "number", @min = "0", @onKeyUp = "requiredValueDFT(this)", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })*@
+                @Html.EditorFor(model => model.DraftFwd, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @type = "number", @min = "0", @required = "true", @onKeyUp = "requiredValueDFT(this)", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftFwd" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Mid</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftMid, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "number", @min = "0", @onKeyUp = "requiredValueDFT(this)", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftMid" style="color:red"></span>
+            </div>
+
+            <label for="inputPassword" class="col-sm-4 col-form-label">Draft Aft</label>
+            <div class="col-sm-8">
+                @Html.EditorFor(model => model.DraftAft, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "number", @min = "0", @onKeyUp = "requiredValueDFT(this)", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @onBlur = "CheckValidation(this)", @step = "any" } })
+                <span id="msgDraftAft" style="color:red"></span>
+            </div>
+
+        </div>
+
+        <div class="col-md">
+
+            <div class="row report-actions">
+                <div class="col">
+                    <button id="btnSave1" class="function-button submit-button">
+                        Submit
+                    </button>
+                </div>
+                <div id="SDraft" class="col">
+                    <button onclick="SaveDraftFunction()" class="function-button draft-button">
+                        Save Draft
+                    </button>
+                    <div hidden="hidden">
+                        @Html.CheckBoxFor(model => model.SaveDraft)
+                    </div>
+
+                </div>
+                @if (Model.SaveDraft != true)
+                {
+                    <div class="col">
+                        <button onClick="window.location.reload();" class="function-button reset-button">
+                            Reset
+                        </button>
+                    </div>
+                }
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="align-items-start">
+    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" style="width: 100%; display: flow-root;">
+        <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home"
+                type="button" role="tab" aria-controls="v-pills-home" aria-selected="true" style="width:10%;float:left">
+            Cargo-1
+        </button>
+        <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile"
+                type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false" style="width:10%;float:left">
+            Cargo-2
+        </button>
+
+    </div>
+    <div class="tab-content" id="v-pills-tabContent">
+
+        <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+
+            <div class="col-md">
+                <div class="row">
+                    <div class="col-xl">
+                        <div class="row">
+
+                            <table id="tblCargo" class="GeneratedTable" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th width="120px">Cargo Grades</th>
+                                        <th width="210px">
+                                            Commence Loading Date & Time
+                                        </th>
+                                        <th>
+                                            Terminal Loading Rate (m3/hr)
+                                        </th>
+                                        <th>
+                                            Loading Rate Accepted by Vessel (m3/hr)
+                                        </th>
+                                        <th> Average Achieved Loading Rate (m3/hr) </th>
+                                        <th>No of Manifold / Hoses by Terminal</th>
+                                        <th>Size of Manifold / Hoses by Terminal (Inches)</th>
+                                        <th>No of Manifold / Hoses by Vessel</th>
+                                        <th>Size of Manifold / Hoses by Vessel (Inches)</th>
+                                        <th>Shore Line Distance (mtrs)</th>
+                                        <th>Quantity onboard (MT)</th>
+                                        <th>Balance Quantity to be Loaded (MT)</th>
+                                        <th width="210px">ETC Comp Date & Time</th>
+                                        <th width="210px">Actual Comp Date & Time</th>
+
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var VLeg in Model.CargoLists)
+                                    {
+                                    <tr>
+                                        @*<td>@VLeg.CargoName</td>*@
+                                        <td>@VLeg.CargoName</td>
+                                        <td>@VLeg.LoadingDatetime</td>
+                                        <td>@VLeg.TerminalLoadingRate</td>
+                                        <td>@VLeg.LoadingRateAccepted</td>
+                                        <td>@VLeg.AverageAchievedLoadingRate</td>
+                                        <td>@VLeg.No_Manifold_Hoses_by_Terminal</td>
+                                        <td>@VLeg.Size_of_Manifold_Hoses_by_Terminal</td>
+                                        <td>@VLeg.No_Manifold_Hoses_by_Vessel</td>
+                                        <td>@VLeg.Size_of_Manifold_Hoses_by_Vessel</td>
+                                        <td>@VLeg.ShoreLineDistance</td>
+                                        <td>@VLeg.QuantityOnboard</td>
+                                        <td>@VLeg.BalanceQuantityLoaded</td>
+                                        <td>@VLeg.EstCompDateTime</td>
+                                        <td>@VLeg.ActualCompDateTime</td>
+                                        <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+                                    </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+
+                                        @*<td> @Html.EditorFor(model => model.CargoName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 30, @required = "true" } })</td>*@
+
+                                        <td> @Html.DropDownListFor(model => model.CargoName, new SelectList(Model.CargoNameList, "Cargo", "Cargo"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+                                        @* <td> @Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>*@
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.LoadingDatetime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+                                        <td> @Html.EditorFor(model => model.TerminalLoadingRate, @*"{0:F3}",*@ new { htmlAttributes = new { @autocomplete = "off", @min = "0", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+
+                                        <td> @Html.EditorFor(model => model.LoadingRateAccepted, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.AverageAchievedLoadingRate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Terminal, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Terminal, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.No_Manifold_Hoses_by_Vessel, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-number", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.Size_of_Manifold_Hoses_by_Vessel, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.ShoreLineDistance, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @min = "0", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.QuantityOnboard, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @required = "true", @min = "0", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.BalanceQuantityLoaded, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input check-decimal", @maxlength = 7, @min = "0", @required = "true", @onKeyUp = "requiredValue8(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        @*<td> @Html.EditorFor(model => model.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local" } })</td>*@
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.EstCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right: -20px">&#128197;</span></td>
+                                        <td class="datetime-wrapper2">@Html.EditorFor(model => model.ActualCompDateTime, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ " } }) <span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+
+                                        <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+            <div class="row">
+                <div class="col-md">
+                    <div class="row">
+                        <div class="col-xl">
+
+                            <div class="row">
+                                <!-- Speed - Distance - Time Table -->
+                                <table class="GeneratedTable">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">Letter of Protests</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @*<tr>
+                                                <td>LOP Type</td>
+                                                <td>Issued/ Recd</td>
+                                            </tr>*@
+                                        <tr>
+                                            <td>Time</td>
+                                            <td>
+                                                @Html.DropDownListFor(model => model.Times, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                                <span id="msgTimes" style="color:red"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rate</td>
+                                            <td>
+                                                @Html.DropDownListFor(model => model.Rate, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                                <span id="msgRate" style="color:red"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hose Connection</td>
+                                            <td>
+                                                @Html.DropDownListFor(model => model.Hose_Connection, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                                <span id="msgHose_Connection" style="color:red"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>High H2S</td>
+                                            <td>
+                                                @Html.DropDownListFor(model => model.High_H2S, new SelectList(Model.LOPList, "Value", "Text"), "----Select----", htmlAttributes: new { @class = "mdb-select  bottom-border-input", @required = "true", })
+                                                <span id="msgHigh_H2S" style="color:red"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!-- table-end -->
+                            </div>
+                            <div class="row">
+
+                                <table id="tblStoppage" class="GeneratedTable" cellpadding="0" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Stoppage Reason</th>
+                                            @*<th>Reason</th>*@
+                                            <th width="210px">Date Time From</th>
+                                            <th width="210px">Date Time To</th>
+
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var Stop in Model.StoppageLists)
+                                        {
+                                            <tr>
+                                                <td>@Stop.Stoppage</td>
+                                                @*<td>@Stop.Reason</td>*@
+                                                <td>@Stop.DateTimeFrom</td>
+                                                <td>@Stop.DateTimeTo</td>
+
+                                                <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            @*<td> @Html.DropDownListFor(model => model.LegPort_A, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+                                                <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_A, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                                <td> @Html.DropDownListFor(model => model.LegPort_B, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                                <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_B, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+                                                <td>@Html.EditorFor(model => model.DTG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 8, @max = "9999", @required = "true", @onKeyUp = "requiredValue2(this)" } })</td>
+                                                <td>  @Html.DropDownListFor(model => model.CP_SOG, new SelectList(Model.SpeedStatusList, "Speed", "Speed"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+                                                <td> @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                            *@
+                                            <td> @Html.EditorFor(model => model.Stoppage, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 250, @required = "true" } })</td>
+                                            @*<td> @Html.EditorFor(model => model.Reason, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @required = "true" } })</td>*@
+                                            @*<td> @Html.EditorFor(model => model.DateTimeFrom, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @onchange = "CheckDate(this)" } })</td>*@
+                                            <td class="datetime-wrapper2">@Html.EditorFor(model => model.DateTimeFrom, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+
+                                            @*<td> @Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @onchange = "CheckDate(this)" } })</td>*@
+                                            <td class="datetime-wrapper2">@Html.EditorFor(model => model.DateTimeTo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input datetimePickerEdit", @placeholder = "YYYY-MM-DD  _ : _ : _" } })<span class="datetime-icon" style="font-size: 15px; margin-right:-20px">&#128197;</span></td>
+
+                                            <td><input class="btn btn-info" type="button" id="btnAddStoppage" value="Add" /></td>
+
+
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md">
+                    <div class="row">
+                        <!-- Speed - Distance - Time Table -->
+                        <table id="tblBallastPump" class="GeneratedTable">
+                            <thead>
+                                <tr>
+                                    <th colspan="3">Ballast Pumps in Use</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                    {
+                                        <td>@Html.DisplayFor(model => BTank.Name, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs", @required = "true" } })   </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <td>Rate</td>
+                                    @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.Rate, "{0:F3}", new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs check-decimal", @required = "true", @maxlength = 7, @onkeypress = "return isNumberKey(event)", @step = "any" } })   </td>
+                                    }
+                                    @*<td> @Html.EditorFor(model => model.BallastPumps_Rate1, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+                                        <td> @Html.EditorFor(model => model.BallastPumps_Rate2, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
+                                </tr>
+                                <tr style="display:none">
+                                    <td>PId</td>
+                                    @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.PumpId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                    }
+                                </tr>
+                                <tr style="display:none">
+                                    <td>PId</td>
+                                    @foreach (var BTank in Model.LR_Ballast_PumpUseList)
+                                    {
+                                        <td>@Html.EditorFor(model => BTank.PumpUseId, new { htmlAttributes = new { @autocomplete = "off", @class = "table-inputs" } })   </td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- table-end -->
+                    </div>
+                    <div class="row">
+                        <!-- Speed - Distance - Time Table -->
+                        <table class="GeneratedTable remarks">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Loading Report Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Remarks</td>
+                                    <td>
+                                        @Html.TextAreaFor(model => model.Remarks, new { @style = "width:370px", @maxlength = 500, @placeholder = "max 500 characters", htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @required = "true" } })
+                                        <span id="msgRemarks" style="color:red"></span>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <span style="font-family:Arial;color:gray" id="remaining">500/500</span>
+                        <!-- table-end -->
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePickerT", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            maxDate: "today"
+        });
+    });
+
+</script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePicker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+           // defaultDate: new Date()
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".datetimePickerEdit", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            //defaultDate: new Date()
+        });
+    });
+
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $("#ReportDateTime").prop("disabled", true);
+
+    });
+
+</script>
+
+<script>
+    function CheckDate(arg) {
+        debugger;
+        var frmdt = $("#DateTimeFrom").val();
+        var todt = $("#DateTimeTo").val();
+        var frmdt1 = frmdt.replace("T", " ");
+        var todt1 = todt.replace("T", " ");
+
+        //alert(todt1);
+
+        if (todt1 != "" && frmdt1 != "") {
+
+            if (todt1 < frmdt1) {
+                alert('From date can not less then To date.');
+                $("#DateTimeTo").val('');
+            }
+        }
+        //else {
+        //    alert('right');
+        //}
+
+    }
+</script>
+
+<script>
+
+       var loginUser = '@StaticHelper.LoginUser';
+    if (loginUser == "cheng") {
+        $("#v-pills-home :input").prop('disabled', true);
+        $("#v-pills-profile :input").prop('disabled', true);
+        $("#divIDheader :input").prop('disabled', true);
+        $("#tblCargo :input").prop('disabled', true);
+    }
+    if (loginUser == "choff") {
+        $("#v-pills-home :input").prop('disabled', false);
+        $("#v-pills-profile :input").prop('disabled', false);
+        $("#divIDheader :input").prop('disabled', false);
+    }
+    if (loginUser == "2off") {
+        $("#v-pills-home :input").prop('disabled', true);
+        $("#v-pills-profile :input").prop('disabled', true);
+        $("#divIDheader :input").prop('disabled', true);
+    }
+
+    window.onload = function () {
+
+        var loadingid = '@TempData["loadingReportId"]';
+
+        debugger;
+        if (loadingid == "") {
+            $('#SDraft').show();
+
+
+        }
+        else {
+            if ($('#SaveDraft').is(":checked") == false && loadingid != null) {
+                $('#SDraft').hide();
+            }
+        }
+    };
+</script>
+
+<script>
+    function GetLegEdit(legportid) {
+
+
+        //var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Loading/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#LegPortId').empty();
+
+
+                    $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#LegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#LegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    $("#LegPortId option[value=" + legportid + "]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+<script type="text/javascript">
+
+
+    $(".check-number").on("keypress", function (event) {
+
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        var finalValue = value + String.fromCharCode(charCode);
+
+        if (finalValue.length > 7) {
+            return false;
+        }
+
+        return true;
+    });
+
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').addClass('active');
+    $('#Menu7').removeClass('active');
+    $('#Menu8').removeClass('active');
+    $('#Menu9').removeClass('active');
+
+</script>
+
+
+<script>
+    function GetLeg(t) {
+        debugger;
+        var Id = t.value;
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/Loading/BindLeg?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    // $('#NextLegPortId').empty();
+                    $('#LegPortId').empty();
+
+                    $('#LegPortId').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#LegPortId').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+<script>
+    function bindport(t) {
+        debugger;
+        var Id = t.value;
+        /*var Legid = $("#LegPortId option:selected").val();*/
+        var Voyid = $("#VoyageId option:selected").val();
+        //alert(portName);
+
+        var Id = $("#Id").val();
+
+        if (Id == 0) {
+            $("#ReportDateTime").val('');
+            $("#ReportDateTime").prop("disabled", false);
+        }
+
+
+        $.ajax({
+            type: 'GET',
+            /*url: '/Report/Loading/BindPort?Legid=' + Legid,*/
+            url: '/Report/Loading/Bind_Port?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#PortName').empty();
+
+
+                    $('#PortName').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#PortName').append('<option value="' + txt + '">' + txt + '</option>');
+
+                    }
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+
+<script>
+    /*function bindportEdit(legportid) {*/
+    function bindportEdit(Voyid) {
+
+
+        $.ajax({
+            type: 'GET',
+           // url: '/Report/Loading/BindPortEdit?Legid=' + legportid,
+            url: '/Report/Loading/BindPort_Edit?Voyid=' + Voyid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#PortName').empty();
+
+                    var prtname = response.PortName;
+                    //alert(prtname);
+
+                    $('#PortName').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#PortName').append('<option value="' + txt + '">' + txt + '</option>');
+
+                    }
+
+                    $("#PortName option[value='" + prtname + "']").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+    };
+</script>
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        //Reference the Name and Country TextBoxes.
+
+        debugger;
+
+
+        var txtCargoName = $("#CargoName");
+        if (txtCargoName.val() == '') {
+            alert("Please Enter Cargo Grade");
+            return;
+        }
+        var txtLoadingDatetime = $("#LoadingDatetime");
+        var text1 = txtLoadingDatetime.val();
+        text1 = text1.replace('T', ' ');
+        if (txtLoadingDatetime.val() == '') {
+            alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
+            return;
+        }
+        else {
+            var text = txtLoadingDatetime.val();
+            text = text.replace('T', ' ');
+            txtLoadingDatetime = text;
+        }
+        var txtTerminalLoadingRate = $("#TerminalLoadingRate");
+        if (txtTerminalLoadingRate.val() == '') {
+            alert("Please enter Terminal Loading Rate");
+            return;
+        }
+        var txtLoadingRateAccepted = $("#LoadingRateAccepted");
+        if (txtLoadingRateAccepted.val() == '') {
+            alert("Please enter Loading Rate Accepted");
+            return;
+        }
+        var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
+        if (txtAverageAchievedLoadingRate.val() == '') {
+            alert("Please enter Average Achieved Loading Rate");
+            return;
+        }
+        var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
+        if (txtNo_Manifold_Hoses_by_Terminal.val() == '') {
+            alert("Please enter No Manifold Hoses by Terminal");
+            return;
+        }
+        var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
+        if (txtSize_of_Manifold_Hoses_by_Terminal.val() == '') {
+            alert("Please enter  Size of Manifold Hoses by Terminal");
+            return;
+        }
+        var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
+        if (txtNo_Manifold_Hoses_by_Vessel.val() == '') {
+            alert("Please enter No Manifold Hoses by Vessel");
+            return;
+        }
+        var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
+        if (txtSize_of_Manifold_Hoses_by_Vessel.val() == '') {
+            alert("Please enter Size of Manifold Hoses by Vessel");
+            return;
+        }
+        var txtShoreLineDistance = $("#ShoreLineDistance");
+        if (txtShoreLineDistance.val() == '') {
+            alert("Please enter ShoreLine Distance");
+            return;
+        }
+        var txtQuantityOnboard = $("#QuantityOnboard");
+        if (txtQuantityOnboard.val() == '') {
+            alert("Please enter Quantity Onboard");
+            return;
+        }
+        var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
+        if (txtBalanceQuantityLoaded.val() == '') {
+            alert("Please enter Balance Quantity Loaded");
+            return;
+        }
+        var txtEstCompDateTime = $("#EstCompDateTime");
+        var text2 = txtEstCompDateTime.val();
+        text2 = text2.replace('T', ' ');
+        if (txtEstCompDateTime.val() == '') {
+            alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
+            return;
+        }
+        else {
+            var text2 = txtEstCompDateTime.val();
+            text2 = text2.replace('T', ' ');
+            txtEstCompDateTime = text2;
+        }
+        var txtActualCompDateTime = $("#ActualCompDateTime");
+        var text1 = txtActualCompDateTime.val();
+        text1 = text1.replace('T', ' ');
+        if (txtActualCompDateTime.val() == '') {
+            alert("Please Select Actual Comp Date & Time of Cargo " + txtCargoName.val());
+            return;
+        }
+        else {
+            var text1 = txtActualCompDateTime.val();
+            text1 = text1.replace('T', ' ');
+            txtActualCompDateTime = text1;
+        }
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblCargo > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtCargoName.val());
+        //Add Height cell.
+
+        cell = $(row.insertCell(-1));
+        //cell.html(txtLoadingDatetime.val());
+        cell.html(txtLoadingDatetime);
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtTerminalLoadingRate.val() == '' ? '' : txtTerminalLoadingRate.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtLoadingRateAccepted.val() == '' ? '' : txtLoadingRateAccepted.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtAverageAchievedLoadingRate.val() == '' ? '' : txtAverageAchievedLoadingRate.val());
+
+        //Add DTG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtNo_Manifold_Hoses_by_Terminal.val());
+
+        //Add CP_SOG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Terminal.val());
+
+        //Add Log_Speed cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtNo_Manifold_Hoses_by_Vessel.val());
+
+        //-----
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Vessel.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtShoreLineDistance.val() == '' ? '' : txtShoreLineDistance.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtQuantityOnboard.val() == '' ? '' : txtQuantityOnboard.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtBalanceQuantityLoaded.val() == '' ? '' : txtBalanceQuantityLoaded.val());
+
+        cell = $(row.insertCell(-1));
+        //cell.html(txtActualCompDateTime.val());
+        cell.html(txtEstCompDateTime);
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtActualCompDateTime);
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "CargoRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "RemoveCargo(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtCargoName.val("");
+        txtLoadingDatetime.val("");
+        txtTerminalLoadingRate.val("");
+        txtLoadingRateAccepted.val("");
+        txtAverageAchievedLoadingRate.val("");
+        txtNo_Manifold_Hoses_by_Terminal.val("");
+        txtSize_of_Manifold_Hoses_by_Terminal.val("");
+        txtNo_Manifold_Hoses_by_Vessel.val("");
+        txtSize_of_Manifold_Hoses_by_Vessel.val("");
+        txtShoreLineDistance.val("");
+        txtQuantityOnboard.val("");
+        txtBalanceQuantityLoaded.val("");
+        txtEstCompDateTime.val("");
+        txtActualCompDateTime.val("");
+
+    });
+
+    function RemoveCargo(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblCargo")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+</script>
+
+<script type="text/javascript">
+
+
+    function EditCountCargo() {
+
+
+        var txtCargoName = $("#CargoName");
+
+        var txtLoadingDatetime = $("#LoadingDatetime");
+
+        var txtTerminalLoadingRate = $("#TerminalLoadingRate");
+        var txtLoadingRateAccepted = $("#LoadingRateAccepted");
+        var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
+        var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
+        var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
+        var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
+        var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
+        var txtShoreLineDistance = $("#ShoreLineDistance");
+        var txtQuantityOnboard = $("#QuantityOnboard");
+        var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
+        var txtEstCompDateTime = $("#EstCompDateTime");
+        var txtActualCompDateTime = $("#ActualCompDateTime");
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblCargo > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtCargoName.val());
+        //Add Height cell.
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtLoadingDatetime.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtTerminalLoadingRate.val() == '' ? '0' : txtTerminalLoadingRate.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtLoadingRateAccepted.val() == '' ? '0' : txtLoadingRateAccepted.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtAverageAchievedLoadingRate.val() == '' ? '0' : txtAverageAchievedLoadingRate.val());
+
+        //Add DTG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '0' : txtNo_Manifold_Hoses_by_Terminal.val());
+
+        //Add CP_SOG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '0' : txtSize_of_Manifold_Hoses_by_Terminal.val());
+
+        //Add Log_Speed cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '0' : txtNo_Manifold_Hoses_by_Vessel.val());
+
+        //-----
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '0' : txtSize_of_Manifold_Hoses_by_Vessel.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtShoreLineDistance.val() == '' ? '0' : txtShoreLineDistance.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtQuantityOnboard.val() == '' ? '0' : txtQuantityOnboard.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtBalanceQuantityLoaded.val() == '' ? '0' : txtBalanceQuantityLoaded.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtEstCompDateTime.val());
+
+        cell = $(row.insertCell(-1));
+        cell.html(txtActualCompDateTime.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "CargoRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "RemoveCargo1(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtCargoName.val("");
+        txtLoadingDatetime.val("");
+        txtTerminalLoadingRate.val("0");
+        txtLoadingRateAccepted.val("0");
+        txtAverageAchievedLoadingRate.val("0");
+        txtNo_Manifold_Hoses_by_Terminal.val("0");
+        txtSize_of_Manifold_Hoses_by_Terminal.val("0");
+        txtNo_Manifold_Hoses_by_Vessel.val("0");
+        txtSize_of_Manifold_Hoses_by_Vessel.val("0");
+        txtShoreLineDistance.val("0");
+        txtQuantityOnboard.val("0");
+        txtBalanceQuantityLoaded.val("0");
+        txtEstCompDateTime.val("");
+        txtActualCompDateTime.val("");
+    }
+
+
+
+
+    function RemoveCargo1(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblCargo")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+</script>
+
+<script type="text/javascript">
+    $("body").on("click", "#btnAddStoppage", function () {
+        //Reference the Name and Country TextBoxes.
+
+        debugger;
+
+
+        var txtStoppage = $("#Stoppage");
+        if (txtStoppage.val() == '') {
+            alert("Please Enter Stoppage");
+            return;
+        }
+
+        var txtDateTimeFrom = $("#DateTimeFrom");
+        var text1 = txtDateTimeFrom.val();
+        text1 = text1.replace('T', ' ');
+        if (txtDateTimeFrom.val() == '') {
+            alert("Please Select Date-Time From of the Stoppage " + txtStoppage.val());
+            return;
+        }
+        else {
+            var text1 = txtDateTimeFrom.val();
+            text1 = text1.replace('T', ' ');
+            //txtDateTimeFrom = text1;
+            txtDateTimeFrom.val(text1);
+        }
+        var txtDateTimeTo = $("#DateTimeTo");
+        var text2 = txtDateTimeTo.val();
+        text2 = text2.replace('T', ' ');
+        if (txtDateTimeTo.val() == '') {
+            alert("Please Select Date-Time To of the Stoppage " + txtStoppage.val());
+            return;
+        }
+        else {
+            var text2 = txtDateTimeTo.val();
+            text2 = text2.replace('T', ' ');
+            // txtDateTimeTo = text2;
+            txtDateTimeTo.val(text2);
+        }
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblStoppage > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtStoppage.val());
+        //Add Height cell.
+
+        //cell = $(row.insertCell(-1));
+        //cell.html(txtReason.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeFrom.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeTo.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "StopRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtStoppage.val("");
+        //txtReason.val("");
+        txtDateTimeFrom.val("");
+        txtDateTimeTo.val("");
+
+
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblStoppage")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+
+    $("body").on("click", "#btnSave", function () {
+        //Loop through the Table rows and build a JSON array.
+
+        //var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        //var urlparam = url[0].split('=');
+        var result = getUrlVars()["id"];
+        //    var ww = this.href.substring(this.href.lastIndexOf('/') + 1);
+        //alert(result);
+        var voyage = new Array();
+        $("#tblvoyageleg TBODY TR").each(function () {
+            var row = $(this);
+            var VG = {};
+            VG.LegPort_A = row.find("TD").eq(0).html();
+            VG.ReasonforPortCall_A = row.find("TD").eq(1).html();
+            VG.LegPort_B = row.find("TD").eq(2).html();
+            VG.ReasonforPortCall_B = row.find("TD").eq(3).html();
+            VG.DTG = row.find("TD").eq(4).html();
+            VG.CP_SOG = row.find("TD").eq(5).html();
+            VG.CP_Log_Speed = row.find("TD").eq(6).html();
+            VG.Id = result;
+            voyage.push(VG);
+        });
+        var origin = window.location.origin;
+        // alert(origin);
+        //Send the JSON array to Controller using AJAX.
+        $.ajax({
+            type: "POST",
+
+            url: "/CharterParty/Voyage/insertlegD",
+            data: JSON.stringify(voyage),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //alert(r + " record(s) inserted.");
+
+                // window.location = origin + "/CharterParty/Voyage/addfuel?vid=" + r + "";
+
+                if (response.Success) {
+                    //alert("CP_Part2 Completed" + response.Data);
+                    window.location.href = "/CharterParty/Voyage/" + response.Data;
+                } else {
+                    //alert("CP_Part1 Error");
+                    //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                }
+            }
+
+            //success: function (json) {
+
+            //    if (json.isRedirect) {
+            //        window.location.href = json.redirectUrl;
+            //    }
+            //},
+        });
+    });
+</script>
+
+<script>
+    function EditStopR() {
+
+        var txtStoppage = $("#Stoppage");
+
+        //var txtReason = $("#Reason");
+
+        var txtDateTimeFrom = $("#DateTimeFrom");
+
+        var txtDateTimeTo = $("#DateTimeTo");
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblStoppage > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtStoppage.val());
+        //Add Height cell.
+
+        //cell = $(row.insertCell(-1));
+        //cell.html(txtReason.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeFrom.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDateTimeTo.val());
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("id", "StopRe");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtStoppage.val("");
+        //txtReason.val("");
+        txtDateTimeFrom.val("");
+        txtDateTimeTo.val("");
+
+
+    }
+
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblStoppage")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+
+</script>
+
+<script>
+    function SaveDraftFunction() {
+        $("#SaveDraft").prop("checked", true);
+
+        var ReportDateTime = $("#ReportDateTime").val();
+        var VoyageId = $("#VoyageId option:selected").val();
+        var LegId = $("#LegPortId option:selected").val();
+
+        if (VoyageId == "") {
+            $("#messageVoyid").text("Please select Voyage no.");
+            return;
+        }
+        else {
+            $("#messageVoyid").text("");
+        }
+        if (LegId == "") {
+            $("#msgLegPortId").text("Please select Leg");
+            return;
+        }
+        else {
+            $("#msgLegPortId").text("");
+        }
+        if (ReportDateTime == "") {
+            $("#msgReportDateTime").text("Report Date-Time can not be empty.");
+            return;
+        }
+        else {
+            SaveLoadingReportDraft();
+        }
+
+        //var ChkDraft = document.getElementById("SaveDraft");
+        //var alt = ChkDraft.value;
+        // $('#SaveDraft').val();
+        // alert($('#SaveDraft').is(':checked'));
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    function SaveLoadingReport() {
+
+
+        var _lodingR = {};
+        _lodingR.Id = $('#Id').val();
+        var voy = document.getElementById("VoyageId");
+        var voyid = voy.options[voy.selectedIndex].value;
+
+        var legprt = document.getElementById("LegPortId");
+        var legprtid = legprt.options[legprt.selectedIndex].value;
+
+        var prts = document.getElementById("PortName");
+        var prtSt = prts.options[prts.selectedIndex].value;
+
+        //========= LOP Fields ========
+        var time = document.getElementById("Times");
+        var lop_Time = time.options[time.selectedIndex].value;
+
+        var rate = document.getElementById("Rate");
+        var lop_Rate = rate.options[rate.selectedIndex].value;
+
+        var hose = document.getElementById("Hose_Connection");
+        var lop_Hose_Connection = hose.options[hose.selectedIndex].value;
+
+        var high_H2S = document.getElementById("High_H2S");
+        var lop_High_H2S = high_H2S.options[high_H2S.selectedIndex].value;
+
+        debugger;
+
+        _lodingR.Times = lop_Time;
+        _lodingR.Rate = lop_Rate;
+        _lodingR.Hose_Connection = lop_Hose_Connection;
+        _lodingR.High_H2S = lop_High_H2S;
+
+
+        _lodingR.VoyageId = voyid;
+        if (_lodingR.VoyageId == "") {
+            $("#messageVoyid").text("Please Choose Voyage Number.");
+            return;
+        }
+        else {
+            $("#messageVoyid").text('');
+        }
+        _lodingR.LegPortId = legprtid;
+        if (_lodingR.LegPortId == "") {
+            $("#msgLegPortId").text("Please Choose Leg.");
+            return;
+        }
+        else {
+            $("#msgLegPortId").text('');
+        }
+
+        _lodingR.PortName = prtSt;
+
+        if (_lodingR.PortName == "") {
+            $("#msgPortName").text("Please Choose Port Name");
+            return;
+        }
+        else {
+            $("#msgPortName").text('');
+        }
+        _lodingR.ReportDateTime = $("#ReportDateTime").val();
+        if (_lodingR.ReportDateTime == "") {
+            $("#msgReportDateTime").text("Report Date-Time can not be empty.");
+            return;
+        }
+        else {
+            $("#msgReportDateTime").text('');
+        }
+        _lodingR.ETDDateTime = $("#ETDDateTime").val();
+
+        if (_lodingR.ETDDateTime == "") {
+            $("#msgETDDateTime").text("ETD Date-Time can not be empty.");
+            return;
+        }
+        else {
+            $("#msgETDDateTime").text('');
+        }
+
+
+
+        _lodingR.DraftFwd = $("#DraftFwd").val();
+        if (_lodingR.DraftFwd == "") {
+            $("#msgDraftFwd").text("DraftFwd can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftFwd").text('');
+        }
+        _lodingR.DraftMid = $("#DraftMid").val();
+        if (_lodingR.DraftMid == "") {
+            $("#msgDraftMid").text("DraftMid can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftMid").text('');
+        }
+        _lodingR.DraftAft = $("#DraftAft").val();
+        if (_lodingR.DraftAft == "") {
+            $("#msgDraftAft").text("DraftAft can not be empty.");
+            return;
+        }
+        else {
+            $("#msgDraftAft").text('');
+        }
+
+
+
+
+        _lodingR.Remarks = $("#Remarks").val();
+
+
+
+        var CargoListing = [];
+        //var table = document.getElementById('tblCargo'),
+        //    rows = table.getElementsByTagName('tr'),
+        //    i, j, cells, customerId;
+
+
+        //for (i = 1, j = rows.length - 1; i < j; ++i) {
+        //    cells = rows[i].getElementsByTagName('td');
+        //    if (!cells.length) {
+        //        continue;
+        //    }
+
+        //    debugger;
+
+        //    var CargoList = {};
+
+
+
+        //    CargoList.CargoName = cells[0].innerHTML;
+        //    CargoList.LoadingDatetime = cells[1].innerHTML;
+        //    CargoList.TerminalLoadingRate = cells[2].innerHTML;
+        //    CargoList.LoadingRateAccepted = cells[3].innerHTML;
+        //    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
+        //    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
+        //    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+        //    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
+        //    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+        //    CargoList.ShoreLineDistance = cells[9].innerHTML;
+        //    CargoList.QuantityOnboard = cells[10].innerHTML;
+        //    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
+        //    CargoList.ActualCompDateTime = cells[12].innerHTML;
+
+
+
+        //    CargoListing.push(CargoList);
+
+
+        //}
+
+        debugger;
+
+        if (CargoListing == "") {
+
+
+            var txtCargoName = $("#CargoName");
+
+            var chk = txtCargoName.val();
+
+            if (chk != "") {
+
+                if (txtCargoName.val() == '') {
+                    alert("Please Enter Cargo Grade");
+                    return;
+                }
+                var txtLoadingDatetime = $("#LoadingDatetime");
+                if (txtLoadingDatetime.val() == '') {
+                    alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
+                    return;
+                }
+                var txtTerminalLoadingRate = $("#TerminalLoadingRate");
+                if (txtTerminalLoadingRate.val() == '') {
+                    alert("Please enter Terminal Loading Rate");
+                    return;
+                }
+                var txtLoadingRateAccepted = $("#LoadingRateAccepted");
+                if (txtLoadingRateAccepted.val() == '') {
+                    alert("Please enter Loading Rate Accepted");
+                    return;
+                }
+                var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
+                if (txtAverageAchievedLoadingRate.val() == '') {
+                    alert("Please enter Average Achieved Loading Rate");
+                    return;
+                }
+                var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
+                if (txtNo_Manifold_Hoses_by_Terminal.val() == '') {
+                    alert("Please enter No Manifold Hoses by Terminal");
+                    return;
+                }
+                var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
+                if (txtSize_of_Manifold_Hoses_by_Terminal.val() == '') {
+                    alert("Please enter  Size of Manifold Hoses by Terminal");
+                    return;
+                }
+                var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
+                if (txtNo_Manifold_Hoses_by_Vessel.val() == '') {
+                    alert("Please enter No Manifold Hoses by Vessel");
+                    return;
+                }
+                var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
+                if (txtSize_of_Manifold_Hoses_by_Vessel.val() == '') {
+                    alert("Please enter Size of Manifold Hoses by Vessel");
+                    return;
+                }
+                var txtShoreLineDistance = $("#ShoreLineDistance");
+                if (txtShoreLineDistance.val() == '') {
+                    alert("Please enter ShoreLine Distance");
+                    return;
+                }
+                var txtQuantityOnboard = $("#QuantityOnboard");
+                if (txtQuantityOnboard.val() == '') {
+                    alert("Please enter Quantity Onboard");
+                    return;
+                }
+                var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
+                if (txtBalanceQuantityLoaded.val() == '') {
+                    alert("Please enter Balance Quantity Loaded");
+                    return;
+                }
+                var txtEstCompDateTime = $("#EstCompDateTime");
+                if (txtEstCompDateTime.val() == '') {
+                    alert("Please Select ETC Comp Date & Time of Cargo " + txtCargoName.val());
+                    return;
+                }
+                var txtActualCompDateTime = $("#ActualCompDateTime");
+                if (txtActualCompDateTime.val() == '') {
+                    alert("Please Select Actual Comp Date & Time of Cargo " + txtCargoName.val());
+                    return;
+                }
+                //Get the reference of the Table's TBODY element.
+                var tBody = $("#tblCargo > TBODY")[0];
+
+                //Add Row.
+                var row = tBody.insertRow(-1);
+
+                //Add Name cell.
+                var cell = $(row.insertCell(-1));
+                cell.html(txtCargoName.val());
+                //Add Height cell.
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtLoadingDatetime.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtTerminalLoadingRate.val() == '' ? '' : txtTerminalLoadingRate.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtLoadingRateAccepted.val() == '' ? '' : txtLoadingRateAccepted.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtAverageAchievedLoadingRate.val() == '' ? '' : txtAverageAchievedLoadingRate.val());
+
+                //Add DTG cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtNo_Manifold_Hoses_by_Terminal.val());
+
+                //Add CP_SOG cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Terminal.val());
+
+                //Add Log_Speed cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtNo_Manifold_Hoses_by_Vessel.val());
+
+                //-----
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Vessel.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtShoreLineDistance.val() == '' ? '' : txtShoreLineDistance.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtQuantityOnboard.val() == '' ? '' : txtQuantityOnboard.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtBalanceQuantityLoaded.val() == '' ? '' : txtBalanceQuantityLoaded.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtEstCompDateTime.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtActualCompDateTime.val());
+
+
+
+                var table = document.getElementById('tblCargo'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+
+
+                for (i = 1, j = rows.length - 1; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var CargoList = {};
+
+
+
+                    CargoList.CargoName = cells[0].innerHTML;
+                    CargoList.LoadingDatetime = cells[1].innerHTML;
+                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
+                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
+                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+                    CargoList.ShoreLineDistance = cells[9].innerHTML;
+                    CargoList.QuantityOnboard = cells[10].innerHTML;
+                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
+                    CargoList.EstCompDateTime = cells[12].innerHTML;
+                    CargoList.ActualCompDateTime = cells[13].innerHTML;
+
+
+
+                    CargoListing.push(CargoList);
+
+
+
+
+                }
+            }
+        }
+
+        try {
+
+            var StoppageListing = [];
+            //var table = document.getElementById('tblStoppage'),
+            //    rows = table.getElementsByTagName('tr'),
+            //    i, j, cells;
+            //// var rCount = table.rows.length;
+
+            //for (i = 1, j = rows.length - 1; i < j; ++i) {
+            //    cells = rows[i].getElementsByTagName('td');
+            //    if (!cells.length) {
+            //        continue;
+            //    }
+
+            //    debugger;
+
+            //    var StoppageList = {};
+
+
+            //    StoppageList.Stoppage = cells[0].innerHTML;
+            //    //StoppageList.Reason  = cells[1].innerHTML;
+
+            //    try {
+            //        StoppageList.DateTimeFrom = cells[1].children[0].value;
+
+            //    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+
+            //    try {
+            //        StoppageList.DateTimeTo = cells[2].children[0].value;
+
+            //    } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
+
+            //    StoppageListing.push(StoppageList);
+
+
+            //}
+
+            if (StoppageListing == "") {
+                var txtStoppage = $("#Stoppage");
+
+                var chk1 = txtStoppage.val();
+
+                if (chk1 != "") {
+
+
+                var txtDateTimeFrom = $("#DateTimeFrom");
+                var txtDateTimeTo = $("#DateTimeTo");
+                var tBody = $("#tblStoppage > TBODY")[0];
+
+                //Add Row.
+                var row = tBody.insertRow(-1);
+
+                //Add Name cell.
+                var cell = $(row.insertCell(-1));
+                cell.html(txtStoppage.val());
+                //Add Height cell.
+
+                //cell = $(row.insertCell(-1));
+                //cell.html(txtReason.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtDateTimeFrom.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtDateTimeTo.val());
+
+
+
+                var table = document.getElementById('tblStoppage'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells;
+                // var rCount = table.rows.length;
+
+                    for (i = 1, j = rows.length - 1; i < j; ++i) {
+                        cells = rows[i].getElementsByTagName('td');
+                        if (!cells.length) {
+                            continue;
+                        }
+
+                        debugger;
+
+                        var StoppageList = {};
+
+
+                        StoppageList.Stoppage = cells[0].innerHTML;
+                        //StoppageList.Reason  = cells[1].innerHTML;
+
+                        try {
+                            StoppageList.DateTimeFrom = cells[1].children[0].value;
+
+                        } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+
+                        try {
+                            StoppageList.DateTimeTo = cells[2].children[0].value;
+
+                        } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
+
+                        StoppageListing.push(StoppageList);
+
+                    }
+                }
+
+
+            }
+        } catch { }
+
+        //var tables = document.getElementById('tblStoppage'),
+        //    rowss = tables.getElementsByTagName('tr');
+
+        //if (rowss.length - 2 == 0) {
+        //    alert("Please Enter Stoppage Detail and Click on Add Button");
+        //    return;
+        //}
+
+        //if (_lodingR.Remarks == "") {
+        //    $("#v-pills-home").removeClass("show active");
+        //    $("#v-pills-home-tab").removeClass("active");
+        //    $("#v-pills-profile").addClass("show active");
+        //    $("#v-pills-profile-tab").addClass("active");
+        //    $("#msgRemarks").text("Remarks can not be empty.");
+        //    return;
+        //}
+        //else {
+        //    $("#msgRemarks").text('');
+        //}
+
+        _lodingR.SaveDraft = $('#SaveDraft').is(':checked');
+
+        debugger;
+
+        //var eduInput = _noonR;
+        //for (i = 0; i < 72; i++) {
+        //    if (eduInput[i].value == "") {
+        //        alert('Complete all the fields');
+        //        return false;
+        //    }
+        //}
+        $('#cover-spin').show();
+
+          var newUrl= '@Url.Action("LoadingRList", "Loading")';
+
+        $.ajax({
+            type: "POST",
+            url: "/Report/Loading/insertLodingR",
+            data: JSON.stringify(_lodingR),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (r) {
+
+
+
+                // alert("Success");
+
+                CargoInsertion();
+                sleep(1000);
+                StoppageInsertion();
+                sleep(1000);
+                BallastPumpInsertion();
+
+                $('#cover-spin').hide();
+
+                alert("Success");
+
+                window.location.href = newUrl;
+            }
+        });
+
+        //var form = $('form'); // change selector your form
+        //if (!form.attr('validated')) {
+        //    if (form.valid()) {
+        //    }
+        //    else {
+        //        alert('not valid');
+        //    }
+
+
+
+    }
+
+</script>
+
+
+<script type="text/javascript">
+
+    $(".check-decimal").on("keypress", function (event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var value = $(this).val();
+
+        // Check for '.' and ensure there's only one
+        if (charCode == 46 && value.indexOf('.') != -1) {
+            return false;
+        }
+
+        // Allow only backspace, delete, and numeric values
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+
+        // Check for valid decimal values (e.g., .333, 0.963, 2.333)
+        var finalValue = value + String.fromCharCode(charCode);
+        var validDecimal = /^\d*\.?\d{0,3}$/; // allow up to 3 decimal places
+
+        if (!validDecimal.test(finalValue)) {
+            return false;
+        }
+
+        return true;
+    });
+
+</script>
+
+
+<script>
+    function sleep(milliseconds) {
+        const date = Date.now();
+        let currentDate = null;
+        do {
+            currentDate = Date.now();
+        } while (currentDate - date < milliseconds);
+    }
+</script>
+
+
+<script type="text/javascript">
+
+    function SaveLoadingReportDraft() {
+
+
+        var _lodingR = {};
+        _lodingR.Id = $('#Id').val();
+        var voy = document.getElementById("VoyageId");
+        var voyid = voy.options[voy.selectedIndex].value;
+
+        var legprt = document.getElementById("LegPortId");
+        var legprtid = legprt.options[legprt.selectedIndex].value;
+
+        var prts = document.getElementById("PortName");
+        var prtSt = prts.options[prts.selectedIndex].value;
+
+        //========= LOP Fields ========
+        var time = document.getElementById("Times");
+        var lop_Time = time.options[time.selectedIndex].value;
+
+        var rate = document.getElementById("Rate");
+        var lop_Rate = rate.options[rate.selectedIndex].value;
+
+        var hose = document.getElementById("Hose_Connection");
+        var lop_Hose_Connection = hose.options[hose.selectedIndex].value;
+
+        var high_H2S = document.getElementById("High_H2S");
+        var lop_High_H2S = high_H2S.options[high_H2S.selectedIndex].value;
+
+        debugger;
+
+        _lodingR.Times = lop_Time;
+        _lodingR.Rate = lop_Rate;
+        _lodingR.Hose_Connection = lop_Hose_Connection;
+        _lodingR.High_H2S = lop_High_H2S;
+
+
+        _lodingR.VoyageId = voyid;
+        if (_lodingR.VoyageId == "") {
+            _lodingR.VoyageId = 0;
+            //$("#messageVoyid").text("Please Choose Voyage Number.");
+            //return;
+        }
+        //else {
+        //    $("#messageVoyid").text('');
+        //}
+        _lodingR.LegPortId = legprtid;
+        if (_lodingR.LegPortId == "") {
+            _lodingR.LegPortId = 0;
+            //$("#msgLegPortId").text("Please Choose Leg.");
+            //return;
+        }
+        //else {
+        //    $("#msgLegPortId").text('');
+        //}
+
+        _lodingR.PortName = prtSt;
+
+        if (_lodingR.PortName == "") {
+            _lodingR.PortName = "";
+            //$("#msgPortName").text("Please Choose Status");
+            //return;
+        }
+        //else {
+        //    $("#msgVesselStatus").text('');
+        //}
+        _lodingR.ReportDateTime = $("#ReportDateTime").val();
+        if (_lodingR.ReportDateTime == "") {
+            _lodingR.ReportDateTime = "";
+            //$("#msgReportDateTime").text("Loading Date-Time can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgReportDateTime").text('');
+        //}
+        _lodingR.ETDDateTime = $("#ETDDateTime").val();
+
+        if (_lodingR.ETDDateTime == "") {
+            _lodingR.ETDDateTime = "";
+            //$("#msgETDDateTime").text("ETD Date-Time can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgETDDateTime").text('');
+        //}
+
+
+
+        _lodingR.DraftFwd = $("#DraftFwd").val();
+        if (_lodingR.DraftFwd == "") {
+            _lodingR.DraftFwd = 0;
+            //$("#msgDraftFwd").text("DraftFwd can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgDraftFwd").text('');
+        //}
+        _lodingR.DraftAft = $("#DraftAft").val();
+        if (_lodingR.DraftAft == "") {
+            _lodingR.DraftAft = 0;
+            //$("#msgDraftAft").text("DraftAft can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgDraftAft").text('');
+        //}
+        _lodingR.DraftMid = $("#DraftMid").val();
+        if (_lodingR.DraftMid == "") {
+            _lodingR.DraftMid = 0;
+            //$("#msgDraftMid").text("DraftMid can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgDraftMid").text('');
+        //}
+
+
+
+        _lodingR.Remarks = $("#Remarks").val();
+
+
+
+        $("#msgTimes").text('');
+        $("#msgRate").text('');
+        $("#msgHose_Connection").text('');
+        $("#msgHigh_H2S").text('');
+
+        var lop = 0;
+        if (_lodingR.Times == "") {
+            $("#v-pills-home").removeClass("show active");
+            $("#v-pills-home-tab").removeClass("active");
+            $("#v-pills-profile").addClass("show active");
+            $("#v-pills-profile-tab").addClass("active");
+            //$("#msgTimes").text("Select Time");
+            //lop = 1;
+        }
+        //else {
+        //    $("#msgTimes").text('');
+        //}
+
+        if (_lodingR.Rate == "") {
+            $("#v-pills-home").removeClass("show active");
+            $("#v-pills-home-tab").removeClass("active");
+            $("#v-pills-profile").addClass("show active");
+            $("#v-pills-profile-tab").addClass("active");
+            //$("#msgRate").text("Please select Rate");
+            //lop = 1;
+        }
+
+        if (_lodingR.Hose_Connection == "") {
+            $("#v-pills-home").removeClass("show active");
+            $("#v-pills-home-tab").removeClass("active");
+            $("#v-pills-profile").addClass("show active");
+            $("#v-pills-profile-tab").addClass("active");
+            //$("#msgHose_Connection").text("Select Hose Connection");
+            //lop = 1;
+        }
+
+        if (_lodingR.High_H2S == "") {
+            $("#v-pills-home").removeClass("show active");
+            $("#v-pills-home-tab").removeClass("active");
+            $("#v-pills-profile").addClass("show active");
+            $("#v-pills-profile-tab").addClass("active");
+            //$("#msgHigh_H2S").text("Please Select High H2S (Letter of Protests)");
+            //lop = 1;
+        }
+
+        //if (lop == 1) {
+        //    return;
+        //}
+
+        var table = document.getElementById('tblCargo'),
+            rows = table.getElementsByTagName('tr');
+
+        //if (rows.length - 2 == 0) {
+        //    alert("Please Enter Cargo Detail and Click on Add Button");
+        //    return;
+        //}
+
+        var tables = document.getElementById('tblStoppage'),
+            rowss = tables.getElementsByTagName('tr');
+
+        //if (rowss.length - 2 == 0) {
+        //    alert("Please Enter Stoppage Detail and Click on Add Button");
+        //    return;
+        //}
+
+        if (_lodingR.Remarks == "") {
+            _lodingR.Remarks = "";
+            $("#v-pills-home").removeClass("show active");
+            $("#v-pills-home-tab").removeClass("active");
+            $("#v-pills-profile").addClass("show active");
+            $("#v-pills-profile-tab").addClass("active");
+            //$("#msgRemarks").text("Remarks can not be empty.");
+            //return;
+        }
+        //else {
+        //    $("#msgRemarks").text('');
+        //}
+
+
+
+        var CargoListing = [];
+        //var table = document.getElementById('tblCargo'),
+        //    rows = table.getElementsByTagName('tr'),
+        //    i, j, cells, customerId;
+        //// var rCount = table.rows.length;
+
+        //for (i = 1, j = rows.length - 1; i < j; ++i) {
+        //    cells = rows[i].getElementsByTagName('td');
+        //    if (!cells.length) {
+        //        continue;
+        //    }
+
+        //    debugger;
+
+        //    var CargoList = {};
+
+
+
+        //    CargoList.CargoName = cells[0].innerHTML;
+        //    //CargoList.LoadingDatetime = cells[1].innerHTML;
+        //    CargoList.LoadingDatetime = cells[1].children[0].value;
+        //    CargoList.TerminalLoadingRate = cells[2].innerHTML;
+        //    CargoList.LoadingRateAccepted = cells[3].innerHTML;
+        //    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
+        //    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
+        //    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+        //    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
+        //    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+        //    CargoList.ShoreLineDistance = cells[9].innerHTML;
+        //    CargoList.QuantityOnboard = cells[10].innerHTML;
+        //    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
+        //    //CargoList.ActualCompDateTime = cells[12].innerHTML;
+
+        //    CargoList.ActualCompDateTime = cells[12].children[0].value;
+
+        //    CargoListing.push(CargoList);
+
+
+        //}
+
+        debugger;
+
+        if (CargoListing == "") {
+
+
+            var txtCargoName = $("#CargoName");
+
+            var chk = txtCargoName.val();
+
+            if (chk != "") {
+
+                //if (txtCargoName.val() == '') {
+                //    alert("Please Enter Cargo Grade");
+                //    return;
+                //}
+                var txtLoadingDatetime = $("#LoadingDatetime");
+                if (txtLoadingDatetime.val() == '') {
+                    txtLoadingDatetime.val(null);
+                    //alert("Please Select Commence Loading Date & Time of Cargo " + txtCargoName.val());
+                    //return;
+                }
+                var txtTerminalLoadingRate = $("#TerminalLoadingRate");
+                //if (txtTerminalLoadingRate.val() == '') {
+                //    alert("Please enter Terminal Loading Rate");
+                //    return;
+                //}
+                var txtLoadingRateAccepted = $("#LoadingRateAccepted");
+                //if (txtLoadingRateAccepted.val() == '') {
+                //    alert("Please enter Loading Rate Accepted");
+                //    return;
+                //}
+                var txtAverageAchievedLoadingRate = $("#AverageAchievedLoadingRate");
+                //if (txtAverageAchievedLoadingRate.val() == '') {
+                //    alert("Please enter Average Achieved Loading Rate");
+                //    return;
+                //}
+                var txtNo_Manifold_Hoses_by_Terminal = $("#No_Manifold_Hoses_by_Terminal");
+                //if (txtNo_Manifold_Hoses_by_Terminal.val() == '') {
+                //    alert("Please enter No Manifold Hoses by Terminal");
+                //    return;
+                //}
+                var txtSize_of_Manifold_Hoses_by_Terminal = $("#Size_of_Manifold_Hoses_by_Terminal");
+                //if (txtSize_of_Manifold_Hoses_by_Terminal.val() == '') {
+                //    alert("Please enter  Size of Manifold Hoses by Terminal");
+                //    return;
+                //}
+                var txtNo_Manifold_Hoses_by_Vessel = $("#No_Manifold_Hoses_by_Vessel");
+                //if (txtNo_Manifold_Hoses_by_Vessel.val() == '') {
+                //    alert("Please enter No Manifold Hoses by Vessel");
+                //    return;
+                //}
+                var txtSize_of_Manifold_Hoses_by_Vessel = $("#Size_of_Manifold_Hoses_by_Vessel");
+                //if (txtSize_of_Manifold_Hoses_by_Vessel.val() == '') {
+                //    alert("Please enter Size of Manifold Hoses by Vessel");
+                //    return;
+                //}
+                var txtShoreLineDistance = $("#ShoreLineDistance");
+                //if (txtShoreLineDistance.val() == '') {
+                //    alert("Please enter ShoreLine Distance");
+                //    return;
+                //}
+                var txtQuantityOnboard = $("#QuantityOnboard");
+                //if (txtQuantityOnboard.val() == '') {
+                //    alert("Please enter Quantity Onboard");
+                //    return;
+                //}
+                var txtBalanceQuantityLoaded = $("#BalanceQuantityLoaded");
+                //if (txtBalanceQuantityLoaded.val() == '') {
+                //    alert("Please enter Balance Quantity Loaded");
+                //    return;
+                //}
+                var txtActualCompDateTime = $("#ActualCompDateTime");
+                if (txtActualCompDateTime.val() == '') {
+                    txtActualCompDateTime.val(null);
+                    //alert("Please Select ETC / Actual Comp Date & Time of Cargo " + txtCargoName.val());
+                    //return;
+                }
+                var txtEstCompDateTime = $("#EstCompDateTime");
+                if (txtEstCompDateTime.val() == '') {
+                    txtEstCompDateTime.val(null);
+                    //alert("Please Select ETC / Actual Comp Date & Time of Cargo " + txtCargoName.val());
+                    //return;
+                }
+                //Get the reference of the Table's TBODY element.
+                var tBody = $("#tblCargo > TBODY")[0];
+
+                //Add Row.
+                var row = tBody.insertRow(-1);
+
+                //Add Name cell.
+                var cell = $(row.insertCell(-1));
+                cell.html(txtCargoName.val());
+                //Add Height cell.
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtLoadingDatetime.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtTerminalLoadingRate.val() == '' ? '' : txtTerminalLoadingRate.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtLoadingRateAccepted.val() == '' ? '' : txtLoadingRateAccepted.val());
+
+                //Add Capacity cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtAverageAchievedLoadingRate.val() == '' ? '' : txtAverageAchievedLoadingRate.val());
+
+                //Add DTG cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtNo_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtNo_Manifold_Hoses_by_Terminal.val());
+
+                //Add CP_SOG cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtSize_of_Manifold_Hoses_by_Terminal.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Terminal.val());
+
+                //Add Log_Speed cell.
+                cell = $(row.insertCell(-1));
+                cell.html(txtNo_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtNo_Manifold_Hoses_by_Vessel.val());
+
+                //-----
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtSize_of_Manifold_Hoses_by_Vessel.val() == '' ? '' : txtSize_of_Manifold_Hoses_by_Vessel.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtShoreLineDistance.val() == '' ? '' : txtShoreLineDistance.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtQuantityOnboard.val() == '' ? '' : txtQuantityOnboard.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtBalanceQuantityLoaded.val() == '' ? '' : txtBalanceQuantityLoaded.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtEstCompDateTime.val());
+
+                cell = $(row.insertCell(-1));
+                cell.html(txtActualCompDateTime.val());
+
+
+
+                var table = document.getElementById('tblCargo'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 1, j = rows.length - 1; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var CargoList = {};
+
+
+
+                    CargoList.CargoName = cells[0].innerHTML;
+                    CargoList.LoadingDatetime = cells[1].innerHTML;
+                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
+                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
+                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Terminal = cells[6].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+                    CargoList.ShoreLineDistance = cells[9].innerHTML;
+                    CargoList.QuantityOnboard = cells[10].innerHTML;
+                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
+                    CargoList.EstCompDateTime = cells[12].innerHTML;
+                    CargoList.ActualCompDateTime = cells[13].innerHTML;
+
+                    CargoListing.push(CargoList);
+
+
+                }
+            }
+
+        }
+
+
+        try {
+
+            var StoppageListing = [];
+            //var table = document.getElementById('tblStoppage'),
+            //    rows = table.getElementsByTagName('tr'),
+            //    i, j, cells;
+            //// var rCount = table.rows.length;
+
+            //for (i = 1, j = rows.length - 1; i < j; ++i) {
+            //    cells = rows[i].getElementsByTagName('td');
+            //    if (!cells.length) {
+            //        continue;
+            //    }
+
+            //    debugger;
+
+            //    var StoppageList = {};
+
+
+            //    StoppageList.Stoppage = cells[0].innerHTML;
+            //    //StoppageList.Reason  = cells[1].innerHTML;
+
+            //    try {
+            //        StoppageList.DateTimeFrom = cells[1].children[0].value;
+
+            //    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+
+            //    try {
+            //        StoppageList.DateTimeTo = cells[2].children[0].value;
+
+            //    } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
+
+            //    StoppageListing.push(StoppageList);
+
+
+            //}
+
+            if (StoppageListing == "") {
+                var txtStoppage = $("#Stoppage");
+
+                var chk = txtStoppage.val();
+
+
+                if (chk != "") {
+
+                    var txtDateTimeFrom = $("#DateTimeFrom");
+                    var txtDateTimeTo = $("#DateTimeTo");
+                    var tBody = $("#tblStoppage > TBODY")[0];
+
+                    //Add Row.
+                    var row = tBody.insertRow(-1);
+
+                    //Add Name cell.
+                    var cell = $(row.insertCell(-1));
+                    cell.html(txtStoppage.val());
+                    //Add Height cell.
+
+                    //cell = $(row.insertCell(-1));
+                    //cell.html(txtReason.val());
+
+                    //Add Capacity cell.
+                    cell = $(row.insertCell(-1));
+                    cell.html(txtDateTimeFrom.val());
+
+                    //Add Capacity cell.
+                    cell = $(row.insertCell(-1));
+                    cell.html(txtDateTimeTo.val());
+
+
+
+                    var table = document.getElementById('tblStoppage'),
+                        rows = table.getElementsByTagName('tr'),
+                        i, j, cells;
+                    // var rCount = table.rows.length;
+
+                    for (i = 1, j = rows.length - 1; i < j; ++i) {
+                        cells = rows[i].getElementsByTagName('td');
+                        if (!cells.length) {
+                            continue;
+                        }
+
+                        debugger;
+
+                        var StoppageList = {};
+
+
+                        StoppageList.Stoppage = cells[0].innerHTML;
+                        //StoppageList.Reason  = cells[1].innerHTML;
+
+                        try {
+                            StoppageList.DateTimeFrom = cells[1].children[0].value;
+
+                        } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+
+                        try {
+                            StoppageList.DateTimeTo = cells[2].children[0].value;
+
+                        } catch { StoppageList.DateTimeTo = cells[2].innerHTML; }
+
+                        StoppageListing.push(StoppageList);
+
+
+                    }
+                }
+
+            }
+        } catch { }
+
+
+
+
+
+        _lodingR.SaveDraft = $('#SaveDraft').is(':checked');
+
+        debugger;
+
+        //var eduInput = _noonR;
+        //for (i = 0; i < 72; i++) {
+        //    if (eduInput[i].value == "") {
+        //        alert('Complete all the fields');
+        //        return false;
+        //    }
+        //}
+        $('#cover-spin').show();
+
+          var newUrl= '@Url.Action("LoadingRList", "Loading")';
+
+        $.ajax({
+            type: "POST",
+            url: "/Report/Loading/insertLodingR",
+            data: JSON.stringify(_lodingR),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (r) {
+               // alert("Success");
+
+                CargoInsertion();
+                sleep(1000);
+                StoppageInsertion();
+                sleep(1000);
+                BallastPumpInsertion();
+
+                $('#cover-spin').hide();
+
+                alert("Success");
+
+                window.location.href = newUrl;
+            }
+        });
+
+        //var form = $('form'); // change selector your form
+        //if (!form.attr('validated')) {
+        //    if (form.valid()) {
+        //    }
+        //    else {
+        //        alert('not valid');
+        //    }
+
+
+
+    }
+
+</script>
+
+<script type="text/javascript">
+
+
+
+    $("body").on("click", "#btnSave1", function () {
+
+        $("#SaveDraft").prop("checked", false);
+        SaveLoadingReport();
+
+
+
+    });
+</script>
+
+
+<script>
+
+
+    function GetLRCargoEdit(id) {
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Loading/GetLRCargoEdit?LoadingReportId=' + id,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    var LRCargoList = response.lrc;
+                    var CountCargo = response.cntlrc;
+
+                    //alert(FtypeList);
+
+                    debugger;
+                    var rowCount = CountCargo;
+                    let len = rowCount;
+                    for (let i = 1; i <= len; i++) {
+
+                     EditCountCargo();
+
+
+                    }
+
+                    debugger;
+
+                    var count = 0; var ss = ""; var ss1 = "";
+                    var table = document.getElementById('tblCargo');
+                    var loginUser = '@StaticHelper.LoginUser';
+                   // alert(loginUser);
+
+                    var j = 1; var k = 0;
+                    $.each(LRCargoList, function (index, value) {
+                        ss1 = value;
+                        debugger;
+
+                        if (k == 0) {
+                           // table.rows[j].cells[k].children[0].value = ss1;
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                              /*  table.rows[j].cells[k].setAttribute("contenteditable", true);*/
+                            k++;
+                        }
+
+                        else if (k == 1) {
+
+                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
+
+                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            x.classList.add("datetimePickerEdit");
+
+                            var calendarIcon = document.createElement("SPAN");
+                            calendarIcon.innerHTML = "📅";
+                            calendarIcon.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon);
+
+                            var savedDateValue = '';
+
+                            if (ss1 != null) {
+                                var now = new Date(ss1);
+                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                x.value = now.toISOString().slice(0, 16);
+                                var DT = x.value;
+                                x.value = DT.replace('T', ' ');
+                                savedDateValue = x.value;
+                            }
+
+                            flatpickr(x, {
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                clickOpens: false,
+                                defaultDate: savedDateValue,
+                            });
+
+                            calendarIcon.addEventListener("click", function () {
+                                x._flatpickr.open();
+                            });
+
+                            k++;
+                        }
+
+                        else if (k == 5) {
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+
+                            table.rows[j].cells[k].addEventListener("input", function (event) {
+                                var inputText = event.target.textContent;
+
+                                var numericText = inputText.replace(/[^0-9]/g, '').substr(0, 7);
+
+                                event.target.textContent = numericText;
+
+                            });
+
+                            k++;
+                        }
+
+                        else if (k == 7) {
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+
+                            table.rows[j].cells[k].addEventListener("input", function (event) {
+                                var inputText = event.target.textContent;
+
+                                var numericText = inputText.replace(/[^0-9]/g, '').substr(0, 7);
+
+                                event.target.textContent = numericText;
+
+                            });
+
+                            k++;
+                        }
+
+                        else if (k == 12) {
+
+                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
+
+                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            x.classList.add("datetimePickerEdit");
+
+                            var calendarIcon = document.createElement("SPAN");
+                            calendarIcon.innerHTML = "📅";
+                            calendarIcon.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon);
+
+                            var savedDateValue = '';
+
+                            if (ss1 != null) {
+                                var now = new Date(ss1);
+                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                x.value = now.toISOString().slice(0, 16);
+                                var DT = x.value;
+                                x.value = DT.replace('T', ' ');
+                                savedDateValue = x.value;
+                            }
+
+                            flatpickr(x, {
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                clickOpens: false,
+                                defaultDate: savedDateValue,
+                            });
+
+                            calendarIcon.addEventListener("click", function () {
+                                x._flatpickr.open();
+                            });
+
+                            k++;
+                        }
+
+                        else if (k == 13) {
+
+                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
+
+                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            x.classList.add("datetimePickerEdit");
+
+                            var calendarIcon1 = document.createElement("SPAN");
+                            calendarIcon1.innerHTML = "📅";
+                            calendarIcon1.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon1);
+
+                            var savedDateValue1 = '';
+
+                            if (ss1 != null) {
+                                var now1 = new Date(ss1);
+                                now1.setMinutes(now1.getMinutes() - now1.getTimezoneOffset());
+                                x.value = now1.toISOString().slice(0, 16);
+                                var DT1 = x.value;
+                                x.value = DT1.replace('T', ' ');
+                                savedDateValue1 = x.value;
+                            }
+
+                            flatpickr(x, {
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                clickOpens: false,
+                                defaultDate: savedDateValue1,
+                            });
+
+                            calendarIcon1.addEventListener("click", function () {
+                                x._flatpickr.open();
+                            });
+
+                            k++;
+                        }
+
+                        else if (k == 14) {
+                            k = 0;
+                            j++;
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                                /*table.rows[j].cells[k].setAttribute("contenteditable", true);*/
+                           
+                            k++;
+                        }
+
+                        else {
+
+                            table.rows[j].cells[k].innerHTML = ss1;
+
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+
+                            table.rows[j].cells[k].addEventListener("input", function (event) {
+                                var inputText = event.target.textContent;
+
+                                var cleanedText = inputText.replace(/[^0-9.]/g, '').substr(0, 7);
+
+                                if (/^\d*(\.\d{0,3})?$/.test(cleanedText)) {
+
+                                    event.target.textContent = cleanedText;
+                                }
+                                else {
+
+                                    event.target.textContent = "";
+                                }
+                            });
+
+                            k++;
+                        }
+
+
+                    });
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+
+
+<script type="text/javascript">
+
+    function requiredValueDFT(arg) {
+        // debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 30) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+
+</script>
+<script>
+
+
+    function GetStopR(id) {
+
+        $.ajax({
+            type: 'GET',
+            /*  url: '/Report/DailyNoon/Getfuelcons?VoyId=' + VoyId,*/
+            url: '/Report/Loading/GetStopR?LoadingReportId=' + id,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    var StopRList = response.stpr;
+                    var CountSR = response.cntstopr;
+
+                    // alert(StopRList);
+
+                    debugger;
+                    var rowCount = CountSR;
+                    let len = rowCount;
+                    for (let i = 1; i <= len; i++) {
+
+                        //  $("#btnAdd1").click();
+
+                        EditStopR();
+
+                        //var $tableBody = $('#tblCargo').find("tbody"),
+                        //    $trLast = $tableBody.find("tr:last"),
+                        //    $trNew = $trLast.clone();
+
+                        //$trLast.after($trNew);
+                    }
+
+
+
+
+                    debugger;
+
+                    //for (var i = rowCount - 4; i > 0; i--) {
+                    //    tblFuelC.deleteRow(i);
+                    //}
+                    var count = 0; var ss = ""; var ss1 = "";
+                    var table = document.getElementById('tblStoppage');
+
+
+                    var j = 1; var k = 0;
+                    $.each(StopRList, function (index, value) {
+                        ss1 = value;
+                        debugger;
+                        if (k == 0) {
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+                            k++;
+                        }
+                        else if (k == 3) {
+                            k = 0;
+                            j++;
+                            table.rows[j].cells[k].innerHTML = ss1;
+                            table.rows[j].cells[k].setAttribute("contenteditable", true);
+                            k++;
+                        }
+                        else {
+
+                            table.rows[j].cells[k].setAttribute('style', 'disabled: false;');
+                            //table.rows[j].cells[k].innerHTML = ss1;
+                            // table.rows[j].cells[k].setAttribute("contenteditable", true);
+                            // table.rows[j].cells[k].setAttribute("class", "datetime-wrapper");
+
+                            var x = table.rows[j].cells[k].appendChild(document.createElement("INPUT"));
+                            // x.setAttribute("type", "datetime-local");
+                            x.classList.add("datetimePickerEdit");
+
+                            var calendarIcon = document.createElement("SPAN");
+                            calendarIcon.innerHTML = "📅";
+                            calendarIcon.style.cursor = "pointer";
+                            table.rows[j].cells[k].appendChild(calendarIcon);
+
+                            var savedDateValue = '';
+
+                            if (ss1 != null) {
+                                var now = new Date(ss1);
+                                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                                //alert(ss1.toISOString().slice(0, 16));
+                                x.value = now.toISOString().slice(0, 16);
+                                var DT = x.value;
+                                x.value = DT.replace('T', ' ');
+                                savedDateValue = x.value;
+                            }
+
+                            flatpickr(x, {
+                                enableTime: true,
+                                dateFormat: "Y-m-d H:i",
+                                time_24hr: true,
+                                clickOpens: false,
+                                defaultDate: savedDateValue,
+                            });
+
+                            calendarIcon.addEventListener("click", function () {
+                                x._flatpickr.open();
+                            });
+
+
+                            k++;
+
+                        }
+                    });
+
+
+
+
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+    }
+
+
+
+</script>
+
+
+<script type="text/javascript">
+    function charCount() {
+        var textEntered = document.getElementById('Remarks').value;
+        var msg = document.getElementById('remaining');
+        var counter = (500 - (textEntered.length));
+        if (counter == 0) {
+            $('#remaining').css('color', 'red');
+        }
+        else {
+            $('#remaining').css('color', 'gray');
+        }
+        msg.textContent = counter + "/500";
+    }
+    var el = document.getElementById('Remarks');
+    el.addEventListener('keyup', charCount, false);
+</script>
+
+
+<script type="text/javascript">
+      function CargoInsertion() {
+
+          var LRId = $("#Id").val();
+
+          debugger;
+          var CargoListing = [];
+          var table = document.getElementById('tblCargo'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells, customerId;
+                // var rCount = table.rows.length;
+
+                for (i = 1, j = rows.length-1; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var CargoList = {};
+
+
+
+                    CargoList.CargoName   = cells[0].innerHTML;
+
+                    try {
+                        CargoList.LoadingDatetime = cells[1].children[0].value;
+                    } catch { CargoList.LoadingDatetime = cells[1].innerHTML; }
+
+                    CargoList.TerminalLoadingRate = cells[2].innerHTML;
+                    CargoList.LoadingRateAccepted = cells[3].innerHTML;
+                    CargoList.AverageAchievedLoadingRate = cells[4].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Terminal = cells[5].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Terminal  = cells[6].innerHTML;
+                    CargoList.No_Manifold_Hoses_by_Vessel = cells[7].innerHTML;
+                    CargoList.Size_of_Manifold_Hoses_by_Vessel = cells[8].innerHTML;
+                    CargoList.ShoreLineDistance = cells[9].innerHTML;
+                    CargoList.QuantityOnboard = cells[10].innerHTML;
+                    CargoList.BalanceQuantityLoaded = cells[11].innerHTML;
+                    try {
+                        CargoList.EstCompDateTime = cells[12].children[0].value;
+                    } catch { CargoList.EstCompDateTime = cells[12].innerHTML; }
+
+                    try {
+                        CargoList.ActualCompDateTime = cells[13].children[0].value;
+                    } catch { CargoList.ActualCompDateTime = cells[13].innerHTML; }
+
+                    CargoList.LRId = LRId;
+
+
+                    CargoListing.push(CargoList);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+          CargoListing = JSON.stringify(CargoListing);
+
+                $.ajax({
+                    url: '@Url.Action("InsertCargoList", "Loading")',
+                    type: "POST",
+                    data: { 'CargoListing': CargoListing },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script type="text/javascript">
+      function StoppageInsertion() {
+
+          var LRId = $("#Id").val();
+
+          //alert("Check");
+          debugger;
+          var StoppageListing = [];
+          var table = document.getElementById('tblStoppage'),
+                    rows = table.getElementsByTagName('tr'),
+                    i, j, cells;
+                // var rCount = table.rows.length;
+
+                for (i = 1, j = rows.length-1; i < j; ++i) {
+                    cells = rows[i].getElementsByTagName('td');
+                    if (!cells.length) {
+                        continue;
+                    }
+
+                    debugger;
+
+                    var StoppageList = {};
+
+
+                    StoppageList.Stoppage   = cells[0].innerHTML;
+                    //StoppageList.Reason  = cells[1].innerHTML;
+
+                    try {
+                        StoppageList.DateTimeFrom = cells[1].children[0].value;
+
+                    } catch { StoppageList.DateTimeFrom = cells[1].innerHTML; }
+
+                    try {
+                        StoppageList.DateTimeTo = cells[2].children[0].value;
+
+                    } catch { StoppageList.DateTimeTo = cells[2].innerHTML;}
+
+                    StoppageList.LRId = LRId;
+
+                    StoppageListing.push(StoppageList);
+
+
+                }
+
+                //alert(fuelconsumptions);
+
+          StoppageListing = JSON.stringify(StoppageListing);
+
+                $.ajax({
+                    url: '@Url.Action("InsertStoppage", "Loading")',
+                    type: "POST",
+                    data: { 'StoppageListing': StoppageListing },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+<script type="text/javascript">
+      function BallastPumpInsertion() {
+
+         //alert("Check");
+          debugger;
+          var ballasttank = [];
+
+
+          var table = document.getElementById("tblBallastPump");
+
+
+          var kk = 0;
+
+
+          for(let i = 1, row; row = table.rows[i]; i++) {
+              //iterate through rows
+              //rows would be accessed using the "row" variable assigned in the for loop
+
+              if (kk > 1) {
+                  break;
+              }
+
+              for (let j = 1, col; col = row.cells[j]; j++) {
+                  kk++;
+                 // var k = j + 1;
+                  var LR_DCR_PumpsUse = {};
+
+
+                  LR_DCR_PumpsUse.Rate = table.rows[2].cells[j].children[0].value;
+
+                  //LR_Ballast_PumpUse.Qty_Vol = table.rows[3].cells[j].children[0].value;
+                  //LR_Ballast_PumpUse.HC = table.rows[4].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpId = table.rows[3].cells[j].children[0].value;
+                  LR_DCR_PumpsUse.PumpUseId = table.rows[4].cells[j].children[0].value;
+                  ballasttank.push(LR_DCR_PumpsUse);
+              }
+
+              //alert(cargotank);
+          }
+          //------------------------------------------
+
+
+          ballasttank = JSON.stringify(ballasttank);
+
+                $.ajax({
+                    url: '@Url.Action("InsertBllastPumpUse", "Loading")',
+                    type: "POST",
+                    data: { 'ballasttank': ballasttank },
+                    dataType: "json",
+                    beforeSend: function (x) {
+                        if (x && x.overrideMimeType) {
+                            x.overrideMimeType("application/j-son;charset=UTF-8");
+                        }
+                    },
+                    success: function (result) {
+                        debugger;
+                        window.location.href = result;
+                    }
+                });
+            }
+</script>
+
+
+
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 99999.9) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue8(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 3) {
+                document.getElementById(id).value = (parseInt(dec * 1000) /
+                    1000).toFixed(3);
+            }
+        }
+        if (value > 9999999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+@*@if (ViewBag.EditDepFC != null)
+    {
+        <script type="text/javascript">
+                @Html.Raw(ViewBag.EditDepFC)
+        </script>
+    }
+    @if (ViewBag.EditLeg != null)
+    {
+        <script type="text/javascript">
+                    @Html.Raw(ViewBag.EditLeg)
+        </script>
+    }
+    @if (ViewBag.EditLegNext != null)
+    {
+        <script type="text/javascript">
+                    @Html.Raw(ViewBag.EditLegNext)
+        </script>
+    }*@
+@if (ViewBag.EditLRCargo != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditLRCargo)
+    </script>
+}
+
+@if (ViewBag.EditStopR != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.EditStopR)
+    </script>
+}
+@if (ViewBag.GetLegEdit != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.GetLegEdit)
+    </script>
+}
+@if (ViewBag.GetPortEdit != null)
+{
+    <script type="text/javascript">
+                @Html.Raw(ViewBag.GetPortEdit)
+    </script>
+}

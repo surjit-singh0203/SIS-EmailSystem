@@ -1,0 +1,146 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.FreshWaterReport
+
+<style>
+table#tblBunkerReport {
+    table-layout: fixed!important;
+}
+
+td#newset{
+    width: 450px!important;
+   word-break: break-all;
+    white-space: normal;
+  
+
+}
+td{
+border:1px solid black;
+}
+
+</style>
+
+<div id="FreshWReport">
+    <table id="tblFreshWReport" class="GeneratedTable centered-table"style="layout">
+        <thead>
+            <tr>
+                <th style="display:none">Id</th>
+                <th>S No.</th>
+                <th>Date</th>
+                <th>Port Name</th>
+                <th>Received QTY(MT)</th>
+
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+        <tbody>
+            @{ int count = 0; @*var Date = DateTime.Now;*@ }
+            @foreach (var item in Model.FWReportList)
+            {
+                //Date = item.Received_Date;
+                count++;
+            <tr>
+                <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                <td>@count</td>
+                @*<td hidden> @Date == @item.Received_Date</td>*@
+                @{
+                    if (item.Received_Date != null)
+                    {
+                        var Date = item.Received_Date?? DateTime.Now;
+                        <td> @Date.ToString("yyyy-MM-dd HH:mm")</td>
+                    }
+                    else
+                    {
+                        var Date1 = DateTime.Now;
+                        <td> @Date1.ToString("yyyy-MM-dd HH:mm")</td>
+                    }
+
+                }
+                <td> @Html.DisplayFor(modelItem => item.PortName)</td>
+                <td> @Html.DisplayFor(modelItem => item.QTY_supplied_MT)</td>
+                <td>
+                    <div class="row button-row">
+                        <div class="col table-button-container">
+                            <button type="button" class="function-button table-button">
+                                @Html.ActionLink("Edit", "Edit", "FreshWater", new { id = item.Id, vslid = item.VesselId }, new { onclick = "" })
+                            </button>
+                        </div>
+                        <div class="col table-button-container">
+                            <button type="button" class="function-button table-button">
+                                @Html.ActionLink("Delete", "Delete", "FreshWater", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
+                            </button>
+                        </div>
+                    </div>
+                </td>
+
+            </tr>
+            }
+
+
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            @{ string search1 = ViewBag.search1;
+                string search2 = ViewBag.search2;
+                int totalRecords = 0;
+                foreach (var item in Model.FWReportList)
+                {
+                    totalRecords = item.TotalCount;
+                    break;
+                }
+
+                int pageSize = SIS_Operational_Reports.Common.CommonMethods.PAGESIZE;
+
+                int tot_pages = totalRecords / pageSize;
+                int remainder = remainder = totalRecords % pageSize;
+
+
+                tot_pages = remainder > 0 ? (tot_pages + 1) : tot_pages;
+
+                int currPage = Convert.ToInt32(TempData.Peek("CurrentPage"));
+
+                if (ViewBag.pageNo != null)
+                {
+                    currPage = ViewBag.pageNo;
+                }
+
+                if (totalRecords > 0)
+                {
+                    if (currPage == 0)
+                    {
+                        currPage = 1;
+                    }
+
+                    if (currPage != 1)
+                    {
+                        <li class="page-item"><a class="page-link"> @Html.ActionLink("First", "FreshWaterReportList", "FreshWater", new { pageNo = 1 }, null)</a></li>
+                    }
+
+                    if (currPage != tot_pages)
+                    {
+                        for (int cnt = currPage; cnt < (currPage + 10); cnt++)
+                        {
+                            if (cnt == currPage)
+                            {
+                                <li class="page-item active"><a class="page-link" href="#">@cnt</a></li>
+                            }
+                            else
+                            {
+                                <li class="page-item">@Html.ActionLink(cnt.ToString(), "FreshWaterReportList", "FreshWater", new { pageNo = cnt }, null)</li>
+                            }
+
+                            if (cnt == tot_pages)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        </ul>
+    </nav>
+</div>

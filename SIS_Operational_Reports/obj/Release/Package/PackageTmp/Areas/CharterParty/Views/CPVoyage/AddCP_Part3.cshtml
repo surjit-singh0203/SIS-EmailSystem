@@ -1,0 +1,213 @@
+﻿
+@using DataBuildingLayer;
+@model DataBuildingLayer.CharterPartyClass
+
+@{
+    ViewBag.Title = "AddCP_Part3";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+<h2>Charter Party Other-CONSUMPTION</h2>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+
+    <table id="tblOtherCONSUMPTION" class="table" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+                <th style="width:100px">Consumption</th>
+                <th style="width:100px">AE_VLSFO</th>
+                <th style="width:100px">AE_MDO</th>
+                <th style="width:100px">BOILER_MDO</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CPOtherCONSUMPTIONClass customer3 in Model.OtherCONSUMPTION)
+            {
+                <tr>
+                    <td>@customer3.Consumption</td>
+                    <td>@customer3.AE_VLSFO</td>
+                    <td>@customer3.AE_MDO</td>
+                    <td>@customer3.BOILER_MDO</td>
+
+                    <td><input id="button3" type="button" value="Remove" onclick="Remove3(this)" /></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><input type="text" id="txtConsumption" /></td>
+                <td><input type="text" id="txtOAE_VLSFO" /></td>
+                <td><input type="text" id="txtAE_MDO" /></td>
+                <td><input type="text" id="txtBOILER_MDO" /></td>
+                <td><input type="button" id="btnAdd3" value="Add" /></td>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <br />
+    <input type="button" id="btnSave" value="Save All" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+
+
+    <script>
+        // 3rd Grid
+        $("body").on("click", "#btnAdd3", function () {
+            //Reference the Name and Country TextBoxes.
+            var txtConsumption = $("#txtConsumption");
+            var txtOAE_VLSFO = $("#txtOAE_VLSFO");
+            var txtAE_MDO = $("#txtAE_MDO");
+            var txtBOILER_MDO = $("#txtBOILER_MDO");
+            //var txtAE_DO = $("#txtAE_DO");
+
+            //Get the reference of the Table's TBODY element.
+            var tBody3 = $("#tblOtherCONSUMPTION > TBODY")[0];
+
+            //Add Row.
+            var row3 = tBody3.insertRow(-1);
+
+            //Add Speed cell.
+            var cell3 = $(row3.insertCell(-1));
+            cell3.html(txtConsumption.val());
+
+            //Add txtOAE_VLSFO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtOAE_VLSFO.val());
+
+            //Add txtAE_MDO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtAE_MDO.val());
+
+            //Add AE_VLSFO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtBOILER_MDO.val());
+
+            //Add AE_DO cell.
+            //cell3 = $(row3.insertCell(-1));
+            //cell3.html(txtAE_DO.val());
+
+            //Add Button cell.
+            cell3 = $(row3.insertCell(-1));
+            var btnRemove = $("<input />");
+            btnRemove.attr("id", "button3");
+            btnRemove.attr("type", "button");
+            btnRemove.attr("onclick", "Remove3(this);");
+            btnRemove.val("Remove");
+            cell3.append(btnRemove);
+
+            //Clear the TextBoxes.
+            txtConsumption.val("");
+            txtOAE_VLSFO.val("");
+            txtAE_MDO.val("");
+            txtBOILER_MDO.val("");
+
+        });
+
+        function Remove3(button) {
+            //Determine the reference of the Row using the Button.
+            var row3 = $(button).closest("TR");
+            var name = $("TD", row3).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                //Get the reference of the Table.
+                var table3 = $("#tblOtherCONSUMPTION")[0];
+
+                //Delete the Table row using it's Index.
+                table3.deleteRow(row3[0].rowIndex);
+            }
+        };
+
+
+
+    </script>
+
+
+    <script>
+
+        // For Save All
+        $("body").on("click", "#btnSave", function () {
+
+            //Loop through the Table rows and build a JSON array.
+            //var CPVesselInfo = new Array();
+            //$("#tblCPVessel TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer.VesselID = row.find("TD").eq(0).html();
+            //    customer.VesselName = row.find("TD").eq(1).html();
+            //    customer.StartDate = row.find("TD").eq(2).html();
+            //    customer.EndDate = row.find("TD").eq(3).html();
+            //    customer.VoyageType = row.find("TD").eq(4).html();
+            //    //Model.CPVesselInfo.VesselID = customer.VesselID;
+            //    //Model.CPVesselInfo.VesselName = customer.VesselName;
+            //    //Model.CPVesselInfo.StartDate = customer.StartDate;
+            //    //Model.CPVesselInfo.EndDate = customer.EndDate;
+            //    //Model.CPVesselInfo.VoyageType = customer.VoyageType;
+            //    CPVesselInfo.push(customer);
+            //});
+
+            //Loop through the Table rows and build a JSON array.
+            //var MainCONSUMPTION = new Array();
+            //$("#tblMainCONSUMPTION TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer2 = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer2.Speed = row.find("TD").eq(0).html();
+            //    customer2.ME_LADEN = row.find("TD").eq(1).html();
+            //    customer2.ME_BALLAST = row.find("TD").eq(2).html();
+            //    customer2.AE_VLSFO = row.find("TD").eq(3).html();
+            //    customer2.AE_DO = row.find("TD").eq(4).html();
+
+            //    MainCONSUMPTION.push(customer2);
+            //});
+
+
+            //Loop through the Table rows and build a JSON array.
+            var OtherCONSUMPTION = new Array();
+            $("#tblOtherCONSUMPTION TBODY TR").each(function () {
+                var row = $(this);
+                var customer3 = {};
+                //customer.ID = row.find("TD").eq(0).html();
+                customer3.Consumption = row.find("TD").eq(0).html();
+                customer3.AE_VLSFO = row.find("TD").eq(1).html();
+                customer3.AE_MDO = row.find("TD").eq(2).html();
+                customer3.BOILER_MDO = row.find("TD").eq(3).html();
+                OtherCONSUMPTION.push(customer3);
+            });
+
+            // var CharterParty = '{"CPVesselInfo":["' + CPVesselInfo.join('","') + '"],"MainCONSUMPTION":]"' + MainCONSUMPTION.join('","') + '"],"OtherCONSUMPTION":["' + OtherCONSUMPTION.join('","') + '"]}';
+
+            //var CharterParty = new Array();
+            //CharterParty.push(CPVesselInfo);
+            //CharterParty.push(MainCONSUMPTION);
+            //CharterParty.push(OtherCONSUMPTION);
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+                url: "/CharterParty/CPVoyage/InsertCharterParty3",
+                data: JSON.stringify(OtherCONSUMPTION),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    // alert(r + " record(s) inserted.");
+                    if (response.Success) {
+                        alert("CP_Part3 Completed " + response.Data);
+                        window.location.href = "/CharterParty/CPVoyage/" + response.Data;
+                    } else {
+                        alert("CP_Part1 Error");
+                        //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

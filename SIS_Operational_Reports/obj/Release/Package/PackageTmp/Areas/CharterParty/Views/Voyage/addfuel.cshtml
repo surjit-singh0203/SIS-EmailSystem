@@ -1,0 +1,207 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.VoyageClass
+@{
+    ViewBag.Title = "addfuel";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+
+
+<table id="tblfuel" class="GeneratedTable" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+
+            <th id="idfuel">
+                Fuel Type
+            </th>
+            <th id="idCpc">
+                CP Consumption per day HFO
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (FuelConsumption VLeg in Model.FuelCList)
+        {
+            <tr>
+                <td>@VLeg.FuelTypeId</td>
+                <td>@VLeg.CP_cons_perday_HFO</td>
+
+                <td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>
+            </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <td> @Html.DropDownListFor(model => model.FuelT, new SelectList(Model.FuelTypeList, "FuelType", "FuelType"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })</td>
+
+            <td>   @Html.EditorFor(model => model.CP_Consumption, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 6, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+
+            <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+        </tr>
+    </tfoot>
+</table>
+
+
+
+
+
+<input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />
+
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        //Reference the Name and Country TextBoxes.
+
+
+        var txtfuel = $("#FuelT");
+        var txtcpC = $("#CP_Consumption");
+
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblfuel > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        cell.html(txtfuel.val());
+
+        //Add Height cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtcpC.val());
+
+
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        txtfuel.val("");
+        txtcpC.val("");
+
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblfuel")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+    $("body").on("click", "#btnSave", function () {
+        //Loop through the Table rows and build a JSON array.
+
+        //var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        //var urlparam = url[0].split('=');
+        var result = getUrlVars()["vid"];
+        //    var ww = this.href.substring(this.href.lastIndexOf('/') + 1);
+        //alert(result);
+        var fl = new Array();
+        $("#tblfuel TBODY TR").each(function () {
+            var row = $(this);
+            var VG = {};
+            VG.FuelT = row.find("TD").eq(0).html();
+            VG.CP_Consumption = row.find("TD").eq(1).html();
+            VG.Id = result;
+            fl.push(VG);
+        });
+        var origin = window.location.origin;
+        // alert(origin);
+        //Send the JSON array to Controller using AJAX.
+        $.ajax({
+            type: "POST",
+
+            url: "/CharterParty/Voyage/insertfuel",
+            data: JSON.stringify(fl),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //alert(response.insertedRecords + " record(s) inserted.");
+
+                if (response.Success) {
+                    alert("Voyage_Part2 Completed" + response.Data);
+                    window.location.href = "/CharterParty/Voyage/" + response.Data;
+                } else {
+                    alert("Voyage_Part1 Error");
+                    //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                }
+            }
+
+            //success: function (json) {
+
+            //    if (json.isRedirect) {
+            //        window.location.href = json.redirectUrl;
+            //    }
+            //},
+        });
+    });
+</script>
+
+
+<script>
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+</script>
+
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>

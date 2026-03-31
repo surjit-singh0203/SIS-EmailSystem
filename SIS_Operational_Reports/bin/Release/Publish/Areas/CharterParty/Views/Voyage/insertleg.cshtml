@@ -1,0 +1,813 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.VoyageClass
+@{
+    /**/
+
+    ViewBag.Title = "insertleg";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+
+<style>
+
+    .modal-header {
+        justify-content: end;
+    }
+
+    button.closeA {
+        background: tansparent;
+        font-size: 19px;
+        color: border;
+        border-radius: 3px;
+        border: 1px solid gray;
+    }
+
+    button#submitA {
+        background: black;
+        border-color: black;
+    }
+
+    input#LegPort_othersA {
+        width: 100%;
+    }
+
+</style>
+
+<div class="row" style="margin-top: 10px;">
+
+    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div class="col-md">
+            <h4>Add Voyage Leg</h4>
+        </div>
+        <div class="col-md button-row-top">
+            <button name="back" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+
+        </div>
+    </div>
+
+
+</div>
+
+<table id="tblvoyageleg" class="GeneratedTable" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+
+            <th id="LegA">
+                Leg Port (A)*
+            </th>
+            <th id="ReasonA">
+                Reason for Port Call (A)*
+            </th>
+            <th id="LegB">
+                Leg Port (B)*
+            </th>
+            <th id="ReasonB">
+                Reason for Port Call (B)*
+
+            </th>
+            <th id="LegDTG">DTG(nm)*</th>
+            <th id="LegCP_SOG">CP SOG(kts)*</th>
+            <th id="LegCP_Log_Speed">CP Log Speed(kts)*</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (VoyageLeg VLeg in Model.VoyageLegList)
+        {
+            <tr>
+                <td>@VLeg.LegPort_A</td>
+                <td>@VLeg.ReasonforPortCall_A</td>
+                <td>@VLeg.LegPort_B</td>
+                <td>@VLeg.ReasonforPortCall_B</td>
+                <td>@VLeg.DTG</td>
+                <td>@VLeg.CP_SOG</td>
+                <td>@VLeg.CP_Log_Speed</td>
+                @*<td><input class="btn btn-info" type="button" value="Remove" onclick="Remove(this)" /></td>*@
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td> @Html.DropDownListFor(model => model.LegPort_A, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+
+            <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_A, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td> @Html.DropDownListFor(model => model.LegPort_B, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td>  @Html.DropDownListFor(model => model.ReasonforPortCall_B, new SelectList(Model.PortStatusList, "Status", "Status"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            <td>@Html.EditorFor(model => model.DTG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 7, @max = "99999", @required = "true", @onKeyUp = "requiredValue2(this)" } })</td>
+            <td>  @Html.DropDownListFor(model => model.CP_SOG, new SelectList(Model.SpeedStatusList, "Speed", "Speed"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })</td>
+            @*<td> @Html.EditorFor(model => model.CP_SOG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>*@
+            <td> @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })</td>
+            <td><input class="btn btn-info" type="button" id="btnAdd" value="Add" /></td>
+
+
+
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" id="DisplayModalA" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="closeA" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    Port Name:  @Html.EditorFor(m => m.LegPort_othersA, new { @class = "form-control bottom-border-input",  })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeA" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="submitA" class="btn btn-primary pull-right">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="DisplayModalB" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="closeB" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    Port Name: @Html.EditorFor(m => m.LegPort_othersB, new { @class = "form-control bottom-border-input", })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeB" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="submitB" class="btn btn-primary pull-right">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="inline-content" style="justify-content: center; margin-top: 10px;">
+    <input class="btn btn-success btn-width" type="button" id="btnSave" value="Save All" />
+</div>
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+<script type="text/javascript">
+    function requiredValue2(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99999.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+@* -----Leg A------ *@
+<script type="text/javascript">
+
+    $("#LegPort_A").change(function () {
+        debugger
+        if ($(this).val() == "Others") {
+            $('#DisplayModalA').modal('show');
+        }
+
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('.closeA').click(function () {
+        debugger
+        $('#DisplayModalA').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#closeA').click(function () {
+        debugger
+        $('#DisplayModalA').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#submitA').click(function () {
+        debugger
+        var LegPort_othersA = $('#LegPort_othersA').val();
+        if (LegPort_othersA) {
+            $('select[name="LegPort_A"]').append($('<option>', {
+                value: LegPort_othersA,
+                text: LegPort_othersA,
+                selected: true
+            }));
+        }
+        $('#DisplayModalA').modal('hide');
+
+    });
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $('input[name="LegPort_othersA"]').attr('maxlength', '100');
+        $('input[name="LegPort_othersB"]').attr('maxlength', '100');
+    });
+
+</script>
+
+
+
+@* -----Leg B------ *@
+
+<script type="text/javascript">
+
+    $("#LegPort_B").change(function () {
+        debugger
+        if ($(this).val() == "Others") {
+            $('#DisplayModalB').modal('show');
+        }
+
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('.closeB').click(function () {
+        debugger
+        $('#DisplayModalB').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#closeB').click(function () {
+        debugger
+        $('#DisplayModalB').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#submitB').click(function () {
+        debugger
+        var LegPort_othersB = $('#LegPort_othersB').val();
+        if (LegPort_othersB) {
+            $('select[name="LegPort_B"]').append($('<option>', {
+                value: LegPort_othersB,
+                text: LegPort_othersB,
+                selected: true
+            }));
+        }
+        $('#DisplayModalB').modal('hide');
+
+    });
+
+</script>
+
+
+
+
+<script type="text/javascript" src="~/js/addremoveRows.js"></script>
+<script type="text/javascript">
+    $("body").on("click", "#btnAdd", function () {
+        debugger
+        //Reference the Name and Country TextBoxes.
+
+        debugger;
+        var rsnA = $("#ReasonforPortCall_A option:selected").text();
+        var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+        var legA = $("#LegPort_A option:selected").text();
+        var LegPort_A = $('#LegPort_A').text();
+        var legB = $("#LegPort_B option:selected").text();
+        var LegPort_B = $('#LegPort_B').text();
+
+        var dtg = $("#DTG").val();
+        var cpsog = $("#CP_SOG option:selected").text();
+        var cplogspeed = $("#CP_Log_Speed").val();
+
+        if (LegPort_A == "") {
+
+            if (legA == "") {
+                alert("Please Choose Leg Port(A)");
+                return;
+            }
+        }
+        
+        if (rsnA == "") {
+            alert("Please Choose Reason for Port Call (A)");
+            return;
+        }
+
+        if (LegPort_B == "") {
+            if (legB == "") {
+                alert("Please Choose Leg Port(B)");
+                return;
+            }
+        }
+
+        if (rsnB == "") {
+            alert("Please Choose Reason for Port Call (B)");
+            return;
+        }
+        if (dtg == "") {
+            alert("Please enter DTG");
+            return;
+        }
+        if (cpsog == "") {
+            alert("Please Choose CP SOG");
+            return;
+        }
+        if (cplogspeed == "") {
+            alert("Please enter CP Log Speed");
+            return;
+        }
+
+        if (legA != "Others") {
+            var txtLegA = $("#LegPort_A");
+        }
+
+        if (legB != "Others") {
+            var txtLegB = $("#LegPort_B");
+        }
+
+
+        var txtRsnA = $("#ReasonforPortCall_A");
+       // var txtLegB = $("#LegPort_B");
+        var txtRsnB = $("#ReasonforPortCall_B");
+
+        var txtDTG = $("#DTG");
+        var txtCP_SOG = $("#CP_SOG");
+        var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+        //Get the reference of the Table's TBODY element.
+        var tBody = $("#tblvoyageleg > TBODY")[0];
+
+        //Add Row.
+        var row = tBody.insertRow(-1);
+
+        //Add Name cell.
+        var cell = $(row.insertCell(-1));
+        if (legA != "Others") {
+            cell.html(txtLegA.val());
+        }
+        else {
+            cell.html(txtLegA.val());
+        }
+        //cell.html(txtLegA.val());
+
+        //Add Height cell.
+        cell = $(row.insertCell(-1));
+        //alert(VesselName);
+        debugger;
+        cell.html(txtRsnA.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        if (legB != "Others") {
+            cell.html(txtLegB.val());
+        }
+        else {
+            cell.html(txtLegB.val());
+        }
+        //cell.html(txtLegB.val());
+
+        //Add Capacity cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtRsnB.val());
+
+        //Add DTG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtDTG.val());
+
+        //Add CP_SOG cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtCP_SOG.val());
+
+        //Add Log_Speed cell.
+        cell = $(row.insertCell(-1));
+        cell.html(txtCP_Log_Speed.val());
+
+        //Add Button cell.
+        cell = $(row.insertCell(-1));
+        var btnRemove = $("<input />");
+        btnRemove.attr("type", "button");
+        btnRemove.attr("class", "btn btn-danger btn-width");
+        btnRemove.attr("onclick", "Remove(this);");
+        btnRemove.val("Remove");
+        cell.append(btnRemove);
+
+        //Clear the TextBoxes.
+        // txtLegA.index(0);
+
+        // $("select2-LegPort_A-container").select2("val", "");
+        txtLegA.val('').trigger('change');
+        txtRsnA.val('').trigger('change');
+        txtLegB.val('').trigger('change');
+        txtRsnB.val('').trigger('change');
+        txtCP_SOG.val('').trigger('change');
+
+        //txtRsnA.val("");
+        //txtLegB.val("");
+        //txtRsnB.val("");
+        txtDTG.val("");
+        // txtCP_SOG.val("");
+        txtCP_Log_Speed.val("");
+
+
+    });
+
+    function Remove(button) {
+        //Determine the reference of the Row using the Button.
+        var row = $(button).closest("TR");
+        var name = $("TD", row).eq(0).html();
+        if (confirm("Do you want to delete: " + name)) {
+            //Get the reference of the Table.
+            var table = $("#tblvoyageleg")[0];
+
+            //Delete the Table row using it's Index.
+            table.deleteRow(row[0].rowIndex);
+        }
+    };
+
+
+    //function myfunction() {
+    //    var rsnA = $("#ReasonforPortCall_A option:selected").text();
+    //    var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+    //    var legA = $("#LegPort_A option:selected").text();
+    //    var legB = $("#LegPort_B option:selected").text();
+
+    //    var dtg = $("#DTG").val();
+    //    var cpsog = $("#CP_SOG option:selected").text();
+    //    var cplogspeed = $("#CP_Log_Speed").val();
+
+
+    //    //if (legA == "") {
+    //    //    alert("Please Choose Leg Port(A)");
+    //    //    return;
+    //    //}
+    //    //if (rsnA == "") {
+    //    //    alert("Please Choose Reason for Port Call (A)");
+    //    //    return;
+    //    //}
+    //    //if (legB == "") {
+    //    //    alert("Please Choose Leg Port(B)");
+    //    //    return;
+    //    //}
+    //    //if (rsnB == "") {
+    //    //    alert("Please Choose Reason for Port Call (B)");
+    //    //    return;
+    //    //}
+    //    //if (dtg == "") {
+    //    //    alert("Please enter DTG");
+    //    //    return;
+    //    //}
+    //    //if (cpsog == "") {
+    //    //    alert("Please Choose CP SOG");
+    //    //    return;
+    //    //}
+    //    //if (cplogspeed == "") {
+    //    //    alert("Please enter CP Log Speed");
+    //    //    return;
+    //    //}
+
+
+
+
+
+    //    var txtLegA = $("#LegPort_A");
+
+
+
+    //    var txtRsnA = $("#ReasonforPortCall_A");
+    //    var txtLegB = $("#LegPort_B");
+    //    var txtRsnB = $("#ReasonforPortCall_B");
+
+    //    var txtDTG = $("#DTG");
+    //    var txtCP_SOG = $("#CP_SOG");
+    //    var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+    //    //Get the reference of the Table's TBODY element.
+    //    var tBody = $("#tblvoyageleg > TBODY")[0];
+
+    //    //Add Row.
+    //    var row = tBody.insertRow(-1);
+
+    //    //Add Name cell.
+    //    var cell = $(row.insertCell(-1));
+    //    cell.html(txtLegA.val());
+
+    //    //Add Height cell.
+    //    cell = $(row.insertCell(-1));
+    //    //alert(VesselName);
+    //    debugger;
+    //    cell.html(txtRsnA.val());
+
+    //    //Add Capacity cell.
+    //    cell = $(row.insertCell(-1));
+    //    cell.html(txtLegB.val());
+
+    //    //Add Capacity cell.
+    //    cell = $(row.insertCell(-1));
+    //    cell.html(txtRsnB.val());
+
+    //    //Add DTG cell.
+    //    cell = $(row.insertCell(-1));
+    //    cell.html(txtDTG.val());
+
+    //    //Add CP_SOG cell.
+    //    cell = $(row.insertCell(-1));
+    //    cell.html(txtCP_SOG.val());
+
+    //    //Add Log_Speed cell.
+    //    cell = $(row.insertCell(-1));
+    //    cell.html(txtCP_Log_Speed.val());
+
+    //    //Add Button cell.
+    //    cell = $(row.insertCell(-1));
+    //    var btnRemove = $("<input />");
+    //    btnRemove.attr("type", "button");
+    //    btnRemove.attr("class", "btn btn-danger btn-width");
+    //    btnRemove.attr("onclick", "Remove(this);");
+    //    btnRemove.val("Remove");
+    //    cell.append(btnRemove);
+
+    //    //Clear the TextBoxes.
+    //    // txtLegA.index(0);
+
+    //    // $("select2-LegPort_A-container").select2("val", "");
+    //    txtLegA.val('').trigger('change');
+    //    txtRsnA.val('').trigger('change');
+    //    txtLegB.val('').trigger('change');
+    //    txtRsnB.val('').trigger('change');
+    //    txtCP_SOG.val('').trigger('change');
+
+    //    //txtRsnA.val("");
+    //    //txtLegB.val("");
+    //    //txtRsnB.val("");
+    //    txtDTG.val("");
+    //    // txtCP_SOG.val("");
+    //    txtCP_Log_Speed.val("");
+
+
+    //}
+
+
+
+
+
+
+</script>
+
+
+<script>
+    $("body").on("click", "#btnSave", function () {
+        //Loop through the Table rows and build a JSON array.
+
+        //  alert(56);
+        debugger;
+        //var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        //var urlparam = url[0].split('=');
+        var result = getUrlVars()["id"];
+        //    var ww = this.href.substring(this.href.lastIndexOf('/') + 1);
+        //alert(result);
+        //$("[id*=btnAdd]").click();
+
+
+
+
+        var voyage = new Array();
+        //$("#tblvoyageleg TBODY TR").each(function () {
+        //    var row = $(this);
+        //    var VG = {};
+        //    VG.LegPort_A = row.find("TD").eq(0).html();
+        //    VG.ReasonforPortCall_A = row.find("TD").eq(1).html();
+        //    VG.LegPort_B = row.find("TD").eq(2).html();
+        //    VG.ReasonforPortCall_B = row.find("TD").eq(3).html();
+        //    VG.DTG = row.find("TD").eq(4).html();
+        //    VG.CP_SOG = row.find("TD").eq(5).html();
+        //    VG.CP_Log_Speed = row.find("TD").eq(6).html();
+        //    VG.Id = result;
+        //    voyage.push(VG);
+        //});
+
+        if (voyage == "") {
+
+            var rsnA = $("#ReasonforPortCall_A option:selected").text();
+            var rsnB = $("#ReasonforPortCall_B option:selected").text();
+
+            var legA = $("#LegPort_A option:selected").text();
+            var legB = $("#LegPort_B option:selected").text();
+
+            var dtg = $("#DTG").val();
+            var cpsog = $("#CP_SOG option:selected").text();
+            var cplogspeed = $("#CP_Log_Speed").val();
+
+
+            if (legA == "") {
+                alert("Please Choose Leg Port(A)");
+                return;
+            }
+            if (rsnA == "") {
+                alert("Please Choose Reason for Port Call (A)");
+                return;
+            }
+            if (legB == "") {
+                alert("Please Choose Leg Port(B)");
+                return;
+            }
+            if (rsnB == "") {
+                alert("Please Choose Reason for Port Call (B)");
+                return;
+            }
+            if (dtg == "") {
+                alert("Please enter DTG");
+                return;
+            }
+            if (cpsog == "") {
+                alert("Please Choose CP SOG");
+                return;
+            }
+            if (cplogspeed == "") {
+                alert("Please enter CP Log Speed");
+                return;
+            }
+
+            if (legA != "Others") {
+                var txtLegA = $("#LegPort_A");
+            }
+
+            if (legB != "Others") {
+                var txtLegB = $("#LegPort_B");
+            }
+
+            var txtRsnA = $("#ReasonforPortCall_A");
+            // var txtLegB = $("#LegPort_B");
+            var txtRsnB = $("#ReasonforPortCall_B");
+
+            var txtDTG = $("#DTG");
+            var txtCP_SOG = $("#CP_SOG");
+            var txtCP_Log_Speed = $("#CP_Log_Speed");
+
+            //Get the reference of the Table's TBODY element.
+            var tBody = $("#tblvoyageleg > TBODY")[0];
+
+            //Add Row.
+            var row = tBody.insertRow(-1);
+
+            //Add Name cell.
+            var cell = $(row.insertCell(-1));
+            if (legA != "Others") {
+                cell.html(txtLegA.val());
+            }
+            else {
+                cell.html(txtLegA.val());
+            }
+
+
+            //Add Height cell.
+            cell = $(row.insertCell(-1));
+            //alert(VesselName);
+            debugger;
+            cell.html(txtRsnA.val());
+
+            //Add Capacity cell.
+            cell = $(row.insertCell(-1));
+            if (legB != "Others") {
+                cell.html(txtLegB.val());
+            }
+            else {
+                cell.html(txtLegB.val());
+            }
+            // cell.html(txtLegB.val());
+
+            //Add Capacity cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtRsnB.val());
+
+            //Add DTG cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtDTG.val());
+
+            //Add CP_SOG cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtCP_SOG.val());
+
+            //Add Log_Speed cell.
+            cell = $(row.insertCell(-1));
+            cell.html(txtCP_Log_Speed.val());
+
+            $("#tblvoyageleg TBODY TR").each(function () {
+                var row = $(this);
+                var VG = {};
+                VG.LegPort_A = row.find("TD").eq(0).html();
+                VG.ReasonforPortCall_A = row.find("TD").eq(1).html();
+                VG.LegPort_B = row.find("TD").eq(2).html();
+                VG.ReasonforPortCall_B = row.find("TD").eq(3).html();
+                VG.DTG = row.find("TD").eq(4).html();
+                VG.CP_SOG = row.find("TD").eq(5).html();
+                VG.CP_Log_Speed = row.find("TD").eq(6).html();
+                VG.Id = result;
+                voyage.push(VG);
+            });
+
+        }
+        if (voyage != "") {
+            // alert(5);
+        }
+
+        var origin = window.location.origin;
+        // alert(origin);
+        //Send the JSON array to Controller using AJAX.
+        $.ajax({
+            type: "POST",
+            url: "/CharterParty/Voyage/insertlegD",
+            data: JSON.stringify(voyage),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                //alert(r + " record(s) inserted.");
+
+                // window.location = origin + "/CharterParty/Voyage/addfuel?vid=" + r + "";
+
+                if (response.Success) {
+                    //alert("CP_Part2 Completed" + response.Data);
+                    window.location.href = "/CharterParty/Voyage/" + response.Data;
+                } else {
+                    //alert("CP_Part1 Error");
+                    //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                }
+            }
+
+            //success: function (json) {
+
+            //    if (json.isRedirect) {
+            //        window.location.href = json.redirectUrl;
+            //    }
+            //},
+        });
+    });
+
+
+</script>
+
+<script>
+    function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('/') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+</script>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>

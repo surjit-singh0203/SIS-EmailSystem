@@ -1,0 +1,337 @@
+﻿
+
+
+@model DataBuildingLayer.DailyNoonReport
+
+
+
+<div id="test">
+    <div>
+        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
+            <div class="col-md">
+                <h2>Noon-Report List</h2>
+            </div>
+            <div class="col-md button-row-top">
+                <div class="row">
+                    <div class="col">
+                        <button class="function-button submit-button">
+                            <a class="function-button submit-button" href="@Url.Action("Index", "DailyNoon")">
+                                <i class="fa fa-plus-circle mr-2"></i>Add Noon Report
+                            </a>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="idMaindiv" class="container">
+        <div>
+            <div class="search-row">
+                <div class="col m-1">
+
+                    <input id="idFirst" placeholder="search by : voyage no." autocomplete="off" class="form-control" type="text">
+                    <span id="messageLat" style="color:red"></span>
+                </div>
+
+                <div class="col m-1">
+
+                    <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+                    <span id="messageLat" style="color:red"></span>
+                </div>
+
+                <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+            </div>
+
+            <table class="GeneratedTable centered-table">
+                <thead>
+                    <tr>
+                        <th style="display:none">Id</th>
+                        <th>Voyage No.</th>
+                        <th>At Sea/Port</th>
+                        <th>Report Date</th>
+                        <th>Status</th>
+                        <th>Downlaod Report</th>
+                        <th>Sync To Emial</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var item in Model.GetNoonRList)
+                    {
+                        <tr>
+                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                            <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
+                            <td> @Html.DisplayFor(modelItem => item.AtSeaOrPort)</td>
+                            <td> @Html.DisplayFor(modelItem => item.Date)</td>
+                            <td>
+                                @{ var svd = item.SaveDraft;
+                                    if (svd == true)
+                                    {
+                                        @Html.Raw("In Draft") }
+                                    else
+                                    {
+                                        @Html.Raw("Submitted") } }
+                            </td>
+
+                            <td>
+                                @if (svd == true)
+                                {
+                                    <span>N/A</span>
+                                }
+                                else
+                                {
+                                    <button type="button" class="function-button table-button">
+                                        @Html.ActionLink("Download", "SyncReportDownload", "DailyNoon",
+                                        new { VoyageId = item.VoyageId, Id = item.Id, ReportDate = item.Date }, null)
+                                    </button>
+                                }
+
+
+                            </td>
+
+                            <td>
+
+                                @if (svd == true)
+                                {
+                                    <span>N/A</span>
+                                }
+                                else
+                                {
+                                    <button type="button" class="function-button table-button" onclick="openEmail('@item.VoyageId','@item.Id','@item.Date','@item.AtSeaOrPort')">
+                                        SYNC
+                                    </button>
+                                }
+                            </td>
+
+                            <td>
+
+                                <div class="row button-row">
+                                    <div class="col table-button-container">
+                                        <button type="button" class="function-button table-button">
+                                            @Html.ActionLink("Edit", "Edit", "DailyNoon", new { id = item.Id }, new { onclick = "" })
+                                        </button>
+                                    </div>
+                                    @if (StaticHelper.LoginUser == "master")
+                                    {
+                                        <div class="col table-button-container">
+                                            <button type="button" class="function-button table-button">
+                                                @Html.ActionLink("Delete", "Delete", "DailyNoon", new { id = item.Id }, new { onclick = "return confirm('Are you sure you want to delete this entry?');" })
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+
+                            </td>
+
+
+                        </tr>
+                    }
+
+
+                </tbody>
+            </table>
+
+        </div>
+
+        @{
+            var recCnt = "";
+            if (Model.GetNoonRList.Count == 0)
+            {
+                recCnt = "No Record Found !";
+            }
+        }
+        <p style="font-weight:bold; color:red"> @recCnt </p>
+    </div>
+
+
+</div>
+
+
+<script>
+
+    function openEmail(VoyageId, Id, reportDate, AtSeaPort) {
+        debugger
+        $.ajax({
+            url: '/DailyNoon/SyncReportDownload',
+            type: 'GET',
+            data: {
+                VoyageId: VoyageId,
+                Id: Id,
+                ReportDate: reportDate
+            },
+            success: function (response) {
+
+                var to = response.data[0].EmailTo;
+                var cc = response.data[0].EmailCC;
+
+
+                var subject = "Daily Noon Report Sync";
+
+                var fileLink = window.location.origin + response.fileUrl;
+
+                var body =
+                    "Hello,%0D%0A%0D%0A" +
+
+                    "The Daily Noon Report has been generated.%0D%0A%0D%0A" +
+
+                    "Report Details:%0D%0A" +
+                    "----------------------------------%0D%0A" +
+                    "Voyage Id : " + VoyageId + "%0D%0A" +
+                    "Report Date : " + reportDate + "%0D%0A" +
+                    "At Sea/Port : " + AtSeaPort + "%0D%0A" +
+                    "----------------------------------%0D%0A%0D%0A" +
+
+
+
+                    "Regards,%0D%0A" +
+                    "Reporting System";
+
+
+
+                var url = "mailto:" + to +
+                    "?cc=" + cc +
+                    "&subject=" + encodeURIComponent(subject) +
+                    "&body=" + body;
+
+
+                window.location.href = url;
+            }
+        });
+
+    }
+
+</script>
+
+
+
+
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+
+    $('#Menu1').addClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+    $('#Menu8').removeClass('active');
+    $('#Menu9').removeClass('active');
+
+</script>
+
+
+
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+
+<script>
+
+    $("#btnSearch").click(function () {
+        //alert(34);
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+
+
+        //var range = $('#idSecond').datarangepicker.getRange();
+        //var startDate = range.start;
+        //var endDate = range.end;
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+        //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
+        //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        else {
+
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/DailyNoon/noonRlist?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+
+                    // alert(data);
+                    /* if (response.Result === true) {*/
+
+                    //window.location.reload();
+
+                    $("#test").html('');
+                    $("#test").html(data);
+
+
+                    //;
+
+                    // $("#idMaindiv").html('');
+
+                    //$("#idMaindiv").html(data);
+                    // alert(data);
+                    //}
+                    //else {
+                    //    toastr["error"](response.Message);
+                    //}
+                },
+                //failure: function (response) {
+                //    toastr["error"](response.Message);
+                //}
+            });
+
+        }
+
+
+
+    });
+
+</script>

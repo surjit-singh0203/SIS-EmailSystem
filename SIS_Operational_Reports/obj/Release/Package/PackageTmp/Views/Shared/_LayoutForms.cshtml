@@ -1,0 +1,367 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    @*<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">*@
+
+     <link href="~/assets/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="~/css/styleForms.css" rel="stylesheet" />
+    <script src="~/assetsV/js/jquery-3.2.1.min.js"></script>
+
+
+
+    <title>
+        SISNOVA 
+        @*SBNova*@
+    </title>
+    <link rel="shortcut icon" href="~/assets/images/logo2.png">
+
+
+    <link href="~/Datepicker/datepicker.min.css" rel="stylesheet" />
+    <script src="~/assetsV/js/jquery-3.2.1.min.js"></script>
+    <script src="~/Datepicker/datepicker.min.js"></script>
+    <link href="~/css/select2.min.css" rel="stylesheet">
+<style>
+
+        #menu {
+            background: #343434;
+            color: #eee;
+            height: 35px;
+            border-bottom: 4px solid #eeeded
+        }
+
+            #menu ul,
+            #menu li {
+                margin: 0 0;
+                padding: 0 0;
+                list-style: none
+            }
+
+            #menu ul {
+                height: 35px
+            }
+
+            #menu li {
+                float: left;
+                display: inline;
+                position: relative;
+                font: bold 12px Arial;
+                text-shadow: 0 -1px 0 #000;
+                border-right: 1px solid #444;
+                border-left: 1px solid #111;
+                text-transform: uppercase
+            }
+
+                #menu li:first-child {
+                    border-left: none
+                }
+
+            #menu a {
+                display: block;
+                line-height: 35px;
+                padding: 0 14px;
+                text-decoration: none;
+                color: #eee;
+            }
+
+            #menu li:hover > a,
+            #menu li a:hover {
+                background: #111
+            }
+
+            #menu input {
+                display: none;
+                margin: 0 0;
+                padding: 0 0;
+                width: 80px;
+                height: 35px;
+                opacity: 0;
+                cursor: pointer
+            }
+
+            #menu label {
+                font: bold 30px Arial;
+                display: none;
+                width: 35px;
+                height: 36px;
+                line-height: 36px;
+                text-align: center
+            }
+
+                #menu label span {
+                    font-size: 12px;
+                    position: absolute;
+                    left: 35px
+                }
+
+            #menu ul.menus {
+                height: auto;
+                width: 180px;
+                background: #111;
+                position: absolute;
+                z-index: 99;
+                display: none;
+                border: 0;
+            }
+
+                #menu ul.menus li {
+                    display: block;
+                    width: 100%;
+                    font: 12px Arial;
+                    text-transform: none;
+                }
+
+            #menu li:hover ul.menus {
+                display: block
+            }
+
+            #menu a.home {
+                background: #c00;
+            }
+
+            #menu a.prett {
+                padding: 0 27px 0 14px
+            }
+
+                #menu a.prett::after {
+                    content: "";
+                    width: 0;
+                    height: 0;
+                    border-width: 6px 5px;
+                    border-style: solid;
+                    border-color: #eee transparent transparent transparent;
+                    position: absolute;
+                    top: 15px;
+                    right: 9px
+                }
+
+            #menu ul.menus a:hover {
+                background: #333;
+            }
+
+            #menu ul.menus .submenu {
+                display: none;
+                position: absolute;
+                left: 180px;
+                background: #111;
+                top: 0;
+                width: 180px;
+            }
+
+                #menu ul.menus .submenu li {
+                    background: #111;
+                }
+
+            #menu ul.menus .has-submenu:hover .submenu {
+                display: block;
+            }
+
+    li.nav-item .nav-link {
+        border: 0px !important;
+        margin: 0px !important;
+    }
+
+    </style>
+
+
+</head>
+<body class="mini-navbar">
+    <header class="header">
+        <nav class="navbar navbar-expand-xxl navbar-dark bg-dark">
+            <div class="container-fluid">
+                <div style="display: inline-flex; align-items: center;">
+                    @*<a class="navbar-brand" href="#">LOGO</a>*@
+                    @*<img class="navbar-brand" src="~/assets/images/logo2.png" alt="img">*@
+                    @*<label style="color:white;font-size:25px">SISNova</label>*@
+                <label style="color:white;font-size:25px">SISNova</label>
+                    <br /><br />
+                    @*<label style="color:white;font-size:20px">        (@ViewBag.VesselName)</label>*@
+                    @{
+                        if (StaticHelper.VesselName != null)
+                        {
+                            var vslname = StaticHelper.VesselName.ToString();
+                            <label style="color:white;font-size:20px">   (@vslname)</label>
+                        }
+                        else
+                        {
+                            <script>
+                             window.location.href = '@Url.Action("Login", "Account", new { returnUrl = "" })';
+                            </script>
+                        }
+
+                        //var vslname = StaticHelper.VesselName.ToString();
+                    }
+                    @*<label style="color:white;font-size:20px">        (@vslname)</label></div>*@
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">@ViewBag.VesselName</span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown" style= "justify-content: flex-end;">
+                    <ul class="navbar-nav">
+
+                        @if (StaticHelper.LoginUser == "master" || StaticHelper.LoginUser == "2off")
+                        {
+
+                            <li class="nav-item">
+                                <ul id='menu' style="padding-left: 0px;">
+                                    <li class="nav-item">
+                                        <a class="nav-link dropdown-toggle" href="#" style="color: rgba(255,255,255,.55); text-transform: none;">Administration</a>
+
+                                        <ul class='menus'>
+
+
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="@Url.Action("index", "ImportExport", new { area = "ImportExport" })">Import/Export</a>
+                                            </li>
+
+                                        </ul>
+
+
+                                    </li>
+                                </ul>
+                            </li>
+
+                        }
+                        <li class="nav-item">
+                            <ul id='menu' style="padding-left: 0px;">
+                                <li class="nav-item">
+                                    <a class="nav-link dropdown-toggle" href="#" style="color: rgba(255,255,255,.55); text-transform: none;">Voyage Setting</a>
+
+                                    <ul class='menus'>
+
+                                        @*<li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="@Url.Action("Index", "User" ,new { area= "UserManagement"} )">User Management</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="@Url.Action("Index", "VesselPart" ,new { area= "VesselParticulars"} )">Vessel Particulars</a>
+                        </li>*@
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="@Url.Action("index", "Voyage" ,new { area= "CharterParty"} )">Voyage</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" aria-current="page" href="@Url.Action("Index", "CPVoyage" ,new { area= "CharterParty"} )">Charter Party</a>
+                                        </li>
+                                    </ul>
+
+
+                                </li>
+                            </ul>
+                        </li>
+
+
+
+                        @*<li class="nav-item">
+            <a class="nav-link" href="@Url.Action("index", "Voyage" ,new { area= "CharterParty"} )">Voyage Setting</a>
+        </li>*@
+                        <li class="nav-item">
+                            <a id="Menu1" class="nav-link" href="@Url.Action("noonRlist", "DailyNoon" ,new { area= "Report"} )">Daily Noon Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu2" class="nav-link" href="@Url.Action("arrivallist", "Arrival" ,new { area= "Report"} )">Arrival Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu3" class="nav-link" href="@Url.Action("departurelist", "Departure" ,new { area= "Report"} )">Departure Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu4" class="nav-link" href="@Url.Action("DischargeRList", "Discharging" ,new { area= "Report"} )">Discharging Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu5" class="nav-link" href="@Url.Action("berthinglist", "Berthing" ,new { area= "Report"} )">Berthing Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu6" class="nav-link" href="@Url.Action("LoadingRList", "Loading" ,new { area= "Report"} )">Loading Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu7" class="nav-link" href="@Url.Action("BunkerReportList", "Bunker" ,new { area= "Report"} )">Bunker Report</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="Menu8" class="nav-link" href="@Url.Action("FreshWaterReportList", "FreshWater" ,new { area= "Report"} )">FreshWater Report</a>
+                        </li>
+
+                        @*<li>
+            <ul id='menu'>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Vessel Setting</a>
+
+                    <ul class='menus'>
+
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="@Url.Action("Index", "VesselTanks" ,new { area= "VesselParticulars"} )">Vessel Tank Setting</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="@Url.Action("Index", "Pump" ,new { area= "VesselParticulars"} )">Vessel Pump Setting</a>
+                        </li>
+
+                    </ul>
+
+
+                </li>
+            </ul>
+        </li>*@
+                        <li class="nav-item">
+                            <a id="Menu9" href="~/userhelp" target="_blank" class="nav-link">Help Manual</a>
+                        </li>
+                    </ul>
+
+                    <a href="~/Account/SignOut" class="btn btn-default btn-flat"style="padding: 7px 22px !important;">Sign out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="container-fluid ">
+
+        @RenderBody()
+
+    </section>
+
+
+    @*<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>*@
+    <script src="~/assets/bootstrap.bundle.min.js" ></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.mdb-select').materialSelect();
+        });
+    </script>
+
+
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="~/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="~/js/select2.full.min.js"></script>
+
+
+    @*<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>*@
+    <script src="~/assets/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $(".select2").select2({
+                placeholder: "Select an option",
+                allowClear: false
+            });
+            $(".select-control").select2({
+                minimumResultsForSearch: -1,
+                allowClear: false
+            });
+
+
+
+        });
+
+    </script>
+    
+
+
+</body>
+</html>

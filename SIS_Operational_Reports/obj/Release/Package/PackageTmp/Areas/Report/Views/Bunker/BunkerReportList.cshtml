@@ -1,0 +1,190 @@
+﻿@model DataBuildingLayer.BunkerReport
+@{
+    ViewBag.Title = "BukerReportlist";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+<script type="text/javascript" src="~/Content/search1.js"></script>
+<script type="text/javascript" src="~/Content/search2.js"></script>
+<script type="text/javascript" src="~/Content/search3.js"></script>
+<link rel="stylesheet" type="text/css" href="~/Content/search.css" />
+
+
+<div id="idCP">
+    <div class="row">
+        <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div>
+                <h2>
+                    Bunker-Report List
+                </h2>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+            }
+
+            <div class="col-md button-row-top">
+                    <div class="row">
+                        <div class="col">
+                            <button class="function-button submit-button">
+                                <a class="function-button submit-button" href="@Url.Action("Add1", "Bunker")">
+                                   Add Bunker Report
+                                </a>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+
+    <div class="wrapper wrapper-content">
+        <div class="container">
+            <div class="inline-content">
+                <div class="col-md">
+
+                </div>
+
+                <div class="inline-content">
+                    <div class="search-row">
+
+                        <!--<div class="col m-1">-->
+                        @*@Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control importexport", @multiple = "multiple", })*@
+
+                        @*@Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })*@
+                    </div>
+
+                    <div class="col m-1">
+
+                        <input id="idFirst" placeholder="search by : voyage no." autocomplete="off" class="form-control" type="text">
+                        <span id="messageLat" style="color:red"></span>
+                    </div>
+
+                    @*<div class="col m-1">
+
+                    <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+                    <span id="messageLat" style="color:red"></span>
+                </div>*@
+
+                    <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+                </div>
+
+            </div>
+
+
+            <div style="overflow:auto; height:auto;">
+                <ul>
+                    <li style="list-style: none; margin-top:20px">
+
+                        @Html.Partial("_BunkerReport")
+
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').addClass('active');
+    $('#Menu8').removeClass('active');
+    $('#Menu9').removeClass('active');
+
+</script>
+
+
+<script>
+
+    $("#btnSearch").click(function () {
+        debugger
+
+        var firstVal = $("#idFirst").val();
+        /*var secondVal = $("#idSecond").val();*/
+        /*var vsl = $("#VesselId").val();*/
+
+        if (firstVal == "" && vsl == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        //if (vsl == "") {
+        //    alert("Please choose vessel first");
+        //    return;
+        //}
+        else {
+
+            $("#tblBunkerReport").html("");
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/Bunker/_BunkerReport?pageNo=1&firstVal=' + firstVal ,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+                    if (data.trim() != "") {
+                       // $("#tblBunkerReport").fadeIn("fast");
+                        $("#test").html("");
+                        $("#test").html(data);
+                        
+                       
+                    }
+                    else {
+                        $("#test").html("");
+                      //  $("#tblBunkerReport").html('<div class="text-danger card-avatar text-center"><img class="imgnorecord" src="../Include/Admin/img/norecord.png"/><br/>no record found</div>');
+                    }
+                },
+                error: function (data) {
+                    $("#test").html("");
+                    $("#test").html(data);
+                }
+
+            });
+        }
+
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>

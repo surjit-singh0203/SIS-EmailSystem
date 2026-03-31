@@ -1,0 +1,362 @@
+﻿@model DataBuildingLayer.BunkerReport
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+<style>
+    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        background-color: #676969 !important;
+    }
+
+    .nav-link {
+        color: #676969;
+        border: solid 1px #676969 !important;
+        margin: 5px;
+    }
+
+        .nav-link:hover {
+            background-color: #676969 !important;
+            color: white !important;
+        }
+
+    .tab-content {
+        margin: 5px !important;
+        box-shadow: 0px 16px 40px 0px #00000026 !important;
+        width: 100% !important;
+        padding: 10px;
+    }
+
+    .nav-link.active {
+        font-weight: normal;
+    }
+
+    .tab-content .row .col-md .GeneratedTable {
+        margin: 15px 4.8px;
+    }
+</style>
+
+<style>
+
+    #cover-spin {
+        position: fixed;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.7);
+        z-index: 9999;
+        display: none;
+    }
+
+    @@-webkit-keyframes spin {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+
+        to {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    #cover-spin::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 48%;
+        top: 40%;
+        width: 40px;
+        height: 40px;
+        border-style: solid;
+        border-color: black;
+        border-top-color: transparent;
+        border-width: 4px;
+        border-radius: 50%;
+        -webkit-animation: spin .8s linear infinite;
+        animation: spin .8s linear infinite;
+    }
+	
+
+</style>
+<div id="cover-spin"></div>
+@using (Html.BeginForm("InsertBunkerReport", "Bunker", FormMethod.Post, new { onsubmit = "ValidateBunkerReport();", area = "Report", enctype = "multipart/form-data" }))
+{
+    <div class="row">
+      <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div>
+            <h2>
+                @{
+                    var idcheck = Model.Id.ToString();
+                    var addEdit = "";
+                    if (idcheck == "0")
+                    {
+                        addEdit = "Add";
+                    }
+                    else
+                    {
+                        addEdit = "Edit";
+                    }
+                }
+
+                @addEdit Bunker Report
+            </h2>
+
+        </div>
+
+        @if (TempData["error"] != null)
+        {
+            <p class="alert alert-danger" id="errorMessage">@TempData["error"]</p>}
+        @if (TempData["success"] != null)
+        {
+            <p class="alert alert-success" id="successMessage">@TempData["success"]</p>}
+        <div class="col-md button-row-top">
+
+            <div class="col-md button-row-top">
+                <a name="FormatforPrint" id="FormatforPrint" style="margin-right:5px" onclick="FormatforPrint()" class="btn btn-primary">Format for Print</a>
+                <button type="Submit" id="Submit" style="margin-right:5px" class="function-button submit-button">Submit</button>
+                <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> &lt;&lt; Go Back</a>
+            </div>
+        </div>
+    </div>
+
+    @Html.HiddenFor(e => e.Id)
+      <div class="row" style="margin-top: 10px;">
+
+        <div class="col-md">
+            <div class="mb-3 row">
+                <label for="inputPassword" class="col-sm-4 col-form-label">Port</label>
+                <div class="col-sm-8">
+                    @Html.DropDownListFor(model => model.PortName, new SelectList(Model.PortList, "PortName", "PortName"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", @onchange = "GetFacName(this)", })
+                    <span id="msgPortName" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Supplier</label>
+                <div class="col-sm-8">
+                    @Html.EditorFor(model => model.Supplier, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 200, @required = "true", @onBlur = "CheckValidation(this)", @step = "any" } })
+                    <span id="msgSupplier" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Barge Alongside</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    @Html.EditorFor(model => model.BargeAlongside, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD, } })
+                    <span id="msgBargeAlongside" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Bunker Hose Connected</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD1 = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    @Html.EditorFor(model => model.BunkerHoseConnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD1, } })
+                    <span id="msgBunkerHoseConnected" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Commenced Bunkering</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD2 = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    @Html.EditorFor(model => model.CommencedBunkering, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD2, } })
+                    <span id="msgCommencedBunkering" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Bunkering Completed</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD3 = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    @Html.EditorFor(model => model.BunkeringCompleted, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD3, } })
+                    <span id="msgBunkeringCompleted" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Bunker Hose disconnected</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD4 = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    @Html.EditorFor(model => model.BunkerHosedisconnected, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD4, } })
+                    <span id="msgBunkerHosedisconnected" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Barge Cast Off</label>
+                <div class="col-sm-8">
+                    @{
+                        var cD5 = DateTime.Now.ToString("HH:mm");
+                    }
+                    @Html.EditorFor(model => model.BargeCastOff, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "datetime-local", @maxlength = cD5, } })
+                    <span id="msgBargeCastOff" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Barge Name</label>
+                <div class="col-sm-8">
+
+                    @Html.EditorFor(model => model.BargeName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })
+                    <span id="msgBargeName" style="color:red"></span>
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Remarks</label>
+                <div class="col-sm-8"
+                     @Html.TextAreaFor(model => model.Remarks, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 500, } })
+                <span id="msgRemarks" style="color:red"></span>
+            </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Lab Analysis Report</label>
+                <div class="col-sm-8">
+                    <input type="file" name="LabAnalysisReport" accept="application/pdf" />
+                </div>
+
+                <label for="inputPassword" class="col-sm-4 col-form-label">Master Name</label>
+                <div class="col-sm-3">
+
+                    @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })
+                    <span id="msgFirstName" style="color:red"></span>
+                     @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 100, } })
+                    <span id="msgLastName" style="color:red"></span>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3 row">
+
+                <label for="inputPassword" class="col-sm-2 col-form-label">Voy No.</label>
+                <div class="col-sm-4">
+                    @Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @onchange = "GetLeg(this)", @required = "true", })
+                    <span id="messageVoyid" style="color:red"></span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+ 
+}
+        
+
+<div class="modal fade" id="Bunker_model" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    Port Name:  @Html.EditorFor(m => m.PortName_others, new { @class = "form-control bottom-border-input", })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="close" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="submit" class="btn btn-primary pull-right">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').addClass('active');
+    $('#Menu6').removeClass('active');
+    $('#Menu7').removeClass('active');
+
+</script>
+
+<script type="text/javascript">
+
+    $("#PortName").change(function () {
+        debugger
+        if ($(this).val() == "Others") {
+            $(this).blur();
+            $('#Bunker_model').modal('show');
+        }
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('.close').click(function () {
+        debugger
+        $('#Bunker_model').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#close').click(function () {
+        debugger
+        $('#Bunker_model').modal('hide');
+    });
+
+</script>
+
+<script type="text/javascript">
+
+    $('#submit').click(function () {
+        debugger
+        var PortName_others = $('#PortName_others').val();
+        if (PortName_others) {
+            $('select[name="PortName"]').append($('<option>', {
+                value: PortName_others,
+                text: PortName_others,
+                selected: true
+            }));
+        }
+        $('#Bunker_model').modal('hide');
+
+    });
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $('input[name="PortName_others"]').attr('maxlength', '100');
+
+    });
+
+</script>
+
+<script>
+
+    function ValidateBunkerReport() {
+        debugger
+        
+    }
+
+</script>
+
+
+
+
+
