@@ -422,6 +422,8 @@
     <Compile Include="Common\ArrivalReportEmailTemplate.cs" />
     <Compile Include="Common\DailyNoonReportEmailTemplate.cs" />
     <Compile Include="Common\DepartureReportEmailTemplate.cs" />
+    <Compile Include="Common\BerthingReportEmailTemplate.cs" />
+    <Compile Include="Common\LoadingReportEmailTemplate.cs" />
     <Compile Include="Common\UserAuthenticationFilter.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -2786,6 +2788,7 @@
     <Content Include="Datepicker\datepicker.min.css" />
     <Content Include="Datepicker\datepicker.min.js" />
     <Content Include="favicon.ico" />
+    <Content Include="Files\ReportExportLog.txt" />
     <Content Include="font-awesome\css\font-awesome.css" />
     <Content Include="font-awesome\fonts\fontawesome-webfont3e6e.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -2891,6 +2894,8 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Templates\DailyNoonReport.html" />
+    <Content Include="Templates\BerthingReport.html" />
+    <Content Include="Templates\LoadingReport.html" />
     <Content Include="Areas\UserManagement\Views\web.config" />
     <Content Include="Areas\UserManagement\Views\_ViewStart.cshtml" />
     <Content Include="Areas\UserManagement\Views\Shared\_Layout.cshtml" />
@@ -3871,6 +3876,27 @@
       <DependentUpon>DataSet1.xsd</DependentUpon>
     </Content>
     <Content Include="libman.json" />
+    <Content Include="Files\ArrivalReport_9413779_01_10_2025_R55_183623.xlsx" />
+    <Content Include="Files\ArrivalReport_9413779_04_10_2025_R56_183623.xlsx" />
+    <Content Include="Files\ArrivalReport_9413779_13_09_2025_R53_183620.xlsx" />
+    <Content Include="Files\ArrivalReport_9413779_26_09_2025_R54_183622.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_12_09_2025_183629.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_13_09_2025_183630.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_14_09_2025_183632.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_15_09_2025_183633.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_16_09_2025_183634.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_17_09_2025_183635.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_18_09_2025_183636.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_19_09_2025_183637.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_20_09_2025_183638.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_21_09_2025_183710.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_22_09_2025_183711.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_23_09_2025_183712.xlsx" />
+    <Content Include="Files\DailyNoonReport_9413779_24_09_2025_183713.xlsx" />
+    <Content Include="Files\DepartureReport_9413779_03_10_2025_R1057_183628.xlsx" />
+    <Content Include="Files\DepartureReport_9413779_13_09_2025_R1054_183625.xlsx" />
+    <Content Include="Files\DepartureReport_9413779_25_09_2025_R1055_183625.xlsx" />
+    <Content Include="Files\DepartureReport_9413779_30_09_2025_R1056_183626.xlsx" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />

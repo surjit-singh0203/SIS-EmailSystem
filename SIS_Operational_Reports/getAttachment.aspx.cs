@@ -1123,6 +1123,26 @@ namespace SIS_Operational_Reports
                         }
                         catch (Exception exDeparture) { }
                     }
+
+                    // Generate and save Berthing Report Excel to Files folder (after Update)
+                    if (sheetName == "BerthingReport")
+                    {
+                        try
+                        {
+                            SaveBerthingReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exBerthing) { }
+                    }
+
+                    // Generate and save Loading Report Excel to Files folder (after Update)
+                    if (sheetName == "LoadingReport")
+                    {
+                        try
+                        {
+                            SaveLoadingReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exLoading) { }
+                    }
                 }
 
 
@@ -2439,6 +2459,34 @@ namespace SIS_Operational_Reports
                             isHtml = true;
                         }
                     }
+                    else if (reportType.Equals("BerthingReport", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.BerthingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
+                    else if (reportType.Equals("LoadingReport", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.LoadingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
                     else
                     {
                         body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
@@ -2489,6 +2537,8 @@ namespace SIS_Operational_Reports
             if (reportType.Equals("DailyNoonReport", StringComparison.OrdinalIgnoreCase)) return "Daily Noon Report";
             if (reportType.Equals("ArrivalReport", StringComparison.OrdinalIgnoreCase)) return "Arrival Report";
             if (reportType.Equals("DepartureReport", StringComparison.OrdinalIgnoreCase)) return "Departure Report";
+            if (reportType.Equals("BerthingReport", StringComparison.OrdinalIgnoreCase)) return "Berthing Report";
+            if (reportType.Equals("LoadingReport", StringComparison.OrdinalIgnoreCase)) return "Loading Report";
             return reportType;
         }
 
@@ -2847,6 +2897,647 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
                 AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
             }
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Berthing Report Excel for each vessel/date in tbls and saves to Files folder.
+        /// Uses editberthingRListDashboard logic (reportdate, vesselid) to fetch all details.
+        /// </summary>
+        private void SaveBerthingReportExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("VesselId");
+            bool hasReportDate = tbls.Columns.Contains("ReportDate");
+            bool hasModifiedDate = tbls.Columns.Contains("ModifiedDate");
+            if (!hasVesselId) return;
+            if (!hasReportDate && !hasModifiedDate) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                if (row["VesselId"] != DBNull.Value && row["VesselId"] != null)
+                    int.TryParse(row["VesselId"].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                DateTime? reportDateVal = null;
+                if (hasReportDate && row["ReportDate"] != DBNull.Value && row["ReportDate"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["ReportDate"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue && hasModifiedDate && row["ModifiedDate"] != DBNull.Value && row["ModifiedDate"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["ModifiedDate"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue) continue;
+
+                string reportdate = reportDateVal.Value.ToString("yyyy-MM-dd");
+                string key = vesselId + "_" + reportdate;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                var vd = new BerthingReport();
+                vd.GetBerthRList = CommonMethods.editberthingRListDashboard(reportdate, vesselId, "BerthingReport");
+                var berthRBind = vd.GetBerthRList?.Where(x => x.Id > 0).FirstOrDefault();
+                if (berthRBind == null)
+                {
+                    vd.GetBerthRList = CommonMethods.editberthingRListDashboard(reportdate, vesselId, "BerthingReportR");
+                    berthRBind = vd.GetBerthRList?.Where(x => x.Id > 0).FirstOrDefault();
+                }
+                if (berthRBind == null && tbls.Columns.Contains("Id"))
+                {
+                    int rowId = 0;
+                    if (row["Id"] != DBNull.Value && row["Id"] != null && int.TryParse(row["Id"].ToString(), out rowId) && rowId > 0)
+                    {
+                        vd.GetBerthRList = CommonMethods.editberthingRList(rowId, vesselId, "BerthingReport");
+                        berthRBind = vd.GetBerthRList?.Where(x => x.Id == rowId).FirstOrDefault();
+                    }
+                }
+                if (berthRBind == null) continue;
+
+                int id = berthRBind.Id;
+
+                DataTable dtFuelCons = new DataTable();
+                DataTable dtFuelROB = new DataTable();
+                DataTable dtBunker = new DataTable();
+                DataTable dtNonRoutine = new DataTable();
+                DataTable dtMain = new DataTable();
+
+                try
+                {
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                        adp.Fill(dtFuelCons);
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP as SBE, a.FWE as RFA from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", ConnectionBulder.con))
+                        adp.Fill(dtFuelROB);
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", ConnectionBulder.con))
+                        adp.Fill(dtBunker);
+                    if (dtBunker.Rows.Count == 0)
+                    {
+                        DataTable dtFuelTypes = new DataTable();
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                            adp.Fill(dtFuelTypes);
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=4 order by FuelType_Id", ConnectionBulder.con))
+                        {
+                            DataTable dtBunk = new DataTable();
+                            adp.Fill(dtBunk);
+                            foreach (DataRow r in dtBunk.Rows)
+                            {
+                                int ftId = Convert.ToInt32(r["FuelType_Id"]);
+                                var ftRow = dtFuelTypes.AsEnumerable().FirstOrDefault(x => Convert.ToInt32(x["Id"]) == ftId);
+                                string fuelType = ftRow != null ? ftRow["FuelType"].ToString() : "";
+                                dtBunker.Rows.Add(fuelType, r["Receipt"]?.ToString());
+                            }
+                        }
+                    }
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=4 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                        adp.Fill(dtNonRoutine);
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@VoyageId", berthRBind.VoyageId);
+                        cmd.Parameters.AddWithValue("@ReportDate", reportdate);
+                        cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                        cmd.Parameters.AddWithValue("@Action", "BerthingReport");
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dtMain);
+                    }
+                }
+                catch { }
+
+                DateTime rptDt = reportDateVal.Value;
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "BerthingReport";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + id + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddBerthingNavigationSheet(wb, berthRBind, dtNonRoutine, dtMain);
+                    AddBerthingEngineSheet(wb, berthRBind, dtFuelCons, dtFuelROB, dtBunker);
+                    AddBerthingCargoSheet(wb, berthRBind);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddBerthingNavigationSheet(XLWorkbook wb, BerthingReport r, DataTable dtNonRoutine, DataTable dtMain)
+        {
+            var ws = wb.Worksheets.Add("Navigation");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Berthing Report - Navigation";
+            var rngNav = ws.Range(row, 1, row, 3);
+            rngNav.Merge();
+            rngNav.Style.Font.Bold = true;
+            rngNav.Style.Font.FontSize = 16;
+            rngNav.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            if (r != null)
+            {
+                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string legText = "";
+                string portStatusText = r.PortStatus.ToString();
+                if (dtMain != null && dtMain.Rows.Count > 0)
+                {
+                    var dr = dtMain.Rows[0];
+                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
+                    if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                }
+                AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
+                AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
+                AddKeyValueRow(ws, ref row, "Facility", r.FacilityName ?? "");
+                AddKeyValueRow(ws, ref row, "Berth", r.BerthName ?? "");
+                AddKeyValueRow(ws, ref row, "Port Status", portStatusText);
+                AddKeyValueRow(ws, ref row, "Leg", legText);
+                AddKeyValueRow(ws, ref row, "Report Date", r.ReportDate != null ? Convert.ToDateTime(r.ReportDate).ToString(ExcelDateFormat) : "");
+                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
+                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
+                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Manoeuvring & SBE/RFA";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Manoeuvring Hrs", r.Manoeuvring_Hrs);
+                AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
+                AddKeyValueRow(ws, ref row, "SBE Date & Time", r.SBE_DateT != null ? Convert.ToDateTime(r.SBE_DateT).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "RFA Date & Time", r.RFA_DateT != null ? Convert.ToDateTime(r.RFA_DateT).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "SBE ROB", r.SBE_ROB);
+                AddKeyValueRow(ws, ref row, "RFA ROB", r.RFA_ROB);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Non-Routine Events";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            ws.Cell(row, 1).Value = "Event Name";
+            ws.Cell(row, 2).Value = "Owners/Charterers Account";
+            ws.Cell(row, 3).Value = "Hrs.";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
+            string[] nreLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Preparation", "Cargo Heating", "BW Exchange" };
+            for (int i = 0; i < 7; i++)
+            {
+                ws.Cell(row, 1).Value = nreLabels[i];
+                ws.Cell(row, 2).Value = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["ChartererAccount"]?.ToString() ?? "") : "";
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? dtNonRoutine.Rows[i]["Hours"] : null);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Weather";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Sea State", r.SeaState);
+                AddKeyValueRow(ws, ref row, "Wind Direction", r.WindDirection);
+                AddKeyValueRow(ws, ref row, "Wind Force(BF Scale)", r.WindForce);
+                AddKeyValueRow(ws, ref row, "Swell Direction", r.SwellDirection);
+                AddKeyValueRow(ws, ref row, "Swell Height (mtrs)", r.SwellHeight);
+                AddKeyValueRow(ws, ref row, "Wave Length (mtrs)", r.WaveLength);
+                AddKeyValueRow(ws, ref row, "Wave Height (mtrs)", r.WaveHeight);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Berthing Report Remarks";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
+            ws.Columns().AdjustToContents();
+        }
+
+        private void AddBerthingEngineSheet(XLWorkbook wb, BerthingReport r, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker)
+        {
+            var ws = wb.Worksheets.Add("Engine");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Berthing Report - Engine";
+            var rngHdr = ws.Range(row, 1, row, 3);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            ws.Cell(row, 1).Value = "Engine";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "SLIP%", r.Slip);
+                AddKeyValueRow(ws, ref row, "RPM", r.RPM);
+                AddKeyValueRow(ws, ref row, "BHP(hp)", r.BHP);
+                AddKeyValueRow(ws, ref row, "MCR%", r.MCR);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Lube Oil & Hydraulic Oil";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "ME Crosshead Cons", r.LO_HO_Cons_MECC);
+                AddKeyValueRow(ws, ref row, "ME Cylinder Cons", r.LO_HO_Cons_MECYL);
+                AddKeyValueRow(ws, ref row, "AE Crosshead Cons", r.LO_HO_Cons_AECC);
+                AddKeyValueRow(ws, ref row, "Hydraulic Oil Cons", r.LO_HO_Cons_HYDR_Oil);
+                AddKeyValueRow(ws, ref row, "ME Crosshead ROB", r.LO_HO_Cons_MECC_ROB);
+                AddKeyValueRow(ws, ref row, "ME Cylinder ROB", r.LO_HO_Cons_MECYL_ROB);
+                AddKeyValueRow(ws, ref row, "AE Crosshead ROB", r.LO_HO_Cons_AECC_ROB);
+                AddKeyValueRow(ws, ref row, "Hydraulic Oil ROB", r.LO_HO_Cons_HYDR_Oil_ROB);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Fuel ROB in MT (SBE/RFA)";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (dtFuelROB != null)
+            {
+                foreach (DataRow dr in dtFuelROB.Rows)
+                {
+                    string sbe = dr.Table.Columns.Contains("SBE") ? dr["SBE"]?.ToString() : "";
+                    string rfa = dr.Table.Columns.Contains("RFA") ? dr["RFA"]?.ToString() : "";
+                    string robVal = string.IsNullOrEmpty(sbe) && string.IsNullOrEmpty(rfa) ? "" : (sbe ?? "-") + " / " + (rfa ?? "-");
+                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", robVal);
+                }
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Bunker Received in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtBunker != null)
+            {
+                foreach (DataRow dr in dtBunker.Rows)
+                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "");
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Other ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Full";
+                ws.Cell(row, 3).Value = "In Use";
+                ws.Cell(row, 4).Value = "Empty";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "Oxygen (Bottles)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty);
+                row++;
+                ws.Cell(row, 1).Value = "Acetylene (Bottles)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Fuel Consumption in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            {
+                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
+                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
+                AddKeyValueRow(ws, ref row, "VLSFO (Total)", FormatDec(vlsfo));
+                AddKeyValueRow(ws, ref row, "MDO (Total)", FormatDec(mdo));
+            }
+            ws.Columns().AdjustToContents();
+        }
+
+        private void AddBerthingCargoSheet(XLWorkbook wb, BerthingReport r)
+        {
+            var ws = wb.Worksheets.Add("Cargo");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Berthing Report - Cargo";
+            var rngHdr = ws.Range(row, 1, row, 4);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            ws.Cell(row, 1).Value = "Cargo";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Qty Grade 1", r.Qty_Grade1);
+                AddKeyValueRow(ws, ref row, "Qty Grade 2", r.Qty_Grade2);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Slops ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Oil";
+                ws.Cell(row, 3).Value = "Water";
+                ws.Cell(row, 4).Value = "Total";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "ROB (m3)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.SlopsROB_Oil);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.SlopsROB_Water);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.SlopsROB_Total);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Ballast";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "ROB (MT)", r?.Ballast_ROB);
+            row++;
+
+            ws.Cell(row, 1).Value = "Fresh Water";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
+                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
+                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
+            }
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Loading Report Excel for each vessel/date in tbls and saves to Files folder.
+        /// Uses editloadingRListDashboard logic (reportdate, vesselid) to fetch all details.
+        /// </summary>
+        private void SaveLoadingReportExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("VesselId");
+            bool hasReportDateTime = tbls.Columns.Contains("ReportDateTime");
+            bool hasModifyDate = tbls.Columns.Contains("ModifyDate");
+            if (!hasVesselId) return;
+            if (!hasReportDateTime && !hasModifyDate) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                if (row["VesselId"] != DBNull.Value && row["VesselId"] != null)
+                    int.TryParse(row["VesselId"].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                DateTime? reportDateVal = null;
+                if (hasReportDateTime && row["ReportDateTime"] != DBNull.Value && row["ReportDateTime"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["ReportDateTime"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue && hasModifyDate && row["ModifyDate"] != DBNull.Value && row["ModifyDate"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["ModifyDate"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue) continue;
+
+                string reportdate = reportDateVal.Value.ToString("yyyy-MM-dd");
+                string key = vesselId + "_" + reportdate;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                var loadingRBind = (LoadingReport)null;
+                var loadList = CommonMethods.editloadingRListDashboard(reportdate, vesselId, "LoadingReport");
+                loadingRBind = loadList?.Where(x => x.Id > 0).FirstOrDefault();
+                if (loadingRBind == null)
+                {
+                    loadList = CommonMethods.editloadingRListDashboard(reportdate, vesselId, "LoadingReportR");
+                    loadingRBind = loadList?.Where(x => x.Id > 0).FirstOrDefault();
+                }
+                if (loadingRBind == null && tbls.Columns.Contains("Id"))
+                {
+                    int rowId = 0;
+                    if (row["Id"] != DBNull.Value && row["Id"] != null && int.TryParse(row["Id"].ToString(), out rowId) && rowId > 0)
+                    {
+                        loadList = CommonMethods.editloadingRList(rowId, vesselId, "LoadingReport");
+                        loadingRBind = loadList?.Where(x => x.Id == rowId).FirstOrDefault();
+                    }
+                }
+                if (loadingRBind == null) continue;
+
+                int id = loadingRBind.Id;
+
+                DataTable dtCargo = new DataTable();
+                DataTable dtStoppage = new DataTable();
+                DataTable dtPumpsUse = new DataTable();
+                DataTable dtMain = new DataTable();
+
+                try
+                {
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Cargo where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                        adp.Fill(dtCargo);
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                        adp.Fill(dtStoppage);
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                        adp.Fill(dtPumpsUse);
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@VoyageId", loadingRBind.VoyageId);
+                        cmd.Parameters.AddWithValue("@ReportDate", reportdate);
+                        cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                        cmd.Parameters.AddWithValue("@Action", "LoadingReport");
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dtMain);
+                    }
+                }
+                catch { }
+
+                DateTime rptDt = reportDateVal.Value;
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "LoadingReport";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + id + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddLoadingDetailsSheet(wb, loadingRBind, dtCargo, dtStoppage, dtPumpsUse, dtMain);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddLoadingDetailsSheet(XLWorkbook wb, LoadingReport r, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtMain)
+        {
+            var ws = wb.Worksheets.Add("Loading Details");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Loading Report";
+            var rngHdr = ws.Range(row, 1, row, 4);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            // General Info
+            if (r != null)
+            {
+                string voyNo = "";
+                string legText = "";
+                if (dtMain != null && dtMain.Rows.Count > 0)
+                {
+                    var dr = dtMain.Rows[0];
+                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? "";
+                    if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? "";
+                }
+                if (string.IsNullOrEmpty(voyNo)) voyNo = r.VoyageId.ToString();
+
+                AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
+                AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
+                AddKeyValueRow(ws, ref row, "Vessel", r.VesselName ?? "");
+                AddKeyValueRow(ws, ref row, "Leg", legText);
+                AddKeyValueRow(ws, ref row, "Report Date & Time", r.ReportDateTime != null ? Convert.ToDateTime(r.ReportDateTime).ToString("yyyy-MM-dd HH:mm") : "");
+                AddKeyValueRow(ws, ref row, "ETD Date & Time", r.ETDDateTime != null ? Convert.ToDateTime(r.ETDDateTime).ToString("yyyy-MM-dd HH:mm") : "");
+                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
+                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
+                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
+            }
+            row++;
+
+            // LOP Fields
+            ws.Cell(row, 1).Value = "Letter of Protest (LOP)";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Times", r.Times ?? "");
+                AddKeyValueRow(ws, ref row, "Rate", r.Rate ?? "");
+                AddKeyValueRow(ws, ref row, "Hose Connection", r.Hose_Connection ?? "");
+                AddKeyValueRow(ws, ref row, "High H2S", r.High_H2S ?? "");
+            }
+            row++;
+
+            // Cargo List
+            ws.Cell(row, 1).Value = "Cargo Details";
+            ApplyLightGrayTitle(ws, row, 1, 8);
+            row++;
+            if (dtCargo != null && dtCargo.Rows.Count > 0)
+            {
+                ws.Cell(row, 1).Value = "Cargo Name";
+                ws.Cell(row, 2).Value = "Loading Date/Time";
+                ws.Cell(row, 3).Value = "Terminal Loading Rate";
+                ws.Cell(row, 4).Value = "Loading Rate Accepted";
+                ws.Cell(row, 5).Value = "Avg Achieved Rate";
+                ws.Cell(row, 6).Value = "Qty Onboard";
+                ws.Cell(row, 7).Value = "Balance Qty Loaded";
+                ws.Cell(row, 8).Value = "Actual Comp Date/Time";
+                ws.Range(row, 1, row, 8).Style.Font.Bold = true;
+                row++;
+
+                foreach (DataRow dr in dtCargo.Rows)
+                {
+                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("CargoName") ? (dr["CargoName"]?.ToString() ?? "") : "";
+                    ws.Cell(row, 2).Value = dr.Table.Columns.Contains("LoadingDatetime") && dr["LoadingDatetime"] != DBNull.Value ? Convert.ToDateTime(dr["LoadingDatetime"]).ToString("yyyy-MM-dd HH:mm") : "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("TerminalLoadingRate") ? dr["TerminalLoadingRate"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), dr.Table.Columns.Contains("LoadingRateAccepted") ? dr["LoadingRateAccepted"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 5), dr.Table.Columns.Contains("AverageAchievedLoadingRate") ? dr["AverageAchievedLoadingRate"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), dr.Table.Columns.Contains("QuantityOnboard") ? dr["QuantityOnboard"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 7), dr.Table.Columns.Contains("BalanceQuantityLoaded") ? dr["BalanceQuantityLoaded"] : null);
+                    ws.Cell(row, 8).Value = dr.Table.Columns.Contains("ActualCompDateTime") && dr["ActualCompDateTime"] != DBNull.Value ? Convert.ToDateTime(dr["ActualCompDateTime"]).ToString("yyyy-MM-dd HH:mm") : "";
+                    row++;
+                }
+            }
+            row++;
+
+            // Stoppage List
+            ws.Cell(row, 1).Value = "Stoppage Details";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (dtStoppage != null && dtStoppage.Rows.Count > 0)
+            {
+                ws.Cell(row, 1).Value = "Reason";
+                ws.Cell(row, 2).Value = "From";
+                ws.Cell(row, 3).Value = "To";
+                ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+                row++;
+
+                foreach (DataRow dr in dtStoppage.Rows)
+                {
+                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("Reason") ? (dr["Reason"]?.ToString() ?? "") : "";
+                    ws.Cell(row, 2).Value = dr.Table.Columns.Contains("DateTimeFrom") && dr["DateTimeFrom"] != DBNull.Value ? Convert.ToDateTime(dr["DateTimeFrom"]).ToString("yyyy-MM-dd HH:mm") : "";
+                    ws.Cell(row, 3).Value = dr.Table.Columns.Contains("DateTimeTo") && dr["DateTimeTo"] != DBNull.Value ? Convert.ToDateTime(dr["DateTimeTo"]).ToString("yyyy-MM-dd HH:mm") : "";
+                    row++;
+                }
+            }
+            row++;
+
+            // Pumps Use
+            ws.Cell(row, 1).Value = "Ballast Pump Use";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtPumpsUse != null && dtPumpsUse.Rows.Count > 0)
+            {
+                ws.Cell(row, 1).Value = "Pump Name";
+                ws.Cell(row, 2).Value = "Rate";
+                ws.Range(row, 1, row, 2).Style.Font.Bold = true;
+                row++;
+
+                foreach (DataRow dr in dtPumpsUse.Rows)
+                {
+                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("PumpName") ? (dr["PumpName"]?.ToString() ?? "") : (dr.Table.Columns.Contains("Name") ? (dr["Name"]?.ToString() ?? "") : "");
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null);
+                    row++;
+                }
+            }
+            row++;
+
+            // Remarks
+            ws.Cell(row, 1).Value = "Remarks";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
+
             ws.Columns().AdjustToContents();
         }
 
