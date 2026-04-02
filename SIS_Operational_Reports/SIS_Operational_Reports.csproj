@@ -425,6 +425,7 @@
     <Compile Include="Common\BerthingReportEmailTemplate.cs" />
     <Compile Include="Common\LoadingReportEmailTemplate.cs" />
     <Compile Include="Common\DischargingReportEmailTemplate.cs" />
+    <Compile Include="Common\BulkNoonReportEmailTemplate.cs" />
 
     <Compile Include="Common\UserAuthenticationFilter.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -2899,6 +2900,7 @@
     <Content Include="Templates\BerthingReport.html" />
     <Content Include="Templates\LoadingReport.html" />
     <Content Include="Templates\DischargingReport.html" />
+    <Content Include="Templates\BulkNoonReport.html" />
 
     <Content Include="Areas\UserManagement\Views\web.config" />
     <Content Include="Areas\UserManagement\Views\_ViewStart.cshtml" />
