@@ -158,7 +158,8 @@ namespace DataBuildingLayer
                     Id = row["Id"] != DBNull.Value && row["Id"] != null ? Convert.ToInt32(row["Id"]) : 0,
                     EmailTo = row["EmailTo"]?.ToString() ?? "",
                     EmailCC = row["EmailCC"]?.ToString() ?? "",
-                    VesselId = vId
+                    VesselId = vId,
+                    LastSent = row["LastSent"] != DBNull.Value ? Convert.ToDateTime(row["LastSent"]) : DateTime.MinValue
                 });
             }
             return list;
@@ -171,5 +172,6 @@ namespace DataBuildingLayer
         public string EmailTo { get; set; }
         public string EmailCC { get; set; }
         public int VesselId { get; set; }
+        public DateTime LastSent { get; set; }
     }
 }

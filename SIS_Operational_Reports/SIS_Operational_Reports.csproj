@@ -426,6 +426,10 @@
     <Compile Include="Common\LoadingReportEmailTemplate.cs" />
     <Compile Include="Common\DischargingReportEmailTemplate.cs" />
     <Compile Include="Common\BulkNoonReportEmailTemplate.cs" />
+    <Compile Include="Common\ConsumptionReportEmailTemplate.cs" />
+    <Compile Include="Common\BunkerReportEmailTemplate.cs" />
+    <Compile Include="Common\FreshWaterReportEmailTemplate.cs" />
+    <Compile Include="Common\NoonReportAllowEmailTemplate.cs" />
 
     <Compile Include="Common\UserAuthenticationFilter.cs" />
     <Compile Include="Controllers\AccountController.cs" />

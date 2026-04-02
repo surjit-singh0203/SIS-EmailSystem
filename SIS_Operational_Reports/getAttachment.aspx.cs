@@ -1163,6 +1163,46 @@ namespace SIS_Operational_Reports
                         }
                         catch (Exception exBulkNoon) { }
                     }
+
+                    // Generate and save Consumption Report Excel to Files folder (after Update)
+                    if (sheetName == "DailyNoonReport")
+                    {
+                        try
+                        {
+                            SaveConsumptionReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exConsumption) { }
+                    }
+
+                    // Generate and save Bunker Report Excel to Files folder (after Update)
+                    if (sheetName == "BunkerReport")
+                    {
+                        try
+                        {
+                            SaveBunkerReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exBunker) { }
+                    }
+
+                    // Generate and save Fresh Water Report Excel to Files folder (after Update)
+                    if (sheetName == "FreshWaterReport")
+                    {
+                        try
+                        {
+                            SaveFreshWaterReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exFreshWater) { }
+                    }
+
+                    // Generate and save Noon Report Allow Excel to Files folder (after Update)
+                    if (sheetName == "NoonReport_allow")
+                    {
+                        try
+                        {
+                            SaveNoonReportAllowExcelToFiles(tbls);
+                        }
+                        catch (Exception exNoonReportAllow) { }
+                    }
                 }
 
 
@@ -2424,10 +2464,13 @@ namespace SIS_Operational_Reports
                 var toAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var ccAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var emailList = CommonClass.GetSyncEmailVesselsReport(vesselId);
+                // foreach
                 foreach (var e in emailList)
                 {
+                    //
                     foreach (var addr in SplitEmailAddresses(e.EmailTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
                     foreach (var addr in SplitEmailAddresses(e.EmailCC)) if (!string.IsNullOrWhiteSpace(addr)) ccAddresses.Add(addr.Trim());
+
                 }
                 if (toAddresses.Count == 0 && !string.IsNullOrWhiteSpace(fallbackTo))
                     foreach (var addr in SplitEmailAddresses(fallbackTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
@@ -2535,6 +2578,62 @@ namespace SIS_Operational_Reports
                             isHtml = true;
                         }
                     }
+                    else if (reportType.Equals("ConsumptionReport", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.ConsumptionReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
+                    else if (reportType.Equals("BunkerReport", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.BunkerReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
+                    else if (reportType.Equals("FreshWaterReport", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.FreshWaterReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
+                    else if (reportType.Equals("NoonReportAllow", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var htmlBody = SIS_Operational_Reports.Common.NoonReportAllowEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                        if (!string.IsNullOrEmpty(htmlBody))
+                        {
+                            body = htmlBody;
+                            isHtml = true;
+                        }
+                        else
+                        {
+                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                            isHtml = true;
+                        }
+                    }
                     else
                     {
                         body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
@@ -2558,10 +2657,13 @@ namespace SIS_Operational_Reports
                             smtp.Credentials = new NetworkCredential(smtpUser, smtpPwd);
                             smtp.Send(msg);
                         }
+                        //Update function
                         LogReportEmailSent(reportType, vesselId, datePart, fn);
                     }
                 }
                 catch (Exception ex) { /* log if needed */ }
+           
+            //continue
             }
 
             // After sending all report emails, delete only Excel files from Files directory (keep logger files for tracking)
@@ -2589,6 +2691,10 @@ namespace SIS_Operational_Reports
             if (reportType.Equals("LoadingReport", StringComparison.OrdinalIgnoreCase)) return "Loading Report";
             if (reportType.Equals("DischargingReport", StringComparison.OrdinalIgnoreCase)) return "Discharging Report";
             if (reportType.Equals("BulkNoonReport", StringComparison.OrdinalIgnoreCase)) return "Bulk Noon Report";
+            if (reportType.Equals("ConsumptionReport", StringComparison.OrdinalIgnoreCase)) return "Consumption Report";
+            if (reportType.Equals("BunkerReport", StringComparison.OrdinalIgnoreCase)) return "Bunker Report";
+            if (reportType.Equals("FreshWaterReport", StringComparison.OrdinalIgnoreCase)) return "Fresh Water Report";
+            if (reportType.Equals("NoonReportAllow", StringComparison.OrdinalIgnoreCase)) return "Noon Report Allow";
             return reportType;
         }
 
@@ -4272,6 +4378,835 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
                 AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
             }
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Consumption Report Excel for each vessel/date in tbls and saves to Files folder.
+        /// Uses editnoonRListdashboard logic (reportdate, vesselid) to fetch all details.
+        /// Structured like Berthing Report with Navigation, Engine, Cargo sheets but focused on consumption data.
+        /// </summary>
+        private void SaveConsumptionReportExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("VesselId");
+            bool hasDate = tbls.Columns.Contains("Date");
+            bool hasModifiedDate = tbls.Columns.Contains("ModifiedDate");
+            if (!hasVesselId || (!hasDate && !hasModifiedDate)) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                if (row["VesselId"] != DBNull.Value && row["VesselId"] != null)
+                    int.TryParse(row["VesselId"].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                DateTime? reportDateVal = null;
+                if (hasDate && row["Date"] != DBNull.Value && row["Date"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["Date"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue && hasModifiedDate && row["ModifiedDate"] != DBNull.Value && row["ModifiedDate"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["ModifiedDate"].ToString(), out d)) reportDateVal = d;
+                }
+                if (!reportDateVal.HasValue) continue;
+
+                string reportdate = reportDateVal.Value.ToString("yyyy-MM-dd");
+                string key = vesselId + "_" + reportdate;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                var vd = new DailyNoonReport();
+                vd.GetNoonRList = CommonMethods.editnoonRListdashboard(reportdate, vesselId, "DailyNoonReport");
+                var noonRBind = vd.GetNoonRList?.Where(x => x.Id > 0).FirstOrDefault();
+                if (noonRBind == null) continue;
+
+                int id = noonRBind.Id;
+
+                DataTable dtFuelCons = new DataTable();
+                DataTable dtFuelROB = new DataTable();
+                DataTable dtBunker = new DataTable();
+                DataTable dtNonRoutine = new DataTable();
+                DataTable dtMain = new DataTable();
+
+                try
+                {
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                        adp.Fill(dtFuelCons);
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                        adp.Fill(dtFuelROB);
+                    if (dtFuelROB.Rows.Count == 0)
+                    {
+                        DataTable dtFuelTypes = new DataTable();
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                            adp.Fill(dtFuelTypes);
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        {
+                            DataTable dtRob = new DataTable();
+                            adp.Fill(dtRob);
+                            foreach (DataRow r in dtRob.Rows)
+                            {
+                                int ftId = Convert.ToInt32(r["FuelType_Id"]);
+                                var ftRow = dtFuelTypes.AsEnumerable().FirstOrDefault(x => Convert.ToInt32(x["Id"]) == ftId);
+                                string fuelType = ftRow != null ? ftRow["FuelType"].ToString() : "";
+                                dtFuelROB.Rows.Add(fuelType, r["OtherROB"]?.ToString() ?? "");
+                            }
+                        }
+                    }
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                        adp.Fill(dtBunker);
+                    if (dtBunker.Rows.Count == 0)
+                    {
+                        DataTable dtFuelTypes = new DataTable();
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                            adp.Fill(dtFuelTypes);
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        {
+                            DataTable dtBunk = new DataTable();
+                            adp.Fill(dtBunk);
+                            foreach (DataRow r in dtBunk.Rows)
+                            {
+                                int ftId = Convert.ToInt32(r["FuelType_Id"]);
+                                var ftRow = dtFuelTypes.AsEnumerable().FirstOrDefault(x => Convert.ToInt32(x["Id"]) == ftId);
+                                string fuelType = ftRow != null ? ftRow["FuelType"].ToString() : "";
+                                dtBunker.Rows.Add(fuelType, r["Receipt"]?.ToString());
+                            }
+                        }
+                    }
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                        adp.Fill(dtNonRoutine);
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@VoyageId", noonRBind.VoyageId);
+                        cmd.Parameters.AddWithValue("@ReportDate", reportdate);
+                        cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                        cmd.Parameters.AddWithValue("@Action", "DailyNoonReport");
+                        cmd.Parameters.AddWithValue("@id", id);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dtMain);
+                    }
+                }
+                catch { }
+
+                DateTime rptDt = reportDateVal.Value;
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "ConsumptionReport";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + id + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddConsumptionNavigationSheet(wb, noonRBind, dtNonRoutine, dtMain);
+                    AddConsumptionEngineSheet(wb, noonRBind, dtFuelCons, dtFuelROB, dtBunker);
+                    AddConsumptionCargoSheet(wb, noonRBind);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddConsumptionNavigationSheet(XLWorkbook wb, DailyNoonReport r, DataTable dtNonRoutine, DataTable dtMain)
+        {
+            var ws = wb.Worksheets.Add("Navigation");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Consumption Report - Navigation";
+            var rngNav = ws.Range(row, 1, row, 3);
+            rngNav.Merge();
+            rngNav.Style.Font.Bold = true;
+            rngNav.Style.Font.FontSize = 16;
+            rngNav.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            if (r != null)
+            {
+                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string legText = r.LegPortName ?? "";
+                string portStatusText = r.PortStatus?.ToString() ?? "";
+                if (dtMain != null && dtMain.Rows.Count > 0)
+                {
+                    var dr = dtMain.Rows[0];
+                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
+                    if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                }
+                AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
+                AddKeyValueRow(ws, ref row, "Status", r.VesselStatus ?? "");
+                AddKeyValueRow(ws, ref row, "Laden/Ballast", r.VesselStatus ?? "");
+                AddKeyValueRow(ws, ref row, "At Sea/In Port", r.AtSeaOrPort ?? "");
+                AddKeyValueRow(ws, ref row, "In Port Status", portStatusText);
+                AddKeyValueRow(ws, ref row, "Leg", legText);
+                AddKeyValueRow(ws, ref row, "Report Date", r.Date != null ? Convert.ToDateTime(r.Date).ToString(ExcelDateFormat) : "");
+                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Speed - Distance";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Dist Noon to Noon (DMG)(NM)", r.NoonToNoonDMG_Dist);
+                AddKeyValueRow(ws, ref row, "Actual Speed Noon to Noon(Kts)", r.Act_Speed);
+                AddKeyValueRow(ws, ref row, "SLIP%", r.Slip);
+                AddKeyValueRow(ws, ref row, "RPM", r.RPM);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Non-Routine Events";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            ws.Cell(row, 1).Value = "Event Name";
+            ws.Cell(row, 2).Value = "Owners/Charterers Account";
+            ws.Cell(row, 3).Value = "Hrs.";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
+            string[] nreLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Preparation", "Cargo Heating", "BW Exchange" };
+            for (int i = 0; i < 7; i++)
+            {
+                ws.Cell(row, 1).Value = nreLabels[i];
+                ws.Cell(row, 2).Value = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["ChartererAccount"]?.ToString() ?? "") : "";
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? dtNonRoutine.Rows[i]["Hours"] : null);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Weather";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Sea State", r.SeaState);
+                AddKeyValueRow(ws, ref row, "Wind Direction", r.WindDirection);
+                AddKeyValueRow(ws, ref row, "Wind Force(BF Scale)", r.WindForce);
+                AddKeyValueRow(ws, ref row, "Swell Direction", r.SwellDirection);
+                AddKeyValueRow(ws, ref row, "Swell Height (mtrs)", r.SwellHeight);
+                AddKeyValueRow(ws, ref row, "Wave Length (mtrs)", r.WaveLength);
+                AddKeyValueRow(ws, ref row, "Wave Height (mtrs)", r.WaveHeight);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Consumption Report Remarks";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
+            ws.Columns().AdjustToContents();
+        }
+
+        private void AddConsumptionEngineSheet(XLWorkbook wb, DailyNoonReport r, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker)
+        {
+            var ws = wb.Worksheets.Add("Engine");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Consumption Report - Engine";
+            var rngHdr = ws.Range(row, 1, row, 3);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            ws.Cell(row, 1).Value = "Fuel Consumption in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            {
+                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
+                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
+                AddKeyValueRow(ws, ref row, "VLSFO (Main/Aux/Boiler/Total)", FormatDec(vlsfo));
+                AddKeyValueRow(ws, ref row, "MDO (Main/Aux/Boiler/Total)", FormatDec(mdo));
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Fuel ROB in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtFuelROB != null)
+            {
+                foreach (DataRow dr in dtFuelROB.Rows)
+                {
+                    string robVal = dr.Table.Columns.Contains("OtherROB") ? dr["OtherROB"]?.ToString() : "";
+                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", robVal ?? "");
+                }
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Bunker Received in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (dtBunker != null)
+            {
+                foreach (DataRow dr in dtBunker.Rows)
+                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "");
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Lube Oil & Hydraulic Oil";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "ME Crosshead Cons", r.LO_HO_Cons_MECC);
+                AddKeyValueRow(ws, ref row, "ME Cylinder Cons", r.LO_HO_Cons_MECYL);
+                AddKeyValueRow(ws, ref row, "AE Crosshead Cons", r.LO_HO_Cons_AECC);
+                AddKeyValueRow(ws, ref row, "Hydraulic Oil Cons", r.LO_HO_Cons_HYDR_Oil);
+                AddKeyValueRow(ws, ref row, "ME Crosshead ROB", r.LO_HO_Cons_MECC_ROB);
+                AddKeyValueRow(ws, ref row, "ME Cylinder ROB", r.LO_HO_Cons_MECYL_ROB);
+                AddKeyValueRow(ws, ref row, "AE Crosshead ROB", r.LO_HO_Cons_AECC_ROB);
+                AddKeyValueRow(ws, ref row, "Hydraulic Oil ROB", r.LO_HO_Cons_HYDR_Oil_ROB);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Other ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Full";
+                ws.Cell(row, 3).Value = "In Use";
+                ws.Cell(row, 4).Value = "Empty";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "Oxygen (Bottles)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty);
+                row++;
+                ws.Cell(row, 1).Value = "Acetylene (Bottles)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Aux. Engine";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Running Hrs No.1", r.AE_RungHrs_No1);
+                AddKeyValueRow(ws, ref row, "Running Hrs No.2", r.AE_RungHrs_No2);
+                AddKeyValueRow(ws, ref row, "Running Hrs No.3", r.AE_RungHrs_No3);
+                AddKeyValueRow(ws, ref row, "Running Hrs No.4", r.AE_RungHrs_No4);
+                AddKeyValueRow(ws, ref row, "Running Hrs Shaft Gen", r.AE_RungHrs_ShaftGen);
+                AddKeyValueRow(ws, ref row, "Load No.1 (KW)", r.AE_Load_No1);
+                AddKeyValueRow(ws, ref row, "Load No.2 (KW)", r.AE_Load_No2);
+                AddKeyValueRow(ws, ref row, "Load No.3 (KW)", r.AE_Load_No3);
+                AddKeyValueRow(ws, ref row, "Load No.4 (KW)", r.AE_Load_No4);
+                AddKeyValueRow(ws, ref row, "Load Shaft Gen (KW)", r.AE_Load_ShaftGen);
+                AddKeyValueRow(ws, ref row, "Extra Run Reason", r.AE_Extra_Run_Reason);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Boiler's";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Boiler No.1 Running Hrs", r.BR_RungHrs_No1);
+                AddKeyValueRow(ws, ref row, "Boiler No.2 Running Hrs", r.BR_RungHrs_No2);
+                AddKeyValueRow(ws, ref row, "Boiler No.1 Extra Run Reason", r.BR_Extra_Run_Reason1);
+                AddKeyValueRow(ws, ref row, "Boiler No.2 Extra Run Reason", r.BR_Extra_Run_Reason2);
+            }
+            ws.Columns().AdjustToContents();
+        }
+
+        private void AddConsumptionCargoSheet(XLWorkbook wb, DailyNoonReport r)
+        {
+            var ws = wb.Worksheets.Add("Cargo");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Consumption Report - Cargo";
+            var rngHdr = ws.Range(row, 1, row, 4);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            ws.Cell(row, 1).Value = "Slops ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Oil";
+                ws.Cell(row, 3).Value = "Water";
+                ws.Cell(row, 4).Value = "Total";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "ROB (m3)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.SLOPS_ROB_OXY_Oil);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.SLOPS_ROB_OXY_Water);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.SLOPS_ROB_OXY_Total);
+                row++;
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Ballast";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "ROB (MT)", r?.Ballast_ROB);
+            row++;
+
+            ws.Cell(row, 1).Value = "Fresh Water";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
+                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
+                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
+            }
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Bunker Report Excel for each vessel/date in tbls and saves to Files folder.
+        /// Uses editBunkerRList logic (id, vesselid) to fetch all details.
+        /// Structured with Bunker Details, Fuel Details sheets.
+        /// </summary>
+        private void SaveBunkerReportExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("VesselId");
+            bool hasId = tbls.Columns.Contains("Id");
+            if (!hasVesselId || !hasId) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                if (row["VesselId"] != DBNull.Value && row["VesselId"] != null)
+                    int.TryParse(row["VesselId"].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                int rowId = 0;
+                if (row["Id"] != DBNull.Value && row["Id"] != null)
+                    int.TryParse(row["Id"].ToString(), out rowId);
+                if (rowId <= 0) continue;
+
+                string key = vesselId + "_" + rowId;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                var bunkerRList = CommonMethods.editBunkerRList(rowId, vesselId, "BunkerReport");
+                var bunkerRBind = bunkerRList?.Where(x => x.Id == rowId).FirstOrDefault();
+                if (bunkerRBind == null) continue;
+
+                // Fetch fuel details
+                var fuelList = CommonMethods.editBunkerFuelList(rowId, vesselId.ToString(), "BunkerFReport");
+                if (fuelList != null)
+                {
+                    foreach (var item in fuelList)
+                    {
+                        if (item.Fuel_type_Id == 5) item.Fuel_type = "VLSFO";
+                        if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
+                    }
+                }
+
+                // Fetch main details from stored procedure
+                DataTable dtMain = new DataTable();
+                try
+                {
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@VoyageId", bunkerRBind.VoyageId);
+                        cmd.Parameters.AddWithValue("@ReportDate", bunkerRBind.BargeAlongside.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                        cmd.Parameters.AddWithValue("@Action", "BunkerReport");
+                        cmd.Parameters.AddWithValue("@id", rowId);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dtMain);
+                    }
+                }
+                catch { }
+
+                DateTime rptDt = bunkerRBind.BargeAlongside;
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "BunkerReport";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + rowId + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddBunkerDetailsSheet(wb, bunkerRBind, dtMain);
+                    AddBunkerFuelDetailsSheet(wb, bunkerRBind, fuelList);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddBunkerDetailsSheet(XLWorkbook wb, BunkerReport r, DataTable dtMain)
+        {
+            var ws = wb.Worksheets.Add("Bunker Details");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Bunker Report - Details";
+            var rngHdr = ws.Range(row, 1, row, 3);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            if (r != null)
+            {
+                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                if (dtMain != null && dtMain.Rows.Count > 0)
+                {
+                    var dr = dtMain.Rows[0];
+                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                }
+                AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
+                AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
+                AddKeyValueRow(ws, ref row, "Supplier", r.Supplier ?? "");
+                AddKeyValueRow(ws, ref row, "Barge Name", r.BargeName ?? "");
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Bunker Timing";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Barge Alongside", r.BargeAlongside != DateTime.MinValue ? r.BargeAlongside.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Bunker Hose Connected", r.BunkerHoseConnected != DateTime.MinValue ? r.BunkerHoseConnected.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Commenced Bunkering", r.CommencedBunkering != DateTime.MinValue ? r.CommencedBunkering.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Bunkering Completed", r.BunkeringCompleted != DateTime.MinValue ? r.BunkeringCompleted.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Bunker Hose Disconnected", r.BunkerHosedisconnected != DateTime.MinValue ? r.BunkerHosedisconnected.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Barge Cast Off", r.BargeCastOff != DateTime.MinValue ? r.BargeCastOff.ToString(ExcelDateTimeFormat) : "");
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Bunker Report Remarks";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
+            row++;
+
+            ws.Cell(row, 1).Value = "Reported By";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
+                AddKeyValueRow(ws, ref row, "Name", reportedBy);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Lab Analysis Report";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "File Name", r?.LabAnalysisReport_Name ?? "");
+            ws.Columns().AdjustToContents();
+        }
+
+        private void AddBunkerFuelDetailsSheet(XLWorkbook wb, BunkerReport r, List<BukerFuelList> fuelList)
+        {
+            var ws = wb.Worksheets.Add("Fuel Details");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Bunker Report - Fuel Details";
+            var rngHdr = ws.Range(row, 1, row, 5);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            ws.Cell(row, 1).Value = "Fuel Type";
+            ApplyLightGrayTitle(ws, row, 1, 5);
+            row++;
+
+            // Header row
+            ws.Cell(row, 1).Value = "Fuel Type";
+            ws.Cell(row, 2).Value = "BDN (MT)";
+            ws.Cell(row, 3).Value = "Fuel Density";
+            ws.Cell(row, 4).Value = "Sulphur Content";
+            ws.Cell(row, 5).Value = "BDN Number";
+            ws.Range(row, 1, row, 5).Style.Font.Bold = true;
+            row++;
+
+            if (fuelList != null && fuelList.Count > 0)
+            {
+                foreach (var fuel in fuelList)
+                {
+                    ws.Cell(row, 1).Value = fuel.Fuel_type ?? "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), fuel.BDN);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), fuel.Fuel_Density);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), fuel.Sulphur_content);
+                    ws.Cell(row, 5).Value = fuel.BDN_Number ?? "";
+                    row++;
+                }
+            }
+            else
+            {
+                ws.Cell(row, 1).Value = "No fuel data available";
+                ws.Range(row, 1, row, 5).Merge();
+                row++;
+            }
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Fresh Water Report Excel for each vessel/row in tbls and saves to Files folder.
+        /// Uses editFreshWaterRList logic (id, vesselid) to fetch all details.
+        /// </summary>
+        private void SaveFreshWaterReportExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("VesselId");
+            bool hasId = tbls.Columns.Contains("Id");
+            if (!hasVesselId || !hasId) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                if (row["VesselId"] != DBNull.Value && row["VesselId"] != null)
+                    int.TryParse(row["VesselId"].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                int rowId = 0;
+                if (row["Id"] != DBNull.Value && row["Id"] != null)
+                    int.TryParse(row["Id"].ToString(), out rowId);
+                if (rowId <= 0) continue;
+
+                string key = vesselId + "_" + rowId;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                var fwRList = CommonMethods.editFreshWaterRList(rowId, vesselId, "FreshWaterReport");
+                var fwRBind = fwRList?.Where(x => x.Id == rowId).FirstOrDefault();
+                if (fwRBind == null) continue;
+
+                DateTime rptDt = fwRBind.Received_Date;
+                if (rptDt == DateTime.MinValue)
+                {
+                    // fallback to Received_Date from import row
+                    if (tbls.Columns.Contains("Received_Date") && row["Received_Date"] != DBNull.Value && row["Received_Date"] != null)
+                    {
+                        DateTime d;
+                        if (DateTime.TryParse(row["Received_Date"].ToString(), out d)) rptDt = d;
+                    }
+                }
+                if (rptDt == DateTime.MinValue) continue;
+
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "FreshWaterReport";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + rowId + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddFreshWaterDetailsSheet(wb, fwRBind);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddFreshWaterDetailsSheet(XLWorkbook wb, FreshWaterReport r)
+        {
+            var ws = wb.Worksheets.Add("Fresh Water Details");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Fresh Water Report - Details";
+            var rngHdr = ws.Range(row, 1, row, 3);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
+                AddKeyValueRow(ws, ref row, "Facility Name", r.Facility_Name ?? "");
+                AddKeyValueRow(ws, ref row, "Vendor Details", r.VendorDetails ?? "");
+                AddKeyValueRow(ws, ref row, "Received Date", r.Received_Date != DateTime.MinValue ? r.Received_Date.ToString(ExcelDateTimeFormat) : "");
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Meter Reading & Quantity";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Initial Meter Reading (MT)", r.Intial_Meter_Reading_MT_supplied);
+                AddKeyValueRow(ws, ref row, "Final Meter Reading (MT)", r.Final_Meter_Reading_MT);
+                AddKeyValueRow(ws, ref row, "Difference in Meter Reading (MT)", r.Difference_in_Meter_Reading_MT);
+                AddKeyValueRow(ws, ref row, "Qty Supplied (MT)", r.QTY_supplied_MT);
+            }
+            row++;
+
+            ws.Cell(row, 1).Value = "Attached Document";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRow(ws, ref row, "File Name", r?.File_Name ?? "");
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>
+        /// Generates Noon Report Allow Excel for each vessel/row in tbls and saves to Files folder.
+        /// Uses GetNoonReportallowList logic to fetch all details.
+        /// </summary>
+        private void SaveNoonReportAllowExcelToFiles(DataTable tbls)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+            bool hasVesselId = tbls.Columns.Contains("Vessel_Id");
+            bool hasId = tbls.Columns.Contains("Id");
+            if (!hasVesselId && !tbls.Columns.Contains("VesselId")) return;
+            if (!hasId) return;
+
+            string filesPath = Server.MapPath("~/Files/");
+            if (!Directory.Exists(filesPath)) Directory.CreateDirectory(filesPath);
+
+            var processed = new HashSet<string>();
+            foreach (DataRow row in tbls.Rows)
+            {
+                int vesselId = 0;
+                string vesselCol = hasVesselId ? "Vessel_Id" : "VesselId";
+                if (row[vesselCol] != DBNull.Value && row[vesselCol] != null)
+                    int.TryParse(row[vesselCol].ToString(), out vesselId);
+                if (vesselId <= 0) continue;
+
+                int rowId = 0;
+                if (row["Id"] != DBNull.Value && row["Id"] != null)
+                    int.TryParse(row["Id"].ToString(), out rowId);
+                if (rowId <= 0) continue;
+
+                string key = vesselId + "_" + rowId;
+                if (processed.Contains(key)) continue;
+                processed.Add(key);
+
+                string noonDate = "";
+                if (tbls.Columns.Contains("Noon_date") && row["Noon_date"] != DBNull.Value && row["Noon_date"] != null)
+                    noonDate = row["Noon_date"].ToString();
+                else if (tbls.Columns.Contains("allow_Noondate") && row["allow_Noondate"] != DBNull.Value && row["allow_Noondate"] != null)
+                    noonDate = row["allow_Noondate"].ToString();
+
+                string userName = "";
+                if (tbls.Columns.Contains("userName") && row["userName"] != DBNull.Value && row["userName"] != null)
+                    userName = row["userName"].ToString();
+
+                string vesselName = "";
+                try
+                {
+                    vesselName = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
+                }
+                catch { }
+                if (string.IsNullOrEmpty(vesselName)) vesselName = "Vessel " + vesselId;
+
+                DateTime rptDt = DateTime.Now;
+                if (!string.IsNullOrEmpty(noonDate))
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(noonDate, out d)) rptDt = d;
+                }
+
+                string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
+                string reportType = "NoonReportAllow";
+
+                if (IsReportAlreadySaved(filesPath, reportType, vesselId, datePart))
+                {
+                    LogReportExport(reportType, vesselId, datePart, null, "Skipped-AlreadySaved");
+                    continue;
+                }
+
+                string uniqueId = DateTime.Now.ToString("HHmmss");
+                string fileName = reportType + "_" + vesselId + "_" + datePart + "_R" + rowId + "_" + uniqueId + ".xlsx";
+                string fullPath = Path.Combine(filesPath, fileName);
+                using (XLWorkbook wb = new XLWorkbook())
+                {
+                    AddNoonReportAllowDetailsSheet(wb, rowId, vesselId, vesselName, noonDate, userName);
+                    wb.SaveAs(fullPath);
+                }
+                LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
+                lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
+            }
+        }
+
+        private void AddNoonReportAllowDetailsSheet(XLWorkbook wb, int id, int vesselId, string vesselName, string noonDate, string userName)
+        {
+            var ws = wb.Worksheets.Add("Noon Report Allow");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            int row = 1;
+            ws.Cell(row, 1).Value = "Noon Report Allow - Details";
+            var rngHdr = ws.Range(row, 1, row, 3);
+            rngHdr.Merge();
+            rngHdr.Style.Font.Bold = true;
+            rngHdr.Style.Font.FontSize = 16;
+            rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            row += 2;
+
+            AddKeyValueRow(ws, ref row, "Vessel Name", vesselName ?? "");
+            AddKeyValueRow(ws, ref row, "Vessel ID (IMO No.)", vesselId.ToString());
+            row++;
+
+            ws.Cell(row, 1).Value = "Bypass Date Details";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+
+            string formattedDate = "";
+            if (!string.IsNullOrEmpty(noonDate))
+            {
+                DateTime d;
+                if (DateTime.TryParse(noonDate, out d))
+                    formattedDate = d.ToString(ExcelDateFormat);
+                else
+                    formattedDate = noonDate;
+            }
+
+            AddKeyValueRow(ws, ref row, "Noon Report Allow Date", formattedDate);
+            AddKeyValueRow(ws, ref row, "User Name", userName ?? "");
+            AddKeyValueRow(ws, ref row, "Report ID", id.ToString());
             ws.Columns().AdjustToContents();
         }
 
