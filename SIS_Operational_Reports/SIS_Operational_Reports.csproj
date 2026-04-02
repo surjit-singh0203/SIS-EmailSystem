@@ -424,6 +424,8 @@
     <Compile Include="Common\DepartureReportEmailTemplate.cs" />
     <Compile Include="Common\BerthingReportEmailTemplate.cs" />
     <Compile Include="Common\LoadingReportEmailTemplate.cs" />
+    <Compile Include="Common\DischargingReportEmailTemplate.cs" />
+
     <Compile Include="Common\UserAuthenticationFilter.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -2896,6 +2898,8 @@
     <Content Include="Templates\DailyNoonReport.html" />
     <Content Include="Templates\BerthingReport.html" />
     <Content Include="Templates\LoadingReport.html" />
+    <Content Include="Templates\DischargingReport.html" />
+
     <Content Include="Areas\UserManagement\Views\web.config" />
     <Content Include="Areas\UserManagement\Views\_ViewStart.cshtml" />
     <Content Include="Areas\UserManagement\Views\Shared\_Layout.cshtml" />
