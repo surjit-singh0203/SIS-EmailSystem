@@ -134,16 +134,33 @@ namespace SIS_Operational_Reports.Common
             string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
             string legText = "";
             string portStatusText = r.PortStatus.ToString();
+            string facilityName = r.FacilityName ?? "";
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                 if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                if (string.IsNullOrEmpty(facilityName) && dtMain.Columns.Contains("FacilityName"))
+                    facilityName = dr["FacilityName"]?.ToString() ?? "";
+            }
+            if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
+            {
+                try
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        DataTable dtLeg = new DataTable();
+                        adp.Fill(dtLeg);
+                        if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+                catch { }
             }
 
             var sb = new StringBuilder();
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Facility", r.FacilityName)).Append(KvRow("Berth", r.BerthName));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Facility", facilityName)).Append(KvRow("Berth", r.BerthName));
             sb.Append(KvRow("Port Status", portStatusText)).Append(KvRow("Leg", legText));
             sb.Append(KvRow("Report Date", V(r.ReportDate)));
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
@@ -166,8 +183,10 @@ namespace SIS_Operational_Reports.Common
             string nonRoutineRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("Sea State", r.SeaState)).Append(KvRow("Wind Direction", r.WindDirection)).Append(KvRow("Wind Force(BF Scale)", r.WindForce));
-            sb.Append(KvRow("Swell Direction", r.SwellDirection)).Append(KvRow("Swell Height (mtrs)", r.SwellHeight));
+            string windDir = string.IsNullOrEmpty(r.WindDirection) || r.WindDirection == "---Select---" ? null : r.WindDirection;
+            string swellDir = string.IsNullOrEmpty(r.SwellDirection) || r.SwellDirection == "---Select---" ? null : r.SwellDirection;
+            sb.Append(KvRow("Sea State", r.SeaState)).Append(KvRow("Wind Direction", windDir)).Append(KvRow("Wind Force(BF Scale)", r.WindForce));
+            sb.Append(KvRow("Swell Direction", swellDir)).Append(KvRow("Swell Height (mtrs)", r.SwellHeight));
             sb.Append(KvRow("Wave Length (mtrs)", r.WaveLength)).Append(KvRow("Wave Height (mtrs)", r.WaveHeight));
             string weatherRows = sb.ToString();
             sb.Clear();
@@ -206,6 +225,22 @@ namespace SIS_Operational_Reports.Common
             string bunkerRows = sb.ToString();
             sb.Clear();
 
+            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            {
+                decimal vlsfo = 0, mdo = 0;
+                foreach (DataRow dr in dtFuelCons.Rows)
+                {
+                    string ft = dr["FuelType"]?.ToString() ?? "";
+                    decimal val = 0;
+                    if (dr["Value"] != null && dr["Value"] != DBNull.Value) val = Convert.ToDecimal(dr["Value"]);
+                    if (ft.Equals("VLSFO", StringComparison.OrdinalIgnoreCase)) vlsfo += val;
+                    else if (ft.Equals("MDO", StringComparison.OrdinalIgnoreCase)) mdo += val;
+                }
+                sb.Append(KvRow("VLSFO (Total)", vlsfo.ToString("0.000"))).Append(KvRow("MDO (Total)", mdo.ToString("0.000")));
+            }
+            string fuelConsRows = sb.ToString();
+            sb.Clear();
+
             sb.Append(KvRow("Qty Grade 1", r.Qty_Grade1)).Append(KvRow("Qty Grade 2", r.Qty_Grade2));
             string cargoRows = sb.ToString();
             sb.Clear();
@@ -229,6 +264,7 @@ namespace SIS_Operational_Reports.Common
                 .Replace("{{LUBE_OIL_ROWS}}", lubeOilRows)
                 .Replace("{{FUEL_ROB_ROWS}}", fuelRobRows)
                 .Replace("{{BUNKER_ROWS}}", bunkerRows)
+                .Replace("{{FUEL_CONS_ROWS}}", fuelConsRows)
                 .Replace("{{OT_ROB_OXY_Full}}", V(r.OT_ROB_OXY_Full))
                 .Replace("{{OT_ROB_OXY_InUse}}", V(r.OT_ROB_OXY_InUse))
                 .Replace("{{OT_ROB_OXY_Empty}}", V(r.OT_ROB_OXY_Empty))
@@ -248,12 +284,29 @@ namespace SIS_Operational_Reports.Common
             string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
             string legText = "";
             string portStatusText = r.PortStatus.ToString();
+            string facilityName = r.FacilityName ?? "";
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                 if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                if (string.IsNullOrEmpty(facilityName) && dtMain.Columns.Contains("FacilityName"))
+                    facilityName = dr["FacilityName"]?.ToString() ?? "";
+            }
+            if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
+            {
+                try
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        DataTable dtLeg = new DataTable();
+                        adp.Fill(dtLeg);
+                        if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+                catch { }
             }
 
             var sb = new StringBuilder();
@@ -265,7 +318,7 @@ namespace SIS_Operational_Reports.Common
 
             // Navigation header
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Facility", r.FacilityName)).Append(KvRow("Berth", r.BerthName));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Facility", facilityName)).Append(KvRow("Berth", r.BerthName));
             sb.Append(KvRow("Port Status", portStatusText)).Append(KvRow("Leg", legText));
             sb.Append(KvRow("Report Date", V(r.ReportDate)));
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
@@ -295,8 +348,10 @@ namespace SIS_Operational_Reports.Common
             // Weather
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Weather</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Sea State", r.SeaState)).Append(KvRow("Wind Direction", r.WindDirection)).Append(KvRow("Wind Force(BF Scale)", r.WindForce));
-            sb.Append(KvRow("Swell Direction", r.SwellDirection)).Append(KvRow("Swell Height (mtrs)", r.SwellHeight));
+            string windDir2 = string.IsNullOrEmpty(r.WindDirection) || r.WindDirection == "---Select---" ? null : r.WindDirection;
+            string swellDir2 = string.IsNullOrEmpty(r.SwellDirection) || r.SwellDirection == "---Select---" ? null : r.SwellDirection;
+            sb.Append(KvRow("Sea State", r.SeaState)).Append(KvRow("Wind Direction", windDir2)).Append(KvRow("Wind Force(BF Scale)", r.WindForce));
+            sb.Append(KvRow("Swell Direction", swellDir2)).Append(KvRow("Swell Height (mtrs)", r.SwellHeight));
             sb.Append(KvRow("Wave Length (mtrs)", r.WaveLength)).Append(KvRow("Wave Height (mtrs)", r.WaveHeight));
             sb.Append(@"</table></td></tr>");
 
@@ -337,6 +392,24 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Received in MT</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             if (dtBunker != null) foreach (DataRow dr in dtBunker.Rows) sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "-"));
+            sb.Append(@"</table></td></tr>");
+
+            // Fuel Consumption
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel Consumption in MT</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
+            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            {
+                decimal vlsfo = 0, mdo = 0;
+                foreach (DataRow dr in dtFuelCons.Rows)
+                {
+                    string ft = dr["FuelType"]?.ToString() ?? "";
+                    decimal val = 0;
+                    if (dr["Value"] != null && dr["Value"] != DBNull.Value) val = Convert.ToDecimal(dr["Value"]);
+                    if (ft.Equals("VLSFO", StringComparison.OrdinalIgnoreCase)) vlsfo += val;
+                    else if (ft.Equals("MDO", StringComparison.OrdinalIgnoreCase)) mdo += val;
+                }
+                sb.Append(KvRow("VLSFO (Total)", vlsfo.ToString("0.000"))).Append(KvRow("MDO (Total)", mdo.ToString("0.000")));
+            }
             sb.Append(@"</table></td></tr>");
 
             // Other ROB

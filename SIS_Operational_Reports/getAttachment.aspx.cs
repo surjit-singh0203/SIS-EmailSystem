@@ -1095,34 +1095,34 @@ namespace SIS_Operational_Reports
                     }
 
                     // Generate and save Daily Noon Report Excel to Files folder (after Update)
-                    if (sheetName == "DailyNoonReport")
-                    {
-                        try
-                        {
-                            SaveDailyNoonReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exDailyNoon) { }
-                    }
+                    //if (sheetName == "DailyNoonReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveDailyNoonReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exDailyNoon) { }
+                    //}
 
-                    // Generate and save Arrival Report Excel to Files folder (after Update)
-                    if (sheetName == "ArrivalReport")
-                    {
-                        try
-                        {
-                            SaveArrivalReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exArrival) { }
-                    }
+                    //// Generate and save Arrival Report Excel to Files folder (after Update)
+                    //if (sheetName == "ArrivalReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveArrivalReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exArrival) { }
+                    //}
 
-                    // Generate and save Departure Report Excel to Files folder (after Update)
-                    if (sheetName == "DepartureReport")
-                    {
-                        try
-                        {
-                            SaveDepartureReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exDeparture) { }
-                    }
+                    //// Generate and save Departure Report Excel to Files folder (after Update)
+                    //if (sheetName == "DepartureReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveDepartureReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exDeparture) { }
+                    //}
 
                     // Generate and save Berthing Report Excel to Files folder (after Update)
                     if (sheetName == "BerthingReport")
@@ -1135,74 +1135,74 @@ namespace SIS_Operational_Reports
                     }
 
                     // Generate and save Loading Report Excel to Files folder (after Update)
-                    if (sheetName == "LoadingReport")
-                    {
-                        try
-                        {
-                            SaveLoadingReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exLoading) { }
-                    }
+                    //if (sheetName == "LoadingReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveLoadingReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exLoading) { }
+                    //}
 
-                    // Generate and save Discharging Report Excel to Files folder (after Update)
-                    if (sheetName == "DischargingReport")
-                    {
-                        try
-                        {
-                            SaveDischargingReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exDischarging) { }
-                    }
+                    //// Generate and save Discharging Report Excel to Files folder (after Update)
+                    //if (sheetName == "DischargingReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveDischargingReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exDischarging) { }
+                    //}
 
-                    // Generate and save Bulk Noon Report Excel to Files folder (after Update)
-                    if (sheetName == "DailyNoonReport")
-                    {
-                        try
-                        {
-                            SaveBulkNoonReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exBulkNoon) { }
-                    }
+                    //// Generate and save Bulk Noon Report Excel to Files folder (after Update)
+                    //if (sheetName == "DailyNoonReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveBulkNoonReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exBulkNoon) { }
+                    //}
 
-                    // Generate and save Consumption Report Excel to Files folder (after Update)
-                    if (sheetName == "DailyNoonReport")
-                    {
-                        try
-                        {
-                            SaveConsumptionReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exConsumption) { }
-                    }
+                    //// Generate and save Consumption Report Excel to Files folder (after Update)
+                    //if (sheetName == "DailyNoonReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveConsumptionReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exConsumption) { }
+                    //}
 
-                    // Generate and save Bunker Report Excel to Files folder (after Update)
-                    if (sheetName == "BunkerReport")
-                    {
-                        try
-                        {
-                            SaveBunkerReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exBunker) { }
-                    }
+                    //// Generate and save Bunker Report Excel to Files folder (after Update)
+                    //if (sheetName == "BunkerReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveBunkerReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exBunker) { }
+                    //}
 
-                    // Generate and save Fresh Water Report Excel to Files folder (after Update)
-                    if (sheetName == "FreshWaterReport")
-                    {
-                        try
-                        {
-                            SaveFreshWaterReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exFreshWater) { }
-                    }
+                    //// Generate and save Fresh Water Report Excel to Files folder (after Update)
+                    //if (sheetName == "FreshWaterReport")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveFreshWaterReportExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exFreshWater) { }
+                    //}
 
-                    // Generate and save Noon Report Allow Excel to Files folder (after Update)
-                    if (sheetName == "NoonReport_allow")
-                    {
-                        try
-                        {
-                            SaveNoonReportAllowExcelToFiles(tbls);
-                        }
-                        catch (Exception exNoonReportAllow) { }
-                    }
+                    //// Generate and save Noon Report Allow Excel to Files folder (after Update)
+                    //if (sheetName == "NoonReport_allow")
+                    //{
+                    //    try
+                    //    {
+                    //        SaveNoonReportAllowExcelToFiles(tbls);
+                    //    }
+                    //    catch (Exception exNoonReportAllow) { }
+                    //}
                 }
 
 
@@ -1793,6 +1793,27 @@ namespace SIS_Operational_Reports
                 {
                     var v = dr["Value"];
                     if (v != null && v != DBNull.Value) sum += Convert.ToDecimal(v);
+                }
+            }
+            return sum;
+        }
+
+        private decimal GetFuelConsByTypeAndConsType(DataTable dt, string fuelType, int consTypeId)
+        {
+            if (dt == null) return 0;
+            decimal sum = 0;
+            foreach (DataRow dr in dt.Rows)
+            {
+                if ((dr["FuelType"]?.ToString() ?? "").Equals(fuelType, StringComparison.OrdinalIgnoreCase))
+                {
+                    int cId = 0;
+                    if (dr.Table.Columns.Contains("ConsTypeId") && dr["ConsTypeId"] != null && dr["ConsTypeId"] != DBNull.Value)
+                        int.TryParse(dr["ConsTypeId"].ToString(), out cId);
+                    if (cId == consTypeId)
+                    {
+                        var v = dr["Value"];
+                        if (v != null && v != DBNull.Value) sum += Convert.ToDecimal(v);
+                    }
                 }
             }
             return sum;
@@ -2427,9 +2448,10 @@ namespace SIS_Operational_Reports
             return true;
         }
 
-       
+
         private void SendImportCompletionEmail(List<string> savedFilePaths, string importedFileName)
         {
+            var vesselID = 0;
             if (savedFilePaths == null || savedFilePaths.Count == 0) return;
 
             var toSend = new List<string>();
@@ -2439,6 +2461,7 @@ namespace SIS_Operational_Reports
                 string fn = Path.GetFileName(path);
                 if (!TryParseSyncReportExportFileName(fn, out string reportType, out int vesselId, out string datePart, out _))
                     continue;
+                vesselID = vesselId;
                 if (IsReportEmailAlreadySent(reportType, vesselId, datePart)) continue;
                 toSend.Add(path);
             }
@@ -2450,220 +2473,236 @@ namespace SIS_Operational_Reports
             string smtpPwd = ConfigurationManager.AppSettings["pwd"] ?? "";
             string fallbackTo = ConfigurationManager.AppSettings["ImportNotificationTo"] ?? "";
 
-            foreach (string path in toSend)
+            var emailListnew = CommonClass.GetSyncEmailVesselsReport(vesselID);
+
+            foreach (var item in emailListnew)
             {
-                string fn = Path.GetFileName(path ?? "");
-                if (!TryParseSyncReportExportFileName(fn, out string reportType, out int vesselId, out string datePart, out int? reportIdFromFile))
-                    continue;
-                string dateDisplay = FormatDateForDisplay(datePart);
-                string reportDisplayName = GetReportDisplayName(reportType);
-                string vesselDisplay = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
-                if (string.IsNullOrEmpty(vesselDisplay)) vesselDisplay = "Vessel " + vesselId;
-                string subject = string.Format("SIS {0} – {1} | {2}", reportDisplayName, vesselDisplay, dateDisplay);
-
-                var toAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var ccAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var emailList = CommonClass.GetSyncEmailVesselsReport(vesselId);
-                // foreach
-                foreach (var e in emailList)
+                if (item.LastSent.Date < DateTime.Now.Date)
                 {
-                    //
-                    foreach (var addr in SplitEmailAddresses(e.EmailTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
-                    foreach (var addr in SplitEmailAddresses(e.EmailCC)) if (!string.IsNullOrWhiteSpace(addr)) ccAddresses.Add(addr.Trim());
+                    foreach (string path in toSend)
+                    {
+                        string fn = Path.GetFileName(path ?? "");
+                        if (!TryParseSyncReportExportFileName(fn, out string reportType, out int vesselId, out string datePart, out int? reportIdFromFile))
+                            continue;
+                        string dateDisplay = FormatDateForDisplay(datePart);
+                        string reportDisplayName = GetReportDisplayName(reportType);
+                        string vesselDisplay = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
+                        if (string.IsNullOrEmpty(vesselDisplay)) vesselDisplay = "Vessel " + vesselId;
+                        string subject = string.Format("SIS {0} – {1} | {2}", reportDisplayName, vesselDisplay, dateDisplay);
+
+                        var toAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var ccAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var emailList = CommonClass.GetSyncEmailVesselsReport(vesselId);
+
+                        foreach (var e in emailList)
+                        {
+                            //
+                            foreach (var addr in SplitEmailAddresses(e.EmailTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
+                            foreach (var addr in SplitEmailAddresses(e.EmailCC)) if (!string.IsNullOrWhiteSpace(addr)) ccAddresses.Add(addr.Trim());
+
+                        }
+                        if (toAddresses.Count == 0 && !string.IsNullOrWhiteSpace(fallbackTo))
+                            foreach (var addr in SplitEmailAddresses(fallbackTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
+                        if (toAddresses.Count == 0) continue;
+
+                        try
+                        {
+                            string body;
+                            bool isHtml;
+                            if (reportType.Equals("DailyNoonReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.DailyNoonReportEmailTemplate.BuildHtml(vesselId, datePart);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("ArrivalReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.ArrivalReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("DepartureReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.DepartureReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("BerthingReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.BerthingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("LoadingReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.LoadingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("DischargingReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.DischargingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("BulkNoonReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.BulkNoonReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("ConsumptionReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.ConsumptionReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("BunkerReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.BunkerReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("FreshWaterReport", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.FreshWaterReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else if (reportType.Equals("NoonReportAllow", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var htmlBody = SIS_Operational_Reports.Common.NoonReportAllowEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(htmlBody))
+                                {
+                                    body = htmlBody;
+                                    isHtml = true;
+                                }
+                                else
+                                {
+                                    body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                    isHtml = true;
+                                }
+                            }
+                            else
+                            {
+                                body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
+                                isHtml = true;
+                            }
+
+                            using (var msg = new MailMessage())
+                            {
+                                msg.From = new System.Net.Mail.MailAddress(from);
+                                foreach (var a in toAddresses) msg.To.Add(a);
+                                foreach (var a in ccAddresses) msg.CC.Add(a);
+                                msg.Subject = subject;
+                                msg.Body = body;
+                                msg.IsBodyHtml = isHtml;
+                                msg.Attachments.Add(new System.Net.Mail.Attachment(path));
+
+                                using (var smtp = new SmtpClient(smtpHost))
+                                {
+                                    smtp.Port = 587;
+                                    smtp.EnableSsl = true;
+                                    smtp.Credentials = new NetworkCredential(smtpUser, smtpPwd);
+                                    smtp.Send(msg);
+                                }
+                                //Update function
+                                LogReportEmailSent(reportType, vesselId, datePart, fn);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                            throw ex;
+                            /* log if needed */
+                        }
+
+                        //continue
+                    }
+
+                    CommonClass.UpdateSyncEmailVesselsReportLastSent(item.Id, DateTime.Now.Date);
 
                 }
-                if (toAddresses.Count == 0 && !string.IsNullOrWhiteSpace(fallbackTo))
-                    foreach (var addr in SplitEmailAddresses(fallbackTo)) if (!string.IsNullOrWhiteSpace(addr)) toAddresses.Add(addr.Trim());
-                if (toAddresses.Count == 0) continue;
-
-                try
-                {
-                    string body;
-                    bool isHtml;
-                    if (reportType.Equals("DailyNoonReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.DailyNoonReportEmailTemplate.BuildHtml(vesselId, datePart);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("ArrivalReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.ArrivalReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("DepartureReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.DepartureReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("BerthingReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.BerthingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("LoadingReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.LoadingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("DischargingReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.DischargingReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("BulkNoonReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.BulkNoonReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("ConsumptionReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.ConsumptionReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("BunkerReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.BunkerReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("FreshWaterReport", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.FreshWaterReportEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else if (reportType.Equals("NoonReportAllow", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var htmlBody = SIS_Operational_Reports.Common.NoonReportAllowEmailTemplate.BuildHtml(vesselId, datePart, reportIdFromFile);
-                        if (!string.IsNullOrEmpty(htmlBody))
-                        {
-                            body = htmlBody;
-                            isHtml = true;
-                        }
-                        else
-                        {
-                            body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                            isHtml = true;
-                        }
-                    }
-                    else
-                    {
-                        body = BuildReportDetailsHtmlTable(reportDisplayName, vesselDisplay, dateDisplay);
-                        isHtml = true;
-                    }
-
-                    using (var msg = new MailMessage())
-                    {
-                        msg.From = new System.Net.Mail.MailAddress(from);
-                        foreach (var a in toAddresses) msg.To.Add(a);
-                        foreach (var a in ccAddresses) msg.CC.Add(a);
-                        msg.Subject = subject;
-                        msg.Body = body;
-                        msg.IsBodyHtml = isHtml;
-                        msg.Attachments.Add(new System.Net.Mail.Attachment(path));
-
-                        using (var smtp = new SmtpClient(smtpHost))
-                        {
-                            smtp.Port = 587;
-                            smtp.EnableSsl = true;
-                            smtp.Credentials = new NetworkCredential(smtpUser, smtpPwd);
-                            smtp.Send(msg);
-                        }
-                        //Update function
-                        LogReportEmailSent(reportType, vesselId, datePart, fn);
-                    }
-                }
-                catch (Exception ex) { /* log if needed */ }
-           
-            //continue
             }
 
             // After sending all report emails, delete only Excel files from Files directory (keep logger files for tracking)
@@ -3210,16 +3249,33 @@ namespace SIS_Operational_Reports
                 string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
                 string legText = "";
                 string portStatusText = r.PortStatus.ToString();
+                string facilityName = r.FacilityName ?? "";
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
                     if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                     if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                    if (string.IsNullOrEmpty(facilityName) && dtMain.Columns.Contains("FacilityName"))
+                        facilityName = dr["FacilityName"]?.ToString() ?? "";
+                }
+                if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        using (SqlDataAdapter adp = new SqlDataAdapter(
+                            "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                        {
+                            DataTable dtLeg = new DataTable();
+                            adp.Fill(dtLeg);
+                            if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                        }
+                    }
+                    catch { }
                 }
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
-                AddKeyValueRow(ws, ref row, "Facility", r.FacilityName ?? "");
+                AddKeyValueRow(ws, ref row, "Facility", facilityName);
                 AddKeyValueRow(ws, ref row, "Berth", r.BerthName ?? "");
                 AddKeyValueRow(ws, ref row, "Port Status", portStatusText);
                 AddKeyValueRow(ws, ref row, "Leg", legText);
@@ -3267,10 +3323,12 @@ namespace SIS_Operational_Reports
             row++;
             if (r != null)
             {
+                string windDir = string.IsNullOrEmpty(r.WindDirection) || r.WindDirection == "---Select---" ? "" : r.WindDirection;
+                string swellDir = string.IsNullOrEmpty(r.SwellDirection) || r.SwellDirection == "---Select---" ? "" : r.SwellDirection;
                 AddKeyValueRow(ws, ref row, "Sea State", r.SeaState);
-                AddKeyValueRow(ws, ref row, "Wind Direction", r.WindDirection);
+                AddKeyValueRow(ws, ref row, "Wind Direction", windDir);
                 AddKeyValueRow(ws, ref row, "Wind Force(BF Scale)", r.WindForce);
-                AddKeyValueRow(ws, ref row, "Swell Direction", r.SwellDirection);
+                AddKeyValueRow(ws, ref row, "Swell Direction", swellDir);
                 AddKeyValueRow(ws, ref row, "Swell Height (mtrs)", r.SwellHeight);
                 AddKeyValueRow(ws, ref row, "Wave Length (mtrs)", r.WaveLength);
                 AddKeyValueRow(ws, ref row, "Wave Height (mtrs)", r.WaveHeight);
@@ -3328,15 +3386,34 @@ namespace SIS_Operational_Reports
             ws.Cell(row, 1).Value = "Fuel ROB in MT (SBE/RFA)";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
-            if (dtFuelROB != null)
+            ws.Cell(row, 1).Value = "Fuel Type";
+            ws.Cell(row, 2).Value = "SBE";
+            ws.Cell(row, 3).Value = "RFA";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
+            if (dtFuelROB != null && dtFuelROB.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtFuelROB.Rows)
                 {
-                    string sbe = dr.Table.Columns.Contains("SBE") ? dr["SBE"]?.ToString() : "";
-                    string rfa = dr.Table.Columns.Contains("RFA") ? dr["RFA"]?.ToString() : "";
-                    string robVal = string.IsNullOrEmpty(sbe) && string.IsNullOrEmpty(rfa) ? "" : (sbe ?? "-") + " / " + (rfa ?? "-");
-                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", robVal);
+                    ws.Cell(row, 1).Value = dr["FuelType"]?.ToString() ?? "";
+                    ws.Cell(row, 1).Style.Font.Bold = true;
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("SBE") ? dr["SBE"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("RFA") ? dr["RFA"] : null);
+                    row++;
                 }
+            }
+            else
+            {
+                ws.Cell(row, 1).Value = "VLSFO";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                ws.Cell(row, 2).Value = "";
+                ws.Cell(row, 3).Value = "";
+                row++;
+                ws.Cell(row, 1).Value = "MDO";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                ws.Cell(row, 2).Value = "";
+                ws.Cell(row, 3).Value = "";
+                row++;
             }
             row++;
 
@@ -3377,14 +3454,93 @@ namespace SIS_Operational_Reports
             row++;
 
             ws.Cell(row, 1).Value = "Fuel Consumption in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            ApplyLightGrayTitle(ws, row, 1, 7);
             row++;
-            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "AT SEA";
+            ws.Cell(row, 3).Value = "MANOEUV";
+            ws.Cell(row, 4).Value = "ANCHOR/WAIT";
+            ws.Cell(row, 5).Value = "BERTH";
+            ws.Cell(row, 6).Value = "SUB TOTAL";
+            ws.Cell(row, 7).Value = "TOTAL";
+            ws.Range(row, 1, row, 7).Style.Font.Bold = true;
+            row++;
+            // VLSFO rows
             {
-                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
-                AddKeyValueRow(ws, ref row, "VLSFO (Total)", FormatDec(vlsfo));
-                AddKeyValueRow(ws, ref row, "MDO (Total)", FormatDec(mdo));
+                decimal vlsfoMeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 2);
+                decimal vlsfoMeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 3);
+                decimal vlsfoMeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 4);
+                decimal vlsfoMeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 5);
+                decimal vlsfoMeSub = vlsfoMeAtSea + vlsfoMeMan + vlsfoMeWait + vlsfoMeBerth;
+                ws.Cell(row, 1).Value = "VLSFO ME"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoMeAtSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoMeMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoMeWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoMeBerth);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), vlsfoMeSub);
+                row++;
+
+                decimal vlsfoAeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 7);
+                decimal vlsfoAeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 8);
+                decimal vlsfoAeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 9);
+                decimal vlsfoAeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 10);
+                decimal vlsfoAeSub = vlsfoAeAtSea + vlsfoAeMan + vlsfoAeWait + vlsfoAeBerth;
+                ws.Cell(row, 1).Value = "VLSFO AE"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoAeAtSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoAeMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoAeWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoAeBerth);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), vlsfoAeSub);
+                row++;
+
+                decimal vlsfoBlrAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 11);
+                decimal vlsfoBlrMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 12);
+                decimal vlsfoBlrWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 13);
+                decimal vlsfoBlrBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 14);
+                ws.Cell(row, 1).Value = "VLSFO Boiler"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoBlrAtSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoBlrMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoBlrWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoBlrBerth);
+                row++;
+
+                decimal vlsfoTotal = GetFuelConsByType(dtFuelCons, "VLSFO");
+                ws.Cell(row, 1).Value = "VLSFO Total"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 7), vlsfoTotal);
+                row++;
+            }
+            // MDO rows
+            {
+                decimal mdoMeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 2);
+                decimal mdoMeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 3);
+                decimal mdoMeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 4);
+                decimal mdoMeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 5);
+                decimal mdoMeSub = mdoMeAtSea + mdoMeMan + mdoMeWait + mdoMeBerth;
+                ws.Cell(row, 1).Value = "MDO ME"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), mdoMeAtSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), mdoMeMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), mdoMeWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), mdoMeBerth);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), mdoMeSub);
+                row++;
+
+                decimal mdoAeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 7);
+                decimal mdoAeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 8);
+                decimal mdoAeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 9);
+                decimal mdoAeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 10);
+                decimal mdoAeSub = mdoAeAtSea + mdoAeMan + mdoAeWait + mdoAeBerth;
+                ws.Cell(row, 1).Value = "MDO AE"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), mdoAeAtSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), mdoAeMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), mdoAeWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), mdoAeBerth);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), mdoAeSub);
+                row++;
+
+                decimal mdoTotal = GetFuelConsByType(dtFuelCons, "MDO");
+                ws.Cell(row, 1).Value = "MDO Total"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 7), mdoTotal);
+                row++;
             }
             ws.Columns().AdjustToContents();
         }
