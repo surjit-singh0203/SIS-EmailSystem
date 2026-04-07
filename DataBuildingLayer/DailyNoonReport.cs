@@ -279,6 +279,20 @@ namespace DataBuildingLayer
         [DisplayFormat(DataFormatString = "{0:F3}", ApplyFormatInEditMode = true)]
         public decimal Others { get; set; }
 
+        public decimal IGG_VLSFO { get; set; }
+        public decimal IGG_MDO { get; set; }
+        public decimal Incinerator_VLSFO { get; set; }
+        public decimal Incinerator_MDO { get; set; }
+
+        public decimal StopageAtSea_MDO { get; set; }
+        public decimal Deviation_MDO { get; set; }
+        public decimal SlowSteaming_MDO { get; set; }
+        public decimal BadWeather_MDO { get; set; }
+        public decimal COTPrep_MDO { get; set; }
+        public decimal CargoHeating_MDO { get; set; }
+        public decimal BWExchange_MDO { get; set; }
+        public decimal Others_MDO { get; set; }
+
         public string voyagenumber { get; set; }
 
         public string dateF { get; set; }

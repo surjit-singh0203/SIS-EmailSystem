@@ -18,7 +18,7 @@ namespace SIS_Operational_Reports.Common
     public static class BulkNoonReportEmailTemplate
     {
         private const string DateFormat = "dd-MMM-yyyy";
-        private const string DateTimeFormat = "dd-MMM-yyyy HH:mm";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/BulkNoonReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
@@ -129,18 +129,22 @@ namespace SIS_Operational_Reports.Common
             string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
             string legText = r.LegPortName ?? "";
             string portStatusText = r.PortStatus?.ToString() ?? "";
+            decimal? cpSpeed = r.CP_Speed;
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                else if (dtMain.Columns.Contains("VoyNo")) voyNo = dr["VoyNo"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                 if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                if (dtMain.Columns.Contains("CP_Speed") && decimal.TryParse(dr["CP_Speed"]?.ToString(), out decimal cpVal)) cpSpeed = cpVal;
+                else if (dtMain.Columns.Contains("CPSpeed") && decimal.TryParse(dr["CPSpeed"]?.ToString(), out decimal cpVal2)) cpSpeed = cpVal2;
             }
 
             // --- Navigation ---
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Status", r.VesselStatus)).Append(KvRow("Latitude", r.Latitude)).Append(KvRow("Longitude", r.Longitude));
-            sb.Append(KvRow("At Sea/In Port", r.AtSeaOrPort)).Append(KvRow("In Port Status", portStatusText)).Append(KvRow("Displacement(MT)", r.Displacement)).Append(KvRow("CP Speed(Kts)", r.CP_Speed));
+            sb.Append(KvRow("At Sea/In Port", r.AtSeaOrPort)).Append(KvRow("In Port Status", portStatusText)).Append(KvRow("Displacement(MT)", r.Displacement)).Append(KvRow("CP Speed(Kts)", cpSpeed));
             sb.Append(KvRow("Leg", legText)).Append(KvRow("Report Date", V(r.Date))).Append(KvRow("ETA", Vdt(r.ETA)));
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
             string headerRows = sb.ToString();
@@ -267,12 +271,16 @@ namespace SIS_Operational_Reports.Common
             string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
             string legText = r.LegPortName ?? "";
             string portStatusText = r.PortStatus?.ToString() ?? "";
+            decimal? cpSpeed = r.CP_Speed;
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                else if (dtMain.Columns.Contains("VoyNo")) voyNo = dr["VoyNo"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                 if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
+                if (dtMain.Columns.Contains("CP_Speed") && decimal.TryParse(dr["CP_Speed"]?.ToString(), out decimal cpVal)) cpSpeed = cpVal;
+                else if (dtMain.Columns.Contains("CPSpeed") && decimal.TryParse(dr["CPSpeed"]?.ToString(), out decimal cpVal2)) cpSpeed = cpVal2;
             }
 
             var sb = new StringBuilder();
@@ -285,7 +293,7 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:12px;background:#555;color:#fff;font-size:16px;font-weight:bold;text-align:center;"">Bulk Noon Report - Navigation (").Append(V(vesselName)).Append(@")</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Status", r.VesselStatus)).Append(KvRow("Latitude", r.Latitude)).Append(KvRow("Longitude", r.Longitude));
-            sb.Append(KvRow("At Sea/In Port", r.AtSeaOrPort)).Append(KvRow("In Port Status", portStatusText)).Append(KvRow("Displacement(MT)", r.Displacement)).Append(KvRow("CP Speed(Kts)", r.CP_Speed));
+            sb.Append(KvRow("At Sea/In Port", r.AtSeaOrPort)).Append(KvRow("In Port Status", portStatusText)).Append(KvRow("Displacement(MT)", r.Displacement)).Append(KvRow("CP Speed(Kts)", cpSpeed));
             sb.Append(KvRow("Leg", legText)).Append(KvRow("Report Date", V(r.Date))).Append(KvRow("ETA", Vdt(r.ETA)));
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
             sb.Append(@"</table></td></tr>");
