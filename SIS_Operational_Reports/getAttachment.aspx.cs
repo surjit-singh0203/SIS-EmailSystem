@@ -1135,14 +1135,14 @@ namespace SIS_Operational_Reports
                     }
 
                     // Generate and save Loading Report Excel to Files folder (after Update)
-                    //if (sheetName == "LoadingReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveLoadingReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exLoading) { }
-                    //}
+                    if (sheetName == "LoadingReport")
+                    {
+                        try
+                        {
+                            SaveLoadingReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exLoading) { }
+                    }
 
                     //// Generate and save Discharging Report Excel to Files folder (after Update)
                     //if (sheetName == "DischargingReport")
@@ -1175,14 +1175,14 @@ namespace SIS_Operational_Reports
                     //}
 
                     //// Generate and save Bunker Report Excel to Files folder (after Update)
-                    //if (sheetName == "BunkerReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveBunkerReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exBunker) { }
-                    //}
+                    if (sheetName == "BunkerReport")
+                    {
+                        try
+                        {
+                            SaveBunkerReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exBunker) { }
+                    }
 
                     //// Generate and save Fresh Water Report Excel to Files folder (after Update)
                     //if (sheetName == "FreshWaterReport")
@@ -1398,16 +1398,31 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string voyNo = r.voyagenumber;
                 string legText = r.LegPortName ?? "";
                 string portStatusText = r.PortStatus?.ToString() ?? "";
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
-                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber"))
+                        voyNo = dr["VoyageNumber"]?.ToString();
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                     if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
                 }
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Status", r.VesselStatus ?? "");
                 AddKeyValueRow(ws, ref row, "Latitude", r.Latitude ?? "");
@@ -3246,19 +3261,36 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string voyNo = r.voyagenumber;
                 string legText = "";
                 string portStatusText = r.PortStatus.ToString();
                 string facilityName = r.FacilityName ?? "";
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
-                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber"))
+                        voyNo = dr["VoyageNumber"]?.ToString();
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                     if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
                     if (string.IsNullOrEmpty(facilityName) && dtMain.Columns.Contains("FacilityName"))
                         facilityName = dr["FacilityName"]?.ToString() ?? "";
                 }
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId,
+                // matching the same lookup the Berthing email body uses. Avoids leaking the
+                // numeric VoyageId (e.g. 14) into the "Voy No." cell when the dashboard SP
+                // doesn't return the VoyageNumber column.
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
                 if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
                 {
                     try
@@ -3743,7 +3775,49 @@ namespace SIS_Operational_Reports
                     if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? "";
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? "";
                 }
-                if (string.IsNullOrEmpty(voyNo)) voyNo = r.VoyageId.ToString();
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
+                // Fallback: resolve Leg via LegPortId / VoyageId from VoyageLeg when the dashboard
+                // SP didn't return the Leg column (mirrors the Berthing email/excel fix).
+                if (string.IsNullOrEmpty(legText))
+                {
+                    try
+                    {
+                        if (r.LegPortId > 0)
+                        {
+                            using (SqlDataAdapter adp = new SqlDataAdapter(
+                                "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId, ConnectionBulder.con))
+                            {
+                                DataTable dtLeg = new DataTable();
+                                adp.Fill(dtLeg);
+                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                            }
+                        }
+                        if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
+                        {
+                            using (SqlDataAdapter adp = new SqlDataAdapter(
+                                "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                            {
+                                DataTable dtLeg = new DataTable();
+                                adp.Fill(dtLeg);
+                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                            }
+                        }
+                    }
+                    catch { }
+                }
 
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
@@ -3990,7 +4064,20 @@ namespace SIS_Operational_Reports
                     if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? "";
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? "";
                 }
-                if (string.IsNullOrEmpty(voyNo)) voyNo = r.VoyageId.ToString();
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
 
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
@@ -4261,16 +4348,31 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string voyNo = r.voyagenumber;
                 string legText = r.LegPortName ?? "";
                 string portStatusText = r.PortStatus?.ToString() ?? "";
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
-                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber"))
+                        voyNo = dr["VoyageNumber"]?.ToString();
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                     if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
                 }
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Status", r.VesselStatus ?? "");
                 AddKeyValueRow(ws, ref row, "Latitude", r.Latitude ?? "");
@@ -4692,16 +4794,31 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string voyNo = r.voyagenumber;
                 string legText = r.LegPortName ?? "";
                 string portStatusText = r.PortStatus?.ToString() ?? "";
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
-                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber"))
+                        voyNo = dr["VoyageNumber"]?.ToString();
                     if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
                     if (dtMain.Columns.Contains("PortStatusName")) portStatusText = dr["PortStatusName"]?.ToString() ?? portStatusText;
                 }
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Status", r.VesselStatus ?? "");
                 AddKeyValueRow(ws, ref row, "Laden/Ballast", r.VesselStatus ?? "");
@@ -5042,12 +5159,27 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+                string voyNo = r.voyagenumber;
                 if (dtMain != null && dtMain.Rows.Count > 0)
                 {
                     var dr = dtMain.Rows[0];
-                    if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                    if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber"))
+                        voyNo = dr["VoyageNumber"]?.ToString();
                 }
+                // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+                // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id.
+                if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+                {
+                    try
+                    {
+                        var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                        var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                        if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                            voyNo = match.VoyageNumber.Trim();
+                    }
+                    catch { }
+                }
+                if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
                 AddKeyValueRow(ws, ref row, "Supplier", r.Supplier ?? "");

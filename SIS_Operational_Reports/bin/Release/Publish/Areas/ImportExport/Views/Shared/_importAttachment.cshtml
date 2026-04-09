@@ -1,6 +1,4 @@
-﻿@*<h2>
-    Import File
-</h2>*@
+@model DataBuildingLayer.ExportPeram2
 <div class="row">
     @*<div class="col-sm-12 form-group">
             <input type="file" name="photo" id="photo" multiple />
@@ -19,6 +17,12 @@
         <input name="submit" type="submit" value="Import BunkerR Attachment" id="ImportAttachment" class="btn peach-btn btn-block btn-info" />
         <input name="submit" type="submit" value="Import FreshWR Attachment" id="ImportAttachment1" class="btn peach-btn btn-block btn-info" />
     </div>
+
+
+    
+
+
+
     @*<div class="col-sm-4">
             <input name="submit" type="submit" value="Import Attachments" id="Import" class="btn peach-btn btn-block btn-warning" />
         </div>*@
@@ -93,6 +97,8 @@
   
 </script>
 
+
+
 <script type="text/javascript">
 
 
@@ -142,6 +148,26 @@
 
     });
 
-
 </script>
+
+@*<script type="text/javascript">
+    function getEmailValues() {
+        var toEmails = $('#emailToValues').val();
+        var ccEmails = $('#emailCcValues').val();
+        return {
+            to: toEmails ? toEmails.split(',').map(function(e) { return e.trim(); }).filter(Boolean) : [],
+            cc: ccEmails ? ccEmails.split(',').map(function(e) { return e.trim(); }).filter(Boolean) : []
+        };
+    }
+
+    $('#SaveEmail').click(function () {
+        var emailData = getEmailValues();
+        console.log('To:', emailData.to);
+        console.log('CC:', emailData.cc);
+        
+        alert('To: ' + (emailData.to.join(', ') || '(none)') + '\nCC: ' + (emailData.cc.join(', ') || '(none)'));
+
+        $.ajax
+    });
+</script>*@
 

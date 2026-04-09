@@ -121,26 +121,33 @@
     <Reference Include="Microsoft.Kiota.Serialization.Text, Version=1.1.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Kiota.Serialization.Text.1.1.4\lib\netstandard2.0\Microsoft.Kiota.Serialization.Text.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportViewer.Common.VS2010.10.0.40219.1\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WebDesign, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.WebDesign.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WebForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.WebForms.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.WinForms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ReportViewer.WinForms.VS2010.10.0.40219.1\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1586.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
@@ -430,7 +437,6 @@
     <Compile Include="Common\BunkerReportEmailTemplate.cs" />
     <Compile Include="Common\FreshWaterReportEmailTemplate.cs" />
     <Compile Include="Common\NoonReportAllowEmailTemplate.cs" />
-
     <Compile Include="Common\UserAuthenticationFilter.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -2795,7 +2801,6 @@
     <Content Include="Datepicker\datepicker.min.css" />
     <Content Include="Datepicker\datepicker.min.js" />
     <Content Include="favicon.ico" />
-    <Content Include="Files\ReportExportLog.txt" />
     <Content Include="font-awesome\css\font-awesome.css" />
     <Content Include="font-awesome\fonts\fontawesome-webfont3e6e.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -2905,7 +2910,6 @@
     <Content Include="Templates\LoadingReport.html" />
     <Content Include="Templates\DischargingReport.html" />
     <Content Include="Templates\BulkNoonReport.html" />
-
     <Content Include="Areas\UserManagement\Views\web.config" />
     <Content Include="Areas\UserManagement\Views\_ViewStart.cshtml" />
     <Content Include="Areas\UserManagement\Views\Shared\_Layout.cshtml" />
@@ -3886,27 +3890,6 @@
       <DependentUpon>DataSet1.xsd</DependentUpon>
     </Content>
     <Content Include="libman.json" />
-    <Content Include="Files\ArrivalReport_9413779_01_10_2025_R55_183623.xlsx" />
-    <Content Include="Files\ArrivalReport_9413779_04_10_2025_R56_183623.xlsx" />
-    <Content Include="Files\ArrivalReport_9413779_13_09_2025_R53_183620.xlsx" />
-    <Content Include="Files\ArrivalReport_9413779_26_09_2025_R54_183622.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_12_09_2025_183629.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_13_09_2025_183630.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_14_09_2025_183632.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_15_09_2025_183633.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_16_09_2025_183634.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_17_09_2025_183635.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_18_09_2025_183636.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_19_09_2025_183637.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_20_09_2025_183638.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_21_09_2025_183710.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_22_09_2025_183711.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_23_09_2025_183712.xlsx" />
-    <Content Include="Files\DailyNoonReport_9413779_24_09_2025_183713.xlsx" />
-    <Content Include="Files\DepartureReport_9413779_03_10_2025_R1057_183628.xlsx" />
-    <Content Include="Files\DepartureReport_9413779_13_09_2025_R1054_183625.xlsx" />
-    <Content Include="Files\DepartureReport_9413779_25_09_2025_R1055_183625.xlsx" />
-    <Content Include="Files\DepartureReport_9413779_30_09_2025_R1056_183626.xlsx" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
@@ -3986,6 +3969,7 @@
     <Folder Include="Areas\UserManagement\Data\" />
     <Folder Include="Areas\VesselParticulars\Models\" />
     <Folder Include="Bunker_LabAnalysisReport\" />
+    <Folder Include="Files\" />
     <Folder Include="FreshWaterReport\" />
     <Folder Include="InboxArchieve\" />
     <Folder Include="Inbox\" />

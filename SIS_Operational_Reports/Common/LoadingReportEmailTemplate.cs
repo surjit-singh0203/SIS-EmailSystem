@@ -77,17 +77,9 @@ namespace SIS_Operational_Reports.Common
             string vesselName = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
             if (string.IsNullOrEmpty(vesselName)) vesselName = "Vessel " + vesselId;
 
-            string templatePath = null;
-            try { templatePath = HostingEnvironment.MapPath(TemplatePath); } catch { }
-            if (string.IsNullOrEmpty(templatePath))
-            {
-                try { templatePath = HttpContext.Current?.Server?.MapPath(TemplatePath); } catch { }
-            }
-            if (!string.IsNullOrEmpty(templatePath) && File.Exists(templatePath))
-            {
-                string template = File.ReadAllText(templatePath);
-                return ApplyTemplate(template, loadingRBind, vesselName, dtCargo, dtStoppage, dtPumpsUse, dtMain);
-            }
+            // Always use inline HTML builder. The external Templates/LoadingReport.html shipped
+            // with older deployments still contains stale placeholders, so the inline builder
+            // (which mirrors the Berthing / Daily Noon fix) guarantees the email renders.
             return BuildHtmlInline(loadingRBind, vesselName, dtCargo, dtStoppage, dtPumpsUse, dtMain);
         }
 
@@ -107,9 +99,56 @@ namespace SIS_Operational_Reports.Common
             return null;
         }
 
+        /// <summary>
+        /// Resolves the display VoyageNumber (e.g. "61") from the Voyage table PK
+        /// using the same GetVoyageList method that the web form uses.
+        /// </summary>
+        private static string LookupVoyageNumber(int voyageId, int vesselId)
+        {
+            if (voyageId <= 0) return null;
+            try
+            {
+                var voyages = CommonMethods.GetVoyageList(vesselId);
+                var match = voyages?.FirstOrDefault(v => v.Id == voyageId);
+                if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                    return match.VoyageNumber.Trim();
+            }
+            catch { }
+            return null;
+        }
+
+        private static string LookupLegText(int legPortId, int voyageId)
+        {
+            try
+            {
+                if (legPortId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legPortId, ConnectionBulder.con))
+                    {
+                        DataTable dtLeg = new DataTable();
+                        adp.Fill(dtLeg);
+                        if (dtLeg.Rows.Count > 0) return dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+                if (voyageId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        DataTable dtLeg = new DataTable();
+                        adp.Fill(dtLeg);
+                        if (dtLeg.Rows.Count > 0) return dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+            }
+            catch { }
+            return "";
+        }
+
         private static string ApplyTemplate(string template, LoadingReport r, string vesselName, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtMain)
         {
-            string voyNo = r.VoyageId.ToString();
+            string voyNo = "";
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
@@ -117,6 +156,8 @@ namespace SIS_Operational_Reports.Common
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
             }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId);
 
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Vessel", r.VesselName ?? vesselName));
@@ -149,7 +190,7 @@ namespace SIS_Operational_Reports.Common
 
         private static string BuildHtmlInline(LoadingReport r, string vesselName, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtMain)
         {
-            string voyNo = r.VoyageId.ToString();
+            string voyNo = "";
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
@@ -157,6 +198,8 @@ namespace SIS_Operational_Reports.Common
                 if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
             }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId);
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");

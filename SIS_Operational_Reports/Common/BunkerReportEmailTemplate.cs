@@ -67,28 +67,39 @@ namespace SIS_Operational_Reports.Common
             string vesselName = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
             if (string.IsNullOrEmpty(vesselName)) vesselName = "Vessel " + vesselId;
 
-            string templatePath = null;
-            try { templatePath = HostingEnvironment.MapPath(TemplatePath); } catch { }
-            if (string.IsNullOrEmpty(templatePath))
-            {
-                try { templatePath = HttpContext.Current?.Server?.MapPath(TemplatePath); } catch { }
-            }
-            if (!string.IsNullOrEmpty(templatePath) && File.Exists(templatePath))
-            {
-                string template = File.ReadAllText(templatePath);
-                return ApplyTemplate(template, bunkerRBind, vesselName, fuelList, dtMain);
-            }
+            // Always use the inline HTML builder. The external Templates/BunkerReport.html
+            // shipped with older deployments still contains stale placeholders, so the inline
+            // builder (mirrors the Berthing / Daily Noon fix) guarantees the email renders.
             return BuildHtmlInline(bunkerRBind, vesselName, fuelList, dtMain);
+        }
+
+        /// <summary>
+        /// Resolves the display VoyageNumber (e.g. "61") from the Voyage table PK
+        /// using the same GetVoyageList method that the web form uses.
+        /// </summary>
+        private static string LookupVoyageNumber(int voyageId, int vesselId)
+        {
+            if (voyageId <= 0) return null;
+            try
+            {
+                var voyages = CommonMethods.GetVoyageList(vesselId);
+                var match = voyages?.FirstOrDefault(v => v.Id == voyageId);
+                if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                    return match.VoyageNumber.Trim();
+            }
+            catch { }
+            return null;
         }
 
         private static string ApplyTemplate(string template, BunkerReport r, string vesselName, List<BukerFuelList> fuelList, DataTable dtMain)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
-                if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
             }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
             string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
 
             // --- Header ---
@@ -140,12 +151,13 @@ namespace SIS_Operational_Reports.Common
 
         private static string BuildHtmlInline(BunkerReport r, string vesselName, List<BukerFuelList> fuelList, DataTable dtMain)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
-                if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
             }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
             string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
 
             var sb = new StringBuilder();

@@ -78,17 +78,9 @@ namespace SIS_Operational_Reports.Common
             string vesselName = CommonClass.GetVesselNamesByImoNo(vesselId.ToString());
             if (string.IsNullOrEmpty(vesselName)) vesselName = "Vessel " + vesselId;
 
-            string templatePath = null;
-            try { templatePath = HostingEnvironment.MapPath(TemplatePath); } catch { }
-            if (string.IsNullOrEmpty(templatePath))
-            {
-                try { templatePath = HttpContext.Current?.Server?.MapPath(TemplatePath); } catch { }
-            }
-            if (!string.IsNullOrEmpty(templatePath) && File.Exists(templatePath))
-            {
-                string template = File.ReadAllText(templatePath);
-                return ApplyTemplate(template, disRBind, vesselName, dtCargo, dtStoppage, dtPumpsUse, dtMain);
-            }
+            // Always use the inline HTML builder. Mirrors the Berthing fix: avoids stale
+            // Templates/DischargingReport.html copies leaving literal {{...}} placeholders
+            // in the rendered email when the deployed template file is out of sync.
             return BuildHtmlInline(disRBind, vesselName, dtCargo, dtStoppage, dtPumpsUse, dtMain);
         }
 
@@ -151,14 +143,28 @@ namespace SIS_Operational_Reports.Common
 
         private static string BuildHtmlInline(DischargingReport r, string vesselName, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtMain)
         {
-            string voyNo = r.VoyageId.ToString();
+            string voyNo = null;
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0)
             {
                 var dr = dtMain.Rows[0];
-                if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+                if (dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString();
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
             }
+            // Fallback: resolve display VoyageNumber from the Voyage table by VoyageId so the
+            // "Voy No." cell shows the user-facing number (e.g. 61) rather than the FK id (e.g. 14).
+            if (string.IsNullOrWhiteSpace(voyNo) && r.VoyageId > 0)
+            {
+                try
+                {
+                    var voyages = CommonMethods.GetVoyageList(r.VesselId);
+                    var match = voyages?.FirstOrDefault(v => v.Id == r.VoyageId);
+                    if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                        voyNo = match.VoyageNumber.Trim();
+                }
+                catch { }
+            }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");
