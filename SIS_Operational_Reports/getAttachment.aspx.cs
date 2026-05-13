@@ -54,6 +54,11 @@ namespace SIS_Operational_Reports
 
         private static HttpClient _httpClient = new HttpClient();
 
+        private SqlConnection GetNewConnection()
+        {
+            return new SqlConnection(ConfigurationManager.ConnectionStrings["SISContext"].ConnectionString);
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -99,6 +104,10 @@ namespace SIS_Operational_Reports
                 using (var httpClient = new HttpClient())
                 {
                     string folderPath = Server.MapPath("~/Inbox/");
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
                     string foldermovePath = Server.MapPath("~/Archive/");
                     string userEmail = ConfigurationManager.AppSettings["ida:GraphMail"];
 
@@ -371,6 +380,10 @@ namespace SIS_Operational_Reports
         private void getAllAttachmentNew2()
         {
             string location = Server.MapPath("~/Inbox/");
+            if (!Directory.Exists(location))
+            {
+                Directory.CreateDirectory(location);
+            }
             string dt = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd");
             var email = System.Configuration.ConfigurationManager.AppSettings["User"];
             var password = System.Configuration.ConfigurationManager.AppSettings["Password"];
@@ -703,7 +716,7 @@ namespace SIS_Operational_Reports
                         m.Delete();
                     }else
                     {
-                        using (SqlDataAdapter adp = new SqlDataAdapter("insert into ErrorLog values( '" + m.Name + "',getdate() )", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("insert into ErrorLog values( '" + m.Name + "',getdate() )", GetNewConnection()))
                         {
                             DataTable dt = new DataTable();
                             adp.Fill(dt);
@@ -748,7 +761,7 @@ namespace SIS_Operational_Reports
                         string exportedby = tbls.Rows[i]["ExportedBy"].ToString();
                         DateTime exporteddate = Convert.ToDateTime(tbls.Rows[i]["ExportedDate"]);
                         DateTime crntdate = DateTime.UtcNow;
-                        using (SqlDataAdapter adp = new SqlDataAdapter("insert into ImportLog values( '" + VesselId + "','" + VoyageId + "','" + exporteddate + "', '" + crntdate + "','" + exportedby + "', '" + importedby + "','" + biggestDate + "' )", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("insert into ImportLog values( '" + VesselId + "','" + VoyageId + "','" + exporteddate + "', '" + crntdate + "','" + exportedby + "', '" + importedby + "','" + biggestDate + "' )", GetNewConnection()))
                         {
                             DataTable dt = new DataTable();
                             adp.Fill(dt);
@@ -767,7 +780,7 @@ namespace SIS_Operational_Reports
                 //        int ReportType_Id = Convert.ToInt32(tbls.Rows[i]["ReportType_Id"]);
                 //        int VesselId = Convert.ToInt32(tbls.Rows[i]["VesselId"]);
 
-                //        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertUpdate_FuelConsNR", ConnectionBulder.con))
+                //        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertUpdate_FuelConsNR", GetNewConnection()))
                 //        {
                 //            adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -803,7 +816,7 @@ namespace SIS_Operational_Reports
                         bool IsActive = Convert.ToBoolean(tbls.Rows[i]["IsActive"]);
                         int VesselId = Convert.ToInt32(tbls.Rows[i]["VesselId"]);
 
-                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertVoyagelegImport", ConnectionBulder.con))
+                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertVoyagelegImport", GetNewConnection()))
                         {
                             adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -847,7 +860,7 @@ namespace SIS_Operational_Reports
                         int ReportType_Id = Convert.ToInt32(tbls.Rows[i]["ReportType_Id"]);
                         int VesselId = Convert.ToInt32(tbls.Rows[i]["VesselId"]);
 
-                        using (SqlDataAdapter adapter = new SqlDataAdapter("tbl_BunkerLReceipt_NoonReport", ConnectionBulder.con))
+                        using (SqlDataAdapter adapter = new SqlDataAdapter("tbl_BunkerLReceipt_NoonReport", GetNewConnection()))
                         {
                             adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -914,7 +927,7 @@ namespace SIS_Operational_Reports
                             Modified_Date = (tbls.Rows[i]["Modified_Date"]).ToString();
                         }
 
-                        using (SqlDataAdapter adapter = new SqlDataAdapter("InsertUpdateBunkerReport", ConnectionBulder.con))
+                        using (SqlDataAdapter adapter = new SqlDataAdapter("InsertUpdateBunkerReport", GetNewConnection()))
                         {
                             adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -968,7 +981,7 @@ namespace SIS_Operational_Reports
                         string Created_Date = (tbls.Rows[i]["Created_Date"]).ToString();
                         // string Modified_Date = (tbls.Rows[i]["Modified_Date"]).ToString();
 
-                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertFreshWaterReport", ConnectionBulder.con))
+                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertFreshWaterReport", GetNewConnection()))
                         {
                             adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -1012,7 +1025,7 @@ namespace SIS_Operational_Reports
                         int VesselId = Convert.ToInt32(tbls.Rows[i]["VesselId"]);
                         bool Is_Active = Convert.ToBoolean(tbls.Rows[i]["Is_Active"]);
 
-                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertBunkerFuelType", ConnectionBulder.con))
+                        using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertBunkerFuelType", GetNewConnection()))
                         {
                             adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
 
@@ -1095,34 +1108,34 @@ namespace SIS_Operational_Reports
                     }
 
                     // Generate and save Daily Noon Report Excel to Files folder (after Update)
-                    //if (sheetName == "DailyNoonReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveDailyNoonReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exDailyNoon) { }
-                    //}
+                    if (sheetName == "DailyNoonReport")
+                    {
+                        try
+                        {
+                            SaveDailyNoonReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exdailynoon) { }
+                    }
 
                     //// Generate and save Arrival Report Excel to Files folder (after Update)
-                    //if (sheetName == "ArrivalReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveArrivalReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exArrival) { }
-                    //}
+                    if (sheetName == "ArrivalReport")
+                    {
+                        try
+                        {
+                            SaveArrivalReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exArrival) { }
+                    }
 
                     //// Generate and save Departure Report Excel to Files folder (after Update)
-                    //if (sheetName == "DepartureReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveDepartureReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exDeparture) { }
-                    //}
+                    if (sheetName == "DepartureReport")
+                    {
+                        try
+                        {
+                            SaveDepartureReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exDeparture) { }
+                    }
 
                     // Generate and save Berthing Report Excel to Files folder (after Update)
                     if (sheetName == "BerthingReport")
@@ -1145,14 +1158,14 @@ namespace SIS_Operational_Reports
                     }
 
                     //// Generate and save Discharging Report Excel to Files folder (after Update)
-                    //if (sheetName == "DischargingReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveDischargingReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exDischarging) { }
-                    //}
+                    if (sheetName == "DischargingReport")
+                    {
+                        try
+                        {
+                            SaveDischargingReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exDischarging) { }
+                    }
 
                     //// Generate and save Bulk Noon Report Excel to Files folder (after Update)
                     //if (sheetName == "DailyNoonReport")
@@ -1185,14 +1198,14 @@ namespace SIS_Operational_Reports
                     }
 
                     //// Generate and save Fresh Water Report Excel to Files folder (after Update)
-                    //if (sheetName == "FreshWaterReport")
-                    //{
-                    //    try
-                    //    {
-                    //        SaveFreshWaterReportExcelToFiles(tbls);
-                    //    }
-                    //    catch (Exception exFreshWater) { }
-                    //}
+                    if (sheetName == "FreshWaterReport")
+                    {
+                        try
+                        {
+                            SaveFreshWaterReportExcelToFiles(tbls);
+                        }
+                        catch (Exception exFreshWater) { }
+                    }
 
                     //// Generate and save Noon Report Allow Excel to Files folder (after Update)
                     //if (sheetName == "NoonReport_allow")
@@ -1281,16 +1294,16 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtFuelROB);
                     if (dtFuelROB.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtRob = new DataTable();
                             adp.Fill(dtRob);
@@ -1303,14 +1316,14 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -1323,16 +1336,16 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
                     try
                     {
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, GetNewConnection()))
                             adp.Fill(dtNRCargo);
                     }
                     catch
                     {
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.lr_cargo_id=b.Id where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.lr_cargo_id=b.Id where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, GetNewConnection()))
                             adp.Fill(dtNRCargo);
                     }
                 }
@@ -1341,7 +1354,7 @@ namespace SIS_Operational_Reports
                 DataTable dtMain = new DataTable();
                 try
                 {
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", noonRBind.VoyageId);
@@ -1949,18 +1962,18 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP, a.FWE from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP, a.FWE from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2", GetNewConnection()))
                         adp.Fill(dtFuelROB);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=2", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=2 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=2 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -1973,9 +1986,9 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=2 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=2 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from AR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.arrivalreport_id=" + id, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from AR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.arrivalreport_id=" + id, GetNewConnection()))
                         adp.Fill(dtARCargo);
                 }
                 catch { }
@@ -1983,7 +1996,7 @@ namespace SIS_Operational_Reports
                 DataTable dtMain = new DataTable();
                 try
                 {
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", arrRBind.VoyageId);
@@ -2100,18 +2113,18 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP as SBE, a.FWE as RFA from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP as SBE, a.FWE as RFA from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3", GetNewConnection()))
                         adp.Fill(dtFuelROB);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=3", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=3 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=3 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -2124,23 +2137,23 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=3 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=3 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
                     try
                     {
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, GetNewConnection()))
                             adp.Fill(dtDRCargo);
                     }
                     catch
                     {
                         try
                         {
-                            using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, ConnectionBulder.con))
+                            using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, GetNewConnection()))
                                 adp.Fill(dtDRCargo);
                         }
                         catch { }
                     }
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", depRBind.VoyageId);
@@ -3181,18 +3194,18 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP as SBE, a.FWE as RFA from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.EOSP as SBE, a.FWE as RFA from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", GetNewConnection()))
                         adp.Fill(dtFuelROB);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=4", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=4 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=4 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -3205,9 +3218,9 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=4 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=4 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", berthRBind.VoyageId);
@@ -3296,7 +3309,7 @@ namespace SIS_Operational_Reports
                     try
                     {
                         using (SqlDataAdapter adp = new SqlDataAdapter(
-                            "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                            "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", GetNewConnection()))
                         {
                             DataTable dtLeg = new DataTable();
                             adp.Fill(dtLeg);
@@ -3708,13 +3721,13 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Cargo where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Cargo where LRId=" + id + " and VesselId=" + vesselId, GetNewConnection()))
                         adp.Fill(dtCargo);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId, GetNewConnection()))
                         adp.Fill(dtStoppage);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, GetNewConnection()))
                         adp.Fill(dtPumpsUse);
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", loadingRBind.VoyageId);
@@ -3798,7 +3811,7 @@ namespace SIS_Operational_Reports
                         if (r.LegPortId > 0)
                         {
                             using (SqlDataAdapter adp = new SqlDataAdapter(
-                                "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId, ConnectionBulder.con))
+                                "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId, GetNewConnection()))
                             {
                                 DataTable dtLeg = new DataTable();
                                 adp.Fill(dtLeg);
@@ -3808,7 +3821,7 @@ namespace SIS_Operational_Reports
                         if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
                         {
                             using (SqlDataAdapter adp = new SqlDataAdapter(
-                                "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                                "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", GetNewConnection()))
                             {
                                 DataTable dtLeg = new DataTable();
                                 adp.Fill(dtLeg);
@@ -3997,13 +4010,13 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from DS_Cargo where DSId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from DS_Cargo where DSId=" + id + " and VesselId=" + vesselId, GetNewConnection()))
                         adp.Fill(dtCargo);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where DCId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where DCId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=1", GetNewConnection()))
                         adp.Fill(dtStoppage);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.DCRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.DCRId=" + id + " and a.VesselId=" + vesselId, GetNewConnection()))
                         adp.Fill(dtPumpsUse);
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", disRBind.VoyageId);
@@ -4250,16 +4263,16 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtFuelROB);
                     if (dtFuelROB.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtRob = new DataTable();
                             adp.Fill(dtRob);
@@ -4272,14 +4285,14 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -4292,9 +4305,9 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", noonRBind.VoyageId);
@@ -4696,16 +4709,16 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.Value, a.ConsTypeId, b.FuelType from Fuel_Cons_NR a inner join tblFuelType b on a.FuelTypeId=b.Id where a.Noon_Report_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1 and a.ConsTypeId not in (1,6) order by a.FuelTypeId, a.ConsTypeId", GetNewConnection()))
                         adp.Fill(dtFuelCons);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.OtherROB from tbl_FuelROB a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtFuelROB);
                     if (dtFuelROB.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, OtherROB from tbl_FuelROB where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtRob = new DataTable();
                             adp.Fill(dtRob);
@@ -4718,14 +4731,14 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select b.FuelType, a.Receipt from tbl_BunkerLReceipt a inner join tblFuelType b on a.FuelType_Id=b.Id where a.TableMax_Id=" + id + " and a.VesselId=" + vesselId + " and a.ReportType_Id=1", GetNewConnection()))
                         adp.Fill(dtBunker);
                     if (dtBunker.Rows.Count == 0)
                     {
                         DataTable dtFuelTypes = new DataTable();
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select Id, FuelType from tblFuelType order by Id", GetNewConnection()))
                             adp.Fill(dtFuelTypes);
-                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", ConnectionBulder.con))
+                        using (SqlDataAdapter adp = new SqlDataAdapter("select FuelType_Id, Receipt from tbl_BunkerLReceipt where TableMax_Id=" + id + " and VesselId=" + vesselId + " and ReportType_Id=1 order by FuelType_Id", GetNewConnection()))
                         {
                             DataTable dtBunk = new DataTable();
                             adp.Fill(dtBunk);
@@ -4738,9 +4751,9 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=1 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", GetNewConnection()))
                         adp.Fill(dtNonRoutine);
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", noonRBind.VoyageId);
@@ -5106,7 +5119,7 @@ namespace SIS_Operational_Reports
                 DataTable dtMain = new DataTable();
                 try
                 {
-                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
+                    using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", GetNewConnection()))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", bunkerRBind.VoyageId);
