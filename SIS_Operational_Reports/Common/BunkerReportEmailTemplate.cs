@@ -36,6 +36,40 @@ namespace SIS_Operational_Reports.Common
             var bunkerRBind = bunkerRList?.Where(x => x.Id == id).FirstOrDefault();
             if (bunkerRBind == null) return null;
 
+            // Backfill from BunkerReport table directly in case spCommonEditList aliases columns
+            // to names that don't map to the model's long property names (same family of bug as Departure / FreshWater).
+            try
+            {
+                using (var adp = new SqlDataAdapter(
+                    "select PortName, PortName_others, Supplier, BargeName, Remarks, " +
+                    "BargeAlongside, BunkerHoseConnected, CommencedBunkering, BunkeringCompleted, " +
+                    "BunkerHosedisconnected, BargeCastOff, FirstName, LastName, LabAnalysisReport_Name " +
+                    "from BunkerReport where Id=" + id, ConnectionBulder.con))
+                {
+                    var dtBackfill = new DataTable();
+                    adp.Fill(dtBackfill);
+                    if (dtBackfill.Rows.Count > 0)
+                    {
+                        var br = dtBackfill.Rows[0];
+                        if (br["PortName"] != DBNull.Value) bunkerRBind.PortName = br["PortName"].ToString();
+                        if (br["PortName_others"] != DBNull.Value) bunkerRBind.PortName_others = br["PortName_others"].ToString();
+                        if (br["Supplier"] != DBNull.Value) bunkerRBind.Supplier = br["Supplier"].ToString();
+                        if (br["BargeName"] != DBNull.Value) bunkerRBind.BargeName = br["BargeName"].ToString();
+                        if (br["Remarks"] != DBNull.Value) bunkerRBind.Remarks = br["Remarks"].ToString();
+                        if (br["BargeAlongside"] != DBNull.Value) bunkerRBind.BargeAlongside = Convert.ToDateTime(br["BargeAlongside"]);
+                        if (br["BunkerHoseConnected"] != DBNull.Value) bunkerRBind.BunkerHoseConnected = Convert.ToDateTime(br["BunkerHoseConnected"]);
+                        if (br["CommencedBunkering"] != DBNull.Value) bunkerRBind.CommencedBunkering = Convert.ToDateTime(br["CommencedBunkering"]);
+                        if (br["BunkeringCompleted"] != DBNull.Value) bunkerRBind.BunkeringCompleted = Convert.ToDateTime(br["BunkeringCompleted"]);
+                        if (br["BunkerHosedisconnected"] != DBNull.Value) bunkerRBind.BunkerHosedisconnected = Convert.ToDateTime(br["BunkerHosedisconnected"]);
+                        if (br["BargeCastOff"] != DBNull.Value) bunkerRBind.BargeCastOff = Convert.ToDateTime(br["BargeCastOff"]);
+                        if (br["FirstName"] != DBNull.Value) bunkerRBind.FirstName = br["FirstName"].ToString();
+                        if (br["LastName"] != DBNull.Value) bunkerRBind.LastName = br["LastName"].ToString();
+                        if (br["LabAnalysisReport_Name"] != DBNull.Value) bunkerRBind.LabAnalysisReport_Name = br["LabAnalysisReport_Name"].ToString();
+                    }
+                }
+            }
+            catch { }
+
             // Fetch fuel details
             var fuelList = CommonMethods.editBunkerFuelList(id, vesselId.ToString(), "BunkerFReport");
             if (fuelList != null)
@@ -91,6 +125,16 @@ namespace SIS_Operational_Reports.Common
             return null;
         }
 
+        /// <summary>When PortName is "Others" (or blank), use the custom PortName_others entered by the user.</summary>
+        private static string ResolvePortDisplay(BunkerReport r)
+        {
+            string port = r.PortName?.Trim();
+            string others = r.PortName_others?.Trim();
+            bool isOthers = !string.IsNullOrEmpty(port) && port.Equals("Others", StringComparison.OrdinalIgnoreCase);
+            if ((isOthers || string.IsNullOrEmpty(port)) && !string.IsNullOrEmpty(others)) return others;
+            return port;
+        }
+
         private static string ApplyTemplate(string template, BunkerReport r, string vesselName, List<BukerFuelList> fuelList, DataTable dtMain)
         {
             string voyNo = r.voyagenumber;
@@ -103,8 +147,9 @@ namespace SIS_Operational_Reports.Common
             string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
 
             // --- Header ---
+            string portDisplay = ResolvePortDisplay(r);
             var sb = new StringBuilder();
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", portDisplay));
             sb.Append(KvRow("Supplier", r.Supplier)).Append(KvRow("Barge Name", r.BargeName));
             string headerRows = sb.ToString();
             sb.Clear();
@@ -169,7 +214,8 @@ namespace SIS_Operational_Reports.Common
             // Bunker Details header
             sb.Append(@"<tr><td colspan=""8"" style=""padding:12px;background:#555;color:#fff;font-size:16px;font-weight:bold;text-align:center;"">Bunker Report - Details (").Append(V(vesselName)).Append(@")</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName));
+            string portDisplayInline = ResolvePortDisplay(r);
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", portDisplayInline));
             sb.Append(KvRow("Supplier", r.Supplier)).Append(KvRow("Barge Name", r.BargeName));
             sb.Append(@"</table></td></tr>");
 

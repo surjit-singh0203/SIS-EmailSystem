@@ -138,9 +138,13 @@
                 width: 180px;
                 background: #111;
                 position: absolute;
-                z-index: 99;
+                top: 100%;
+                left: 0;
+                z-index: 1050;
                 display: none;
                 border: 0;
+                margin: 0;
+                padding: 0;
             }
 
                 #menu ul.menus li {
@@ -150,8 +154,9 @@
                     text-transform: none;
                 }
 
-            #menu li:hover ul.menus {
-                display: block
+            #menu > li:hover > ul.menus,
+            #menu li.nav-item:hover > ul.menus {
+                display: block !important;
             }
 
             #menu a.home {
@@ -209,6 +214,19 @@ a.nav-link {
 <body class="mini-navbar">
     <header class="header">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<style>
+  header.header { position: relative !important; z-index: 9999 !important; overflow: visible !important; }
+  .navbar { position: relative !important; z-index: 9999 !important; overflow: visible !important; }
+  header.header .container-fluid,
+  .navbar .container-fluid { overflow: visible !important; max-width: none !important; }
+  .navbar-collapse,
+  .navbar-nav,
+  .navbar-nav > li,
+  .navbar-nav .nav-item { overflow: visible !important; }
+  #menu, #menu li { overflow: visible !important; position: relative !important; }
+  #menu ul.menus { position: absolute !important; z-index: 99999 !important; }
+  section.container-fluid { position: relative !important; z-index: 1 !important; }
+</style>
             <div class="container-fluid">
                 @*<a class="navbar-brand" href="#">LOGO</a>*@
                 <img class="navbar-brand" src="~/assets/images/logo2.png" alt="img">
@@ -450,11 +468,6 @@ a.nav-link {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
-    <script>
-        $(document).ready(function () {
-            $('.mdb-select').materialSelect();
-        });
-    </script>
 
     <script src="~/js/bootstrap.min.js"></script>
 
@@ -468,7 +481,7 @@ a.nav-link {
 
 
     <script src="~/js/select2.full.min.js"></script>
-   
+
     @*<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>*@
     <script src="~/js/forLayoutAdmin1.js"></script>
     <script>

@@ -203,13 +203,14 @@ namespace SIS_Operational_Reports.Common
                     catch { }
                 }
             }
-            // Look up leg by LegPortId (specific leg linked to this report)
+            // Look up leg by LegPortId (specific leg linked to this report).
+            // VoyageLeg.Id is not unique across vessels/voyages, so scope by VoyageId + VesselId.
             if (r.LegPortId > 0)
             {
                 try
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId, ConnectionBulder.con))
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);
@@ -223,7 +224,7 @@ namespace SIS_Operational_Reports.Common
                 try
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId + " and IsActive=1", ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);
@@ -427,13 +428,14 @@ namespace SIS_Operational_Reports.Common
                     catch { }
                 }
             }
-            // Look up leg by LegPortId (specific leg linked to this report)
+            // Look up leg by LegPortId (specific leg linked to this report).
+            // VoyageLeg.Id is not unique across vessels/voyages, so scope by VoyageId + VesselId.
             if (r.LegPortId > 0)
             {
                 try
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId, ConnectionBulder.con))
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);
@@ -447,7 +449,7 @@ namespace SIS_Operational_Reports.Common
                 try
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and IsActive=1", ConnectionBulder.con))
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId + " and IsActive=1", ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);

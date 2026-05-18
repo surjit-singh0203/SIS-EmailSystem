@@ -26,6 +26,51 @@ namespace SIS_Operational_Reports.Common
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
+        /// <summary>Resolve display VoyageNumber (e.g. "61") from internal VoyageId FK.</summary>
+        private static string LookupVoyageNumber(int voyageId, int vesselId)
+        {
+            if (voyageId <= 0) return null;
+            try
+            {
+                var voyages = CommonMethods.GetVoyageList(vesselId);
+                var match = voyages?.FirstOrDefault(v => v.Id == voyageId);
+                if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                    return match.VoyageNumber.Trim();
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>Resolve "LegPort_A to LegPort_B" scoped by VoyageId + VesselId (VoyageLeg.Id is not unique).</summary>
+        private static string LookupLeg(int legPortId, int voyageId, int vesselId)
+        {
+            try
+            {
+                if (legPortId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legPortId + " and VoyageId=" + voyageId + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0) return dt.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+                if (voyageId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and VesselId=" + vesselId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0) return dt.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+            }
+            catch { }
+            return "";
+        }
+
         /// <summary>
         /// Builds full HTML email body for Arrival Report. Loads template from Templates/ArrivalReport.html and replaces placeholders with data.
         /// </summary>
@@ -148,9 +193,17 @@ namespace SIS_Operational_Reports.Common
 
         private static string ApplyTemplate(string template, ArrivalReport r, string vesselName, DataTable dtNonRoutine, DataTable dtMain, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker, DataTable dtARCargo)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
+            if (dtMain != null && dtMain.Rows.Count > 0)
+            {
+                var dr = dtMain.Rows[0];
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+            }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0 && dtMain.Columns.Contains("Leg")) legText = dtMain.Rows[0]["Leg"]?.ToString() ?? "";
+            if (string.IsNullOrWhiteSpace(legText)) legText = LookupLeg(r.LegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Latitude", r.Latitude)).Append(KvRow("Longitude", r.Longitude));
@@ -274,9 +327,17 @@ namespace SIS_Operational_Reports.Common
 
         private static string BuildHtmlInline(ArrivalReport r, string vesselName, DataTable dtNonRoutine, DataTable dtMain, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker, DataTable dtARCargo)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
+            if (dtMain != null && dtMain.Rows.Count > 0)
+            {
+                var dr = dtMain.Rows[0];
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+            }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0 && dtMain.Columns.Contains("Leg")) legText = dtMain.Rows[0]["Leg"]?.ToString() ?? "";
+            if (string.IsNullOrWhiteSpace(legText)) legText = LookupLeg(r.LegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");

@@ -26,6 +26,52 @@ namespace SIS_Operational_Reports.Common
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
+        /// <summary>Resolve display VoyageNumber (e.g. "61") from internal VoyageId FK.</summary>
+        private static string LookupVoyageNumber(int voyageId, int vesselId)
+        {
+            if (voyageId <= 0) return null;
+            try
+            {
+                var voyages = CommonMethods.GetVoyageList(vesselId);
+                var match = voyages?.FirstOrDefault(v => v.Id == voyageId);
+                if (match != null && !string.IsNullOrWhiteSpace(match.VoyageNumber))
+                    return match.VoyageNumber.Trim();
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>Resolve "LegPort_A to LegPort_B" scoped by VoyageId + VesselId. Tries DepLegPortId first, then NextLegPortId, then the first active leg for the voyage.</summary>
+        private static string LookupLeg(int depLegPortId, int nextLegPortId, int voyageId, int vesselId)
+        {
+            try
+            {
+                foreach (int legId in new[] { depLegPortId, nextLegPortId })
+                {
+                    if (legId <= 0) continue;
+                    using (var adp = new SqlDataAdapter(
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legId + " and VoyageId=" + voyageId + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0) return dt.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+                if (voyageId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and VesselId=" + vesselId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0) return dt.Rows[0]["Leg"]?.ToString() ?? "";
+                    }
+                }
+            }
+            catch { }
+            return "";
+        }
+
         /// <param name="reportId">When set (from export filename R{id}), matches Excel save fallback via editdepartureRList when dashboard date lookup returns no row.</param>
         public static string BuildHtml(int vesselId, string datePart, int? reportId = null)
         {
@@ -52,6 +98,36 @@ namespace SIS_Operational_Reports.Common
             if (depRBind == null) return null;
 
             int id = depRBind.Id;
+
+            // Backfill LO/HO + Cargo_Temp from DepartureReport table directly because
+            // spCommonEditListReport aliases these columns to short names (AECC_ROB, MECC_ROB, ...)
+            // that DataTableToList cannot map to the long-named model properties (LO_HO_Cons_AECC_ROB, ...).
+            try
+            {
+                using (var adp = new SqlDataAdapter(
+                    "select LO_HO_Cons_MECC, LO_HO_Cons_MECC_ROB, LO_HO_Cons_MECYL, LO_HO_Cons_MECYL_ROB, " +
+                    "LO_HO_Cons_AECC, LO_HO_Cons_AECC_ROB, LO_HO_Cons_HYDR_Oil, LO_HO_Cons_HYDR_Oil_ROB, " +
+                    "Cargo_Temp from DepartureReport where Id=" + id, ConnectionBulder.con))
+                {
+                    var dtBackfill = new DataTable();
+                    adp.Fill(dtBackfill);
+                    if (dtBackfill.Rows.Count > 0)
+                    {
+                        var br = dtBackfill.Rows[0];
+                        if (br["LO_HO_Cons_MECC"] != DBNull.Value) depRBind.LO_HO_Cons_MECC = Convert.ToDecimal(br["LO_HO_Cons_MECC"]);
+                        if (br["LO_HO_Cons_MECC_ROB"] != DBNull.Value) depRBind.LO_HO_Cons_MECC_ROB = Convert.ToDecimal(br["LO_HO_Cons_MECC_ROB"]);
+                        if (br["LO_HO_Cons_MECYL"] != DBNull.Value) depRBind.LO_HO_Cons_MECYL = Convert.ToDecimal(br["LO_HO_Cons_MECYL"]);
+                        if (br["LO_HO_Cons_MECYL_ROB"] != DBNull.Value) depRBind.LO_HO_Cons_MECYL_ROB = Convert.ToDecimal(br["LO_HO_Cons_MECYL_ROB"]);
+                        if (br["LO_HO_Cons_AECC"] != DBNull.Value) depRBind.LO_HO_Cons_AECC = Convert.ToDecimal(br["LO_HO_Cons_AECC"]);
+                        if (br["LO_HO_Cons_AECC_ROB"] != DBNull.Value) depRBind.LO_HO_Cons_AECC_ROB = Convert.ToDecimal(br["LO_HO_Cons_AECC_ROB"]);
+                        if (br["LO_HO_Cons_HYDR_Oil"] != DBNull.Value) depRBind.LO_HO_Cons_HYDR_Oil = Convert.ToDecimal(br["LO_HO_Cons_HYDR_Oil"]);
+                        if (br["LO_HO_Cons_HYDR_Oil_ROB"] != DBNull.Value) depRBind.LO_HO_Cons_HYDR_Oil_ROB = Convert.ToDecimal(br["LO_HO_Cons_HYDR_Oil_ROB"]);
+                        if (br["Cargo_Temp"] != DBNull.Value) depRBind.Cargo_Temp = Convert.ToDecimal(br["Cargo_Temp"]);
+                    }
+                }
+            }
+            catch { }
+
             DataTable dtFuelCons = new DataTable(), dtFuelROB = new DataTable(), dtBunker = new DataTable();
             DataTable dtNonRoutine = new DataTable(), dtMain = new DataTable(), dtDRCargo = new DataTable();
 
@@ -127,9 +203,17 @@ namespace SIS_Operational_Reports.Common
 
         private static string ApplyTemplate(string template, DepartureReport r, string vesselName, DataTable dtNonRoutine, DataTable dtMain, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker, DataTable dtDRCargo)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
+            if (dtMain != null && dtMain.Rows.Count > 0)
+            {
+                var dr = dtMain.Rows[0];
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+            }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0 && dtMain.Columns.Contains("Leg")) legText = dtMain.Rows[0]["Leg"]?.ToString() ?? "";
+            if (string.IsNullOrWhiteSpace(legText)) legText = LookupLeg(r.DepLegPortId, r.NextLegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Departure Port", r.DeparturePort)).Append(KvRow("Next Port", r.NextPort));
@@ -162,8 +246,24 @@ namespace SIS_Operational_Reports.Common
             string remarksRow = @"<tr><td colspan=""8"" style=""padding:8px;border:1px solid #ccc;vertical-align:middle;"">" + (r.Remarks ?? "-") + @"</td></tr>";
 
             sb.Append(KvRow("SLIP%", r.Slip)).Append(KvRow("RPM", r.RPM)).Append(KvRow("BHP(hp)", r.BHP)).Append(KvRow("MCR%", r.MCR));
+            sb.Append(KvRow("MECC Consumption (Ltrs)", r.LO_HO_Cons_MECC)).Append(KvRow("MECC ROB (Ltrs)", r.LO_HO_Cons_MECC_ROB));
+            sb.Append(KvRow("MECYL Consumption (Ltrs)", r.LO_HO_Cons_MECYL)).Append(KvRow("MECYL ROB (Ltrs)", r.LO_HO_Cons_MECYL_ROB));
+            sb.Append(KvRow("AECC ROB (Ltrs)", r.LO_HO_Cons_AECC_ROB));
+            sb.Append(KvRow("Hydraulic Oil ROB (Ltrs)", r.LO_HO_Cons_HYDR_Oil_ROB));
             string engineRows = sb.ToString();
             sb.Clear();
+
+            decimal vlsfoTotal = 0m, mdoTotal = 0m;
+            if (dtFuelCons != null)
+            {
+                foreach (DataRow drc in dtFuelCons.Rows)
+                {
+                    string ft = drc["FuelType"]?.ToString() ?? "";
+                    decimal val; decimal.TryParse(drc["Value"]?.ToString(), out val);
+                    if (ft.Equals("VLSFO", StringComparison.OrdinalIgnoreCase)) vlsfoTotal += val;
+                    else if (ft.Equals("MDO", StringComparison.OrdinalIgnoreCase)) mdoTotal += val;
+                }
+            }
 
             if (dtFuelROB != null)
             {
@@ -175,6 +275,8 @@ namespace SIS_Operational_Reports.Common
                     sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", robVal));
                 }
             }
+            sb.Append(KvRow("VLSFO Total Consumption (MT)", (decimal?)vlsfoTotal));
+            sb.Append(KvRow("MDO Total Consumption (MT)", (decimal?)mdoTotal));
             string fuelRobRows = sb.ToString();
             sb.Clear();
 
@@ -186,6 +288,7 @@ namespace SIS_Operational_Reports.Common
             string bunkerRows = sb.ToString();
             sb.Clear();
 
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;vertical-align:middle;"">Cargo Temp.</td><td colspan=""3"" style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(V((decimal?)r.Cargo_Temp)).Append(@"</td></tr>");
             if (dtDRCargo != null && dtDRCargo.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtDRCargo.Rows)
@@ -238,9 +341,17 @@ namespace SIS_Operational_Reports.Common
 
         private static string BuildHtmlInline(DepartureReport r, string vesselName, DataTable dtNonRoutine, DataTable dtMain, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker, DataTable dtDRCargo)
         {
-            string voyNo = r.voyagenumber ?? r.VoyageId.ToString();
+            string voyNo = r.voyagenumber;
+            if (dtMain != null && dtMain.Rows.Count > 0)
+            {
+                var dr = dtMain.Rows[0];
+                if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
+            }
+            if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+
             string legText = "";
             if (dtMain != null && dtMain.Rows.Count > 0 && dtMain.Columns.Contains("Leg")) legText = dtMain.Rows[0]["Leg"]?.ToString() ?? "";
+            if (string.IsNullOrWhiteSpace(legText)) legText = LookupLeg(r.DepLegPortId, r.NextLegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");
@@ -276,9 +387,24 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Engine</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("SLIP%", r.Slip)).Append(KvRow("RPM", r.RPM)).Append(KvRow("BHP(hp)", r.BHP)).Append(KvRow("MCR%", r.MCR));
+            sb.Append(KvRow("MECC Consumption (Ltrs)", r.LO_HO_Cons_MECC)).Append(KvRow("MECC ROB (Ltrs)", r.LO_HO_Cons_MECC_ROB));
+            sb.Append(KvRow("MECYL Consumption (Ltrs)", r.LO_HO_Cons_MECYL)).Append(KvRow("MECYL ROB (Ltrs)", r.LO_HO_Cons_MECYL_ROB));
+            sb.Append(KvRow("AECC ROB (Ltrs)", r.LO_HO_Cons_AECC_ROB));
+            sb.Append(KvRow("Hydraulic Oil ROB (Ltrs)", r.LO_HO_Cons_HYDR_Oil_ROB));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel ROB in MT (SBE/RFA)</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
+            decimal vlsfoTotalInline = 0m, mdoTotalInline = 0m;
+            if (dtFuelCons != null)
+            {
+                foreach (DataRow drc in dtFuelCons.Rows)
+                {
+                    string ft = drc["FuelType"]?.ToString() ?? "";
+                    decimal val; decimal.TryParse(drc["Value"]?.ToString(), out val);
+                    if (ft.Equals("VLSFO", StringComparison.OrdinalIgnoreCase)) vlsfoTotalInline += val;
+                    else if (ft.Equals("MDO", StringComparison.OrdinalIgnoreCase)) mdoTotalInline += val;
+                }
+            }
             if (dtFuelROB != null)
             {
                 foreach (DataRow dr in dtFuelROB.Rows)
@@ -288,6 +414,8 @@ namespace SIS_Operational_Reports.Common
                     sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", string.IsNullOrEmpty(sbe) && string.IsNullOrEmpty(rfa) ? "-" : (sbe ?? "-") + " / " + (rfa ?? "-")));
                 }
             }
+            sb.Append(KvRow("VLSFO Total Consumption (MT)", (decimal?)vlsfoTotalInline));
+            sb.Append(KvRow("MDO Total Consumption (MT)", (decimal?)mdoTotalInline));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Received in MT</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
@@ -302,6 +430,7 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Cargo</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Cargo</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">B/L QTY</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">Load Portal Actual</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">Cargo Temp.</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Cargo Temp.</td><td colspan=""3"" style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V((decimal?)r.Cargo_Temp)).Append(@"</td></tr>");
             if (dtDRCargo != null && dtDRCargo.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtDRCargo.Rows)

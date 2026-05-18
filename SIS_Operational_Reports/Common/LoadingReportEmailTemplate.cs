@@ -55,11 +55,20 @@ namespace SIS_Operational_Reports.Common
 
             try
             {
-                using (var adp = new SqlDataAdapter("select * from LR_Cargo where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                // Cargo: fetch all cargoes for the current voyage (a single voyage can load at multiple
+                // ports, so cargoes accumulate across loading reports under the same VoyageId).
+                // Earlier LRId-only filter returned only cargoes whose LRId matched this report.
+                using (var adp = new SqlDataAdapter(
+                    "select * from LR_Cargo where VesselId=" + vesselId + " and (LRId=" + id + " or VoyageId=" + loadingRBind.VoyageId + ")", ConnectionBulder.con))
                     adp.Fill(dtCargo);
-                using (var adp = new SqlDataAdapter("select * from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                // Stoppage: column is `Stoppage` not `Reason` (renamed in the schema). Also scope to
+                // loading stoppages (LoadingDischarged=0) to mirror the web form's query.
+                using (var adp = new SqlDataAdapter(
+                    "select Stoppage as Reason, DateTimeFrom, DateTimeTo from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0", ConnectionBulder.con))
                     adp.Fill(dtStoppage);
-                using (var adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                // Pumps: the table is `tblPump` (singular) per the Loading controller; `tblPumps` returns no rows.
+                using (var adp = new SqlDataAdapter(
+                    "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPump b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
                     adp.Fill(dtPumpsUse);
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
@@ -117,14 +126,15 @@ namespace SIS_Operational_Reports.Common
             return null;
         }
 
-        private static string LookupLegText(int legPortId, int voyageId)
+        // VoyageLeg.Id is not unique across vessels/voyages — must scope by VoyageId + VesselId.
+        private static string LookupLegText(int legPortId, int voyageId, int vesselId)
         {
             try
             {
                 if (legPortId > 0)
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legPortId, ConnectionBulder.con))
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legPortId + " and VoyageId=" + voyageId + " and VesselId=" + vesselId, ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);
@@ -134,7 +144,7 @@ namespace SIS_Operational_Reports.Common
                 if (voyageId > 0)
                 {
                     using (var adp = new SqlDataAdapter(
-                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and IsActive=1", ConnectionBulder.con))
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and VesselId=" + vesselId + " and IsActive=1", ConnectionBulder.con))
                     {
                         DataTable dtLeg = new DataTable();
                         adp.Fill(dtLeg);
@@ -157,7 +167,7 @@ namespace SIS_Operational_Reports.Common
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
             }
             if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
-            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId);
+            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", r.PortName)).Append(KvRow("Vessel", r.VesselName ?? vesselName));
@@ -199,7 +209,7 @@ namespace SIS_Operational_Reports.Common
                 if (dtMain.Columns.Contains("Leg")) legText = dr["Leg"]?.ToString() ?? legText;
             }
             if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
-            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId);
+            if (string.IsNullOrEmpty(legText)) legText = LookupLegText(r.LegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");
