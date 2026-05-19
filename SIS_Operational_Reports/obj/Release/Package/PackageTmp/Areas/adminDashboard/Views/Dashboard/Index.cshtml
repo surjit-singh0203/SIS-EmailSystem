@@ -65,6 +65,31 @@
     button i, a i {
         display: inline-block !important;
     }
+
+    #tbl1 th,
+    #tbl1 td {
+        padding: 4px 6px !important;
+        min-width: 28px;
+    }
+
+    #tbl1 thead th {
+        border: 1px solid #fff !important;
+    }
+
+    #tbl1 tbody td {
+        border: 1px solid #676969 !important;
+    }
+
+    #tbl1 th:nth-child(1),
+    #tbl1 td:nth-child(1) {
+        min-width: 60px;
+    }
+
+    #tbl1 th:nth-child(2),
+    #tbl1 td:nth-child(2) {
+        min-width: 110px;
+        white-space: nowrap;
+    }
 </style>
 <style>
 
@@ -480,11 +505,17 @@
                                                 j++;
 
                                             }
-                                         
+
                                         }
 
                                     }
 
+                                }
+
+                                while (j <= 31)
+                                {
+                                    <td style="font-size:x-small;font-weight:bold;padding:0px;margin:0px"></td>
+                                    j++;
                                 }
                            }
                         </tr>

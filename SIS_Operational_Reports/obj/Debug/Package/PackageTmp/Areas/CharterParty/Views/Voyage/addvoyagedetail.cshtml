@@ -1,0 +1,232 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.VoyageClass
+
+
+
+@{
+    /**/
+
+    /**/
+
+    ViewBag.Title = "addvoyagedetail";
+    Layout = "~/Views/Shared/_LayoutForms.cshtml";
+}
+
+
+@using (Html.BeginForm("addvoyagedetail", "Voyage"))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(e => e.Id)
+<div class="row" style="margin-top: 10px;">
+    <h4 style="text-align:center">
+
+
+        @if (ViewBag.VesselName != null)
+        {
+            <p>Vessel Name :-  <b>@ViewBag.VesselName</b>  </p>
+        }
+    </h4>
+    <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+        <div class="col-md">
+            <h2>Add Voyage Detail</h2>
+        </div>
+
+
+
+        <div class="col-md button-row-top">
+            <div class="row">
+                <div class="col">
+
+                    <button name="Submit" type="submit" class="function-button submit-button"><i class="uil uil-check mr-2"></i>Submit & Next </button>
+                </div>
+                <div class="col">
+
+                    <button name="Reset" onClick="window.location.reload();" type="reset" id="btnReset" class="function-button go-back"><i class="uil uil-redo mr-2"></i>Reset</button>
+                </div>
+                <div class="col">
+
+                    <button name="back" type="button" onclick="goBack()" id="btnBack" class="function-button go-back"><i class="uil uil-redo mr-2"></i><< Go Back</button>
+                    @*<a name="back" id="btnBack" onclick="goBack()" class="function-button go-back"> << Go Back</a>*@
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <div class="mb-3 row">
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">CP No</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.CPId, new SelectList(Model.CPList, "Id", "CPNo"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })
+                        <span id="messageCPId"></span>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Voyage Number</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.VoyageNumber, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 50, @required = "true", } })
+                        <span id="messageImo"></span>
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">NOR Tender Conditions</label>
+                    <div class="col-sm-8">
+                        @Html.DropDownListFor(model => model.Nor_Conditions, new SelectList(Model.NorCList, "Id", "Conditions"), "", htmlAttributes: new { @class = "form-control bottom-border-input select2", @required = "true", })
+                        <span id="messageCap"></span>
+                    </div>
+
+                    @*<label for="inputPassword" class="col-sm-4 col-form-label">Voyage Start Point</label>
+        <div class="col-sm-8">
+            @Html.DropDownListFor(model => model.VoyageStartPoint, new SelectList(Model.VoyagStartList, "Id", "VoyageStarPoint"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })
+            <span id="messageCap"></span>
+        </div>
+
+        <label for="inputPassword" class="col-sm-4 col-form-label">ETA</label>
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.ETA, "{0:yyyy-MM-dd}", new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 20, @required = "true",@readonly=true,@placeholder="yyyy-MM-dd" } })
+        </div>
+
+        <label for="inputPassword" class="col-sm-4 col-form-label">DTG</label>
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.DTG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 4, @min = 0, @max = "9999", @required = "true", @onKeyUp = "requiredValue(this)" } })
+            <span id="messageDTG"></span>
+        </div>
+
+        <label for="inputPassword" class="col-sm-4 col-form-label">CP SOG</label>
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.CP_SOG, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })
+        </div>
+
+        <label for="inputPassword" class="col-sm-4 col-form-label">CP Log Speed</label>
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.CP_Log_Speed, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })
+        </div>
+
+        <label for="inputPassword" class="col-sm-4 col-form-label">FW</label>
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.FW, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })
+        </div>*@
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Heavy Weather Beaufort Start Scale</label>
+                    <div class="col-sm-8">
+
+                        @{
+                            List<SelectListItem> Listitems = new List<SelectListItem>();
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                Listitems.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString() });
+                            }
+                        }
+
+
+                        @*@Html.EditorFor(model => model.HeavyWeather_BSS, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })*@
+
+                        @Html.DropDownListFor(model => model.HeavyWeather_BSS, Listitems, new { @autocomplete = "off", @class = "form-control bottom-border-input select2", @required = "true", })
+
+                        @*@Html.DropDownListFor(model => model.HeavyWeather_BSS, new SelectList(Model.VoyagStartList, "Id", "VoyageStarPoint"), "", htmlAttributes: new { @class = "form-control bottom-border-input", @required = "true", })*@
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Heavy Weather Wave Height</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.HeavyWeather_WH, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })
+                    </div>
+
+                    <label for="inputPassword" class="col-sm-4 col-form-label">Heavy Weather Current Value</label>
+                    <div class="col-sm-8">
+                        @Html.EditorFor(model => model.HeavyWeather_CV, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @maxlength = 5, @required = "true", @onKeyUp = "requiredValue1(this)", @onkeypress = "return isNumberKey(event)", @step = "any" } })
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+}
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue1(arg) {
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        var dec = document.getElementById(id).value;
+        if (dec.includes(".")) {
+            var res = dec.substring(dec.indexOf(".") + 1);
+            var kl = res.split("");
+            if (kl.length > 1) {
+                document.getElementById(id).value = (parseInt(dec * 100) /
+                    100).toFixed(2);
+            }
+        }
+        if (value > 99.99) {
+
+            $("#" + id + "").val('');
+        }
+
+    }
+</script>
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+</script>
+
+<script type="text/javascript">
+    function requiredValue(arg) {
+
+
+        debugger;
+        var id = arg.getAttribute('id');
+        var value = arg.value;
+
+        if (value > 9999) {
+
+            var message = "";
+            if (id == "DTG") {
+                message = document.getElementById('messageDTG');
+            }
+
+            var goodColor = "#0C6";
+            var badColor = "#FF0000";
+
+            message.style.color = badColor;
+            message.innerHTML = "Value can not greater then 9999 !"
+            $("#" + id + "").val('');
+        }
+        else {
+            var message = "";
+            if (id == "DTG") {
+                message = document.getElementById('messageDTG');
+            }
+
+            message.innerHTML = ""
+        }
+
+      
+    }
+</script>
+
+<script type="text/javascript">
+  
+    $("#ETA").datepicker({
+        format: 'yyyy-MM-dd',
+    });
+</script>

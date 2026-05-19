@@ -1,0 +1,63 @@
+﻿@model DataBuildingLayer.ExportPeram2
+<h2>
+    Export Data
+</h2>
+
+<style>
+.inline-content{
+display: block!important;
+}
+input#FromDate {
+    width: 33%!important;
+}
+input#ToDate {
+ width: 33%!important;
+}
+</style>
+<div class = "row" style = "width: 100%;">
+<div>
+    @*<div class="form-group">
+            <input type="file" name="photo" id="photo" multiple />
+        </div>*@
+</div>
+<div class="inline-content" style="justify-content: space-between; ">
+
+    <div class="inline-content col-md-4">
+        <label for="inputPassword" class="col-form-label">Vessel Name</label>
+        <div class="col">
+            @*@Html.DropDownListFor(model => model.VoyageId, new SelectList(Model.VoyageNumberList, "Id", "VoyageNumber"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input", @onchange = "GetLeg(this)", @required = "true", @oninvalid = "setCustomValidity('Please Select Voyage No.')" })*@
+            @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", @oninvalid = "setCustomValidity('Please select a vessel')" })
+            <span id="messageVoyid" style="color:red"></span>
+        </div>
+    </div>
+    <div class="inline-content">
+        <label class="col-form-label">CP Date From</label>
+        <div class="form-group">
+            @Html.EditorFor(model => model.FromDate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "Date", @required = "true", @oninvalid = "setCustomValidity('Please Select Range of Date From.')" } })
+            <span id="msgETDDateTime" style="color:red"></span>
+        </div>
+    </div>
+    <div class="inline-content">
+        <label class="col-form-label">CP Date To</label>
+        <div class="col form-group">
+
+            @Html.EditorFor(model => model.ToDate, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control bottom-border-input", @type = "Date", @required = "true", @oninvalid = "setCustomValidity('Please Select Range of Date To.')" } })
+
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <input name="submit" type="submit" value="Export" id="Export" class="btn peach-btn btn-block btn-info m-1" />
+
+    @*<div class="col">
+            <input name="submit" type="submit" value="Import Attachments" id="Import" class="btn peach-btn btn-block btn-warning" />
+        </div>*@
+
+
+</div>
+</div>
+
+
+
+

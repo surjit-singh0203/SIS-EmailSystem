@@ -1,0 +1,264 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.CharterPartyClass
+
+@{
+    ViewBag.Title = "AddCP_Part1";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+
+<h2>Charter Party</h2>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    @*<input type="text" id="CPID" hidden="hidden">@Model.Id</input>*@
+    <table id="tblCPVessel" class="table" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+                @*<th  style="display:none">CPID</th>*@
+                <th style="width:100px">IMO Number</th>
+
+                <th style="width:100px">Vessel Name</th>
+                <th style="width:100px">Start Date</th>
+                <th style="width:100px">End Date</th>
+                @*<th style="width:100px">Voyage Type</th>*@
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CPVessel customer in Model.CPVesselInfo)
+            {
+                <tr>
+                    @*<td>@customer.Speed</td>*@
+                    @*<td>
+                            @Html.DropDownListFor(model => customer.VesselID, new SelectList(customer.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                        </td>
+                        <td>@Html.TextBoxFor(x => customer.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                        <td>@Html.TextBoxFor(x => customer.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                        <td>
+                            @Html.DropDownListFor(model => customer.VoyageType, new SelectList(customer.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                        </td>*@
+                    @customer.CPId = @Model.Id;
+                    <td>@customer.CPId</td>
+                    <td>@customer.VesselID</td>
+                    <td>@customer.VesselName</td>
+                    <td>@customer.StartDate</td>
+                    <td>@customer.EndDate</td>
+                    @*<td>@customer.VoyageType</td>*@
+                    <td><input type="button" id="button1" value="Remove" onclick="Remove(this)" /></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+
+                @*<td>
+                        @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                    </td>*@
+                @*<td><input type="text" id="txtSpeed" /></td>
+                    <td><input type="text" id="txtME_LADEN" /></td>
+                    <td><input type="text" id="txtME_BALLAST" /></td>
+                    <td><input type="text" id="txtAE_VLSFO" /></td>*@
+                <td>
+                </td>
+                <td>
+                    @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                </td>
+                <td>@Html.TextBoxFor(model => model.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                <td>@Html.TextBoxFor(model => model.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })</td>
+                @*<td>
+                        @Html.DropDownListFor(model => model.VoyageType, new SelectList(Model.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                    </td>*@
+
+                <td>
+                    @if (StaticHelper.UserRole == "Administrator")
+                    {
+                        <input type="button" id="btnAdd" value="Add" />
+                    }
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <br />
+    <input type="button" id="btnSave" value="Save All" />
+    <script type="text/javascript" src="~/js/forAdd.js"></script>
+    <script type="text/javascript" src="~/js/forAdd1.js"></script>
+    <script type="text/javascript">
+
+        $("body").on("click", "#btnAdd", function () {
+            //Reference the Name and Country TextBoxes.
+            debugger;
+            //var CPID = $("#CPId");
+            //alert(CPID);
+
+            var VesselID = $("#VesselID");
+            var VesselName = $("#VesselID option:selected").text();
+
+            var StartDate = $("#StartDate");
+            var EndDate = $("#EndDate");
+            //var VoyageType = $("#VoyageType");
+            //var txtAE_DO = $("#txtAE_DO");
+
+            //Get the reference of the Table's TBODY element.
+            var tBody = $("#tblCPVessel > TBODY")[0];
+
+            //Add Row.
+            var row = tBody.insertRow(-1);
+
+            //Add CPID cell.
+            //var cell = $(row.insertCell(-1));
+            //cell.html(CPID.val());
+
+            //Add VesselID cell.
+            var cell = $(row.insertCell(-1));
+            cell.html(VesselID.val());
+
+            //Add VesselName cell.
+            var cell = $(row.insertCell(-1));
+            cell.html(VesselName);
+
+            //Add StartDate cell.
+            cell = $(row.insertCell(-1));
+            cell.html(StartDate.val());
+
+            //Add EndDate cell.
+            cell = $(row.insertCell(-1));
+            cell.html(EndDate.val());
+
+            //Add VoyageType cell.
+            //cell = $(row.insertCell(-1));
+            //cell.html(VoyageType.val());
+
+            //Add AE_DO cell.
+            //cell = $(row.insertCell(-1));
+            //cell.html(txtAE_DO.val());
+
+            //Add Button cell.
+            cell = $(row.insertCell(-1));
+            var btnRemove = $("<input />");
+            btnRemove.attr("id", "button1");
+            btnRemove.attr("type", "button");
+            btnRemove.attr("onclick", "Remove(this);");
+            btnRemove.val("Remove");
+            cell.append(btnRemove);
+
+            //Clear the TextBoxes.
+            //CPID.val("");
+            VesselID.val("");
+            VesselName = "";
+            StartDate.val("");
+            EndDate.val("");
+            //VoyageType.val("");
+            //txtAE_DO.val("");
+        });
+
+        function Remove(button) {
+            //Determine the reference of the Row using the Button.
+            var row = $(button).closest("TR");
+            var name = $("TD", row).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                //Get the reference of the Table.
+                var table = $("#tblCPVessel")[0];
+
+                //Delete the Table row using it's Index.
+                table.deleteRow(row[0].rowIndex);
+            }
+        };
+
+
+
+
+
+    </script>
+
+
+    <script>
+
+        // For Save All
+        $("body").on("click", "#btnSave", function () {
+
+            debugger;
+            //Loop through the Table rows and build a JSON array.
+            var CPVesselInfo = new Array();
+            $("#tblCPVessel TBODY TR").each(function () {
+                var row = $(this);
+                var customer = {};
+                //customer.ID = row.find("TD").eq(0).html();
+                customer.VesselID = row.find("TD").eq(0).html();
+                customer.VesselName = row.find("TD").eq(1).html();
+                customer.StartDate = row.find("TD").eq(2).html();
+                customer.EndDate = row.find("TD").eq(3).html();
+                // customer.VoyageType = row.find("TD").eq(4).html();
+                //Model.CPVesselInfo.VesselID = customer.VesselID;
+                //Model.CPVesselInfo.VesselName = customer.VesselName;
+                //Model.CPVesselInfo.StartDate = customer.StartDate;
+                //Model.CPVesselInfo.EndDate = customer.EndDate;
+                //Model.CPVesselInfo.VoyageType = customer.VoyageType;
+                CPVesselInfo.push(customer);
+            });
+
+            ////Loop through the Table rows and build a JSON array.
+            //var MainCONSUMPTION = new Array();
+            //$("#tblMainCONSUMPTION TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer2 = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer2.Speed = row.find("TD").eq(0).html();
+            //    customer2.ME_LADEN = row.find("TD").eq(1).html();
+            //    customer2.ME_BALLAST = row.find("TD").eq(2).html();
+            //    customer2.AE_VLSFO = row.find("TD").eq(3).html();
+            //    customer2.AE_DO = row.find("TD").eq(4).html();
+
+            //    MainCONSUMPTION.push(customer2);
+            //});
+
+
+            //Loop through the Table rows and build a JSON array.
+            //var OtherCONSUMPTION = new Array();
+            //$("#tblMainCONSUMPTION TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer3 = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer3.Consumption = row.find("TD").eq(0).html();
+            //    customer3.AE_VLSFO = row.find("TD").eq(1).html();
+            //    customer3.AE_MDO = row.find("TD").eq(2).html();
+            //    customer3.BOILER_MDO = row.find("TD").eq(3).html();
+            //    OtherCONSUMPTION.push(customer3);
+            //});
+
+            //var CharterParty = '{"CPVesselInfo":["' + CPVesselInfo.join('","') + '"],"MainCONSUMPTION":]"' + MainCONSUMPTION.join('","') + '"],"OtherCONSUMPTION":["' + OtherCONSUMPTION.join('","') + '"]}';
+
+            //var CharterParty = new Array();
+            //CharterParty.push(CPVesselInfo);
+            //CharterParty.push(MainCONSUMPTION);
+            //CharterParty.push(OtherCONSUMPTION);
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+                url: "/CharterParty/CPVoyage/InsertCharterParty1",
+                data: JSON.stringify(CPVesselInfo),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    // alert(r + " record(s) inserted.");
+                    if (response.Success) {
+                        alert("CP_Part1 Completed " + response.Data);
+                        window.location.href = "/CharterParty/CPVoyage/" + response.Data;
+                    } else {
+                        alert("CP_Part1 Error");
+                        window.location.href = "/CharterParty/CPVoyage/" + response.Data;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

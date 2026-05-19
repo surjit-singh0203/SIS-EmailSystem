@@ -1,0 +1,246 @@
+﻿
+@{
+    ViewBag.Title = "pumpandtank";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+
+<div id="idpump">
+
+
+    <div class="row" style="margin-top: 10px;">
+
+        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div class="col-md">
+                <h2>Tank/Pump</h2>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <h4>Tank/Pump</h4>
+            </div>
+
+            <!-- CSS Code: Place this code in the document's head (between the 'head' tags) -->
+
+
+            <div class="mb-lg-1 row">
+                <div style="margin-left:550px" class="col-sm-3">
+
+                    <input id="idFirst" placeholder="search by : vessel name" autocomplete="off" class="form-control" type="text" />
+                    <span id="messageLat" style="color:red"></span>
+                </div>
+
+                <div class="col-sm-3">
+
+                    <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
+                    <span id="messageLat" style="color:red"></span>
+                </div>
+
+
+                <div class="col-md button-row-top">
+                    <div class="row">
+                        <div class="col">
+                            <button id="btnSearch" class="function-button submit-button">
+
+                                <i class="fa fa-plus-circle mr-2"></i>Search
+
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            @Html.Partial("_pandtank")
+
+            <!-- Codes by Quackit.com -->
+
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+
+
+                    @{
+                        int totalRecords = 0;
+                        foreach (var item in Model.GetVesselList)
+                        {
+                            totalRecords = item.TotalCount;
+                            break;
+                        }
+                        //int totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+                        // totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+
+                        int pageSize = SIS_Operational_Reports.Common.CommonMethods.PAGESIZE;
+
+                        int tot_pages = totalRecords / pageSize;
+                        int remainder = totalRecords % pageSize;
+
+                        tot_pages = remainder > 0 ? (tot_pages + 1) : tot_pages;
+
+                        int currPage = Convert.ToInt32(TempData.Peek("CurrentPage"));
+
+                        if (totalRecords > 0)
+                        {
+                            if (currPage == 0)
+                            {
+                                currPage = 1;
+                            }
+
+                            if (currPage != 1)
+                            {
+                                <li class="page-item"><a class="page-link"> @Html.ActionLink("First", "pumpandtank", "Pump", new { pageNo = 1 }, null)</a></li>
+                            }
+
+                            if (currPage != tot_pages)
+                            {
+                                for (int cnt = currPage; cnt < (currPage + 10); cnt++)
+                                {
+                                    if (cnt == currPage)
+                                    {
+                                        <li class="page-item active"><a class="page-link" href="#">@cnt</a></li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item">@Html.ActionLink(cnt.ToString(), "pumpandtank", "Pump", new { pageNo = cnt }, null)</li>
+                                    }
+
+                                    if (cnt == tot_pages)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+
+
+                            if (currPage == tot_pages)
+                            {
+                                <li class="page-item active"><a class="page-link" href="#">@tot_pages</a></li>
+                            }
+                            else
+                            {
+                                <li class="page-item">@Html.ActionLink("Last", "pumpandtank", "Pump", new { pageNo = tot_pages }, null)</li>
+                            }
+                        }
+                    }
+                </ul>
+            </nav>
+
+
+
+        </div>
+        <br />
+        <br />
+
+
+    </div>
+
+</div>
+
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').removeClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').addClass('active');
+
+
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+
+<script>
+
+    $("#btnSearch").click(function () {
+        //alert(34);
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+
+
+
+        //var range = $('#idSecond').datarangepicker.getRange();
+        //var startDate = range.start;
+        //var endDate = range.end;
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+        //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
+        //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        else {
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/VesselParticulars/Pump/pumpandtank?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+                    $("#idpump").html('');
+                    $("#idpump").html(data);
+                },
+
+            });
+        }
+
+    });
+
+</script>
+

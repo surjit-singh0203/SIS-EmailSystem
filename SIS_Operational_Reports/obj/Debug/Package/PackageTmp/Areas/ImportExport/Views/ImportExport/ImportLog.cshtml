@@ -1,0 +1,256 @@
+﻿@model DataBuildingLayer.ImportLgClass
+
+@{
+    ViewBag.Title = "Import";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+
+
+
+<div id="idCP">
+
+    <div class="page-heading page-header-flex">
+        <div>
+            <h1 class="page-title">
+              Import Log
+            </h1>
+       
+          
+        </div>
+        
+    </div>
+
+
+    <div class="wrapper wrapper-content">
+        <div class="container">
+           
+            <div class="table-responsive">
+                @*<div class="table-responsive">*@
+
+
+                @*<div class="mb-lg-1 row">
+            <div style="margin-left:550px" class="col-sm-3">
+
+                <input id="idFirst" class="form-control" type="text" />
+                <span id="messageLat" style="color:red"></span>
+            </div>
+
+            <div class="col-sm-3">
+
+                <input id="idSecond" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text" />
+                <span id="messageLat" style="color:red"></span>
+            </div>
+
+
+            <div class="col-md button-row-top">
+                <div class="row">
+                    <div class="col">
+                        <button id="btnSearch" class="function-button submit-button">
+
+                            <i class="fa fa-plus-circle mr-2"></i>Search
+
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>*@
+
+                <table class="GeneratedTable centered-table">
+                    <thead>
+                        <tr>
+                            <th>Vessel Name</th>
+                            <th>Voyage No</th>
+                            <th>Exported Date & Time </th>
+                            <th>Exported By</th>
+
+                            <th>Imported Date & Time</th>
+                            <th>Imported By</th>
+                            <th>Data Availability Till Date</th>
+
+
+
+                        </tr>
+
+                    </thead>
+                    <tbody>
+
+                        @foreach (var item in Model.ImportLogInfo)
+                        {
+
+
+                            <tr>
+
+
+                                <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+                                <td> @Html.DisplayFor(modelItem => item.VoyageNo)</td>
+                                <td> @Html.DisplayFor(modelItem => item.ExportedDate)</td>
+                                <td> @Html.DisplayFor(modelItem => item.ExportedBy)</td>
+                                <td> @Html.DisplayFor(modelItem => item.ImportedDate)</td>
+                                <td> @Html.DisplayFor(modelItem => item.ImportedBy)</td>
+                                <td> @Html.DisplayFor(modelItem => item.DataAvailabilityTillDate)</td>
+
+
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+
+
+                        @{
+                            int totalRecords = 0;
+                            foreach (var item in Model.ImportLogInfo)
+                            {
+                                totalRecords = item.TotalCount;
+                                break;
+                            }
+                            //int totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+                            // totalRecords = Convert.ToInt32(TempData.Peek("TotalRecords"));
+
+                            int pageSize = SIS_Operational_Reports.Common.CommonMethods.PAGESIZE;
+
+                            int tot_pages = totalRecords / pageSize;
+                            int remainder = totalRecords % pageSize;
+
+                            tot_pages = remainder > 0 ? (tot_pages + 1) : tot_pages;
+
+                            int currPage = Convert.ToInt32(TempData.Peek("CurrentPage"));
+
+                            if (totalRecords > 0)
+                            {
+                                if (currPage == 0)
+                                {
+                                    currPage = 1;
+                                }
+
+                                if (currPage != 1)
+                                {
+                                    @*<li class="page-item"><a class="page-link"> @Html.ActionLink("First", "index", "CP", new { pageNo = 1 }, null)</a></li>*@
+                                    <li class="page-item"><a class="page-link"> @Html.ActionLink("First", "ImportLog", "ImportExport", new { pageNo = 1 }, null)</a></li>
+
+                                }
+
+                                if (currPage != tot_pages)
+                                {
+                                    for (int cnt = currPage; cnt < (currPage + 10); cnt++)
+                                    {
+                                        if (cnt == currPage)
+                                        {
+                                            <li class="page-item active"><a class="page-link" href="#">@cnt</a></li>
+                                        }
+                                        else
+                                        {
+                                            @*<li class="page-item">@Html.ActionLink(cnt.ToString(), "index", "CP", new { pageNo = cnt }, null)</li>*@
+                                            <li class="page-item">@Html.ActionLink(cnt.ToString(), "ImportLog", "ImportExport", new { pageNo = cnt }, null)</li>
+                                        }
+
+                                        if (cnt == tot_pages)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+
+
+                                if (currPage == tot_pages)
+                                {
+                                    <li class="page-item active"><a class="page-link" href="#">@tot_pages</a></li>
+                                }
+                                else
+                                {
+                                    @*<li class="page-item">@Html.ActionLink("Last", "index", "CP", new { pageNo = tot_pages }, null)</li>*@
+                                    <li class="page-item">@Html.ActionLink("Last", "ImportLog", "ImportExport", new { pageNo = tot_pages }, null)</li>
+                                }
+                            }
+                        }
+                    </ul>
+                </nav>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').addClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+
+
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+
+<script>
+
+    $("#btnSearch").click(function () {
+        //alert(34);
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+
+
+
+        //var range = $('#idSecond').datarangepicker.getRange();
+        //var startDate = range.start;
+        //var endDate = range.end;
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+        //var startDate = $('#idSecond').data('daterangepicker').startDate.val;
+        //var endDate = $('#idSecond').data('daterangepicker').endDate._d;
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/CharterParty/CP/index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT,
+            datatype: 'json',
+            cache: false,
+            contentType: 'application/json; charset=utf-8',
+            processData: false,
+            success: function (data) {
+                $("#idCP").html('');
+                $("#idCP").html(data);
+            },
+
+        });
+
+    });
+
+</script>
+
+
+

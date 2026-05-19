@@ -1,0 +1,2228 @@
+﻿@model DataBuildingLayer.DashboardAdminClass
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<link href="~/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="~/Content/userPage-multiselect.css" type="text/css" />
+
+
+
+<style type="text/css">
+    .multiselect-container > li > a > label.checkbox {
+        width: 250px;
+    }
+
+    .dropdown-menu-custom-settings {
+        top: 0% !important;
+        left: 230px !important;
+        width: 100% !important;
+        background-color: #0f3976;
+    }
+
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark {
+        border-radius: 0;
+        padding: 8px 0;
+    }
+
+
+    .collapse.navbar-collapse {
+        display: flex !important;
+        justify-content: flex-end;
+    }
+
+    .navbar-brand {
+        margin-right: 4px;
+        text-decoration: none;
+        white-space: nowrap;
+        padding: 5px 12px;
+    }
+
+    label {
+        font-weight: 400;
+    }
+
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark {
+        margin-bottom: 0;
+    }
+
+    .h1, .h2, .h3, h1, h2, h3 {
+        margin: 0;
+    }
+</style>
+<style>
+    table button, table button a, table a {
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+
+
+    button i, a i {
+        display: inline-block !important;
+    }
+</style>
+<style>
+
+
+
+    #cover-spin {
+        position: fixed;
+        display: none;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.7);
+        z-index: 9999;
+        display: none;
+    }
+
+    @@-webkit-keyframes spin {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+
+        to {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    #cover-spin::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 48%;
+        top: 40%;
+        width: 40px;
+        height: 40px;
+        border-style: solid;
+        border-color: black;
+        border-top-color: transparent;
+        border-width: 4px;
+        border-radius: 50%;
+        -webkit-animation: spin .8s linear infinite;
+        animation: spin .8s linear infinite;
+    }
+</style>
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+@if (ViewBag.Message != null)
+{
+    <script type="text/javascript">
+
+            window.onload = function () {
+                alert("@ViewBag.Message");
+            };
+    </script>
+
+}
+@*<div id="simpleModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sync Information</h5>
+
+                </div>
+                <div class="modal-body">
+                    <label id="idfirst"></label>
+                    <label id="idsecond"></label>
+                </div>
+
+            </div>
+        </div>
+    </div>*@
+
+<script type="text/javascript">
+    //window.onload = function () {
+    //    OpenBootstrapPopup();
+    //};
+    //function OpenBootstrapPopup() {
+    //    $("#simpleModal").modal('show');
+    //}
+</script>
+<label id="idfirst11"></label>
+<label id="idsecond11"></label>
+<div id="test">
+    <div>
+        <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
+            <div class="col-md">
+                <h2>Vessel Data Sync Dashboard</h2>
+            </div>
+        </div>
+    </div>
+    <div id="loader" style="display:none">
+        <div style="display:flex;align-items:center;font-weight:bold;font-size:large; justify-content:center" id="cover-spin"> Synchronization in process, please do not close the window. Page will automatically refresh after synchronization is completed.  </div>
+    </div>
+    <div class="container-fluid">
+        <div>
+
+            @*@using (Html.BeginForm("searchData", "Dashboard", FormMethod.Post))*@
+            @using (Ajax.BeginForm("Index", "Dashboard", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "contactUsPartial" }))
+            {
+                @Html.AntiForgeryToken()
+
+                @Html.HiddenFor(m => m.year, new { @id = "hfYear" })
+                @Html.HiddenFor(m => m.month, new { @id = "hfMonth" })
+
+                <div style="display:flex">
+                    <span style="text-align:center">
+                        <label style="font-size: small; font-weight: bold; font-style: italic; background-color: lightyellow">N-Noon A-Arrival B-Berthing D-Departure L-Loading DC-Discharging</label>
+                        <br />
+                    </span>
+                    <span style="text-align:center; margin-left:auto">
+                        @if (ViewBag.YearMonth != null)
+                        {
+                            <label style="font-size:medium;font-weight:bold;background-color:lightyellow">@ViewBag.YearMonth</label>
+                        }
+                    </span>
+                </div>
+                <br />
+
+                <div class="search-row" style="margin-left:0px !important">
+                    <div class="col-md-4 pl-0">
+                        <button id="btnAutoSync"
+                                style="background-color:lightgray !important;
+                            font-weight:bold; color : black !important" type="submit"
+                                class="function-button submit-button m-1">
+                            <i class="fa fa-refresh" aria-hidden="true"></i>
+                            Sync
+                        </button>
+
+                    </div>
+
+                    <div class="col-md-8 text-right pr-0">
+                        <ul>
+                            <li style="display:inline-block" ;>
+                                  @*@Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text", Model.searchVessel), new { @class = "form-control importexport", @multiple = "multiple", })*@
+
+                                @Html.ListBoxFor(m => m.VesselIDs, new SelectList(Model.VesselList, "Value", "Text"), new { @class = "form-control importexport" })
+
+                            </li>
+                            <li style="display:inline-block" ;>
+                                @Html.DropDownList("linktoMonthId", null, "--Select--", new
+                     {
+                         @id = "ddlMonths",
+                         @onChange = "return ChangeMonth(this)",
+                         @class = "form-control",
+                         @style = "width:200px"
+                     })
+                            </li>
+                            <li style="display:inline-block" ;>
+                                @Html.DropDownList("linktoYearId", null, "--Select--", new
+                      {
+                          @id = "ddlYears",
+                          @onChange = "return ChangeYear(this)",
+                          @class = "form-control",
+                          @style = "width:200px"
+                      })
+                            </li>
+                            <li style="display:inline-block" ;>
+                                <button id="btnSearch" type="submit" class="function-button submit-button m-1">Search</button>
+
+                            </li>
+                        </ul>
+
+                    </div>
+
+                    @*<div class="col m-1">
+
+                             @Html.DropDownListFor(model => model.VesselIDs, new SelectList(Model.VesselList, "Value", "Text", Model.searchVessel), new { @class = "form-control importexport", @multiple = "multiple", })
+
+
+                         </div>
+                         <div class="col m-1">
+
+
+
+                             @Html.DropDownList("linktoMonthId", null, "--Select--", new
+                        {
+                            @id = "ddlMonths",
+                            @onChange = "return ChangeMonth(this)",
+                            @class = "form-control",
+                            @style = "width:200px"
+                        })
+                         </div>
+
+                         <div class="col m-1">
+
+
+                             @Html.DropDownList("linktoYearId", null, "--Select--", new
+                        {
+                            @id = "ddlYears",
+                            @onChange = "return ChangeYear(this)",
+                            @class = "form-control",
+                            @style = "width:200px"
+                        })
+                         </div>
+
+                         <button id="btnSearch" type="submit" class="function-button submit-button m-1">Search</button>*@
+
+                </div>
+
+            }
+
+            <table id="tbl1" class="GeneratedTable centered-table">
+                <thead>
+                    <tr>
+                        <th style="display:none">Id</th>
+                        <th><input type="checkbox" class="ml-2" id="selectall" onClick="selectall(this)" />Select All</th>
+                        <th>Ship Name</th>
+                        <th>01</th>
+                        <th>02</th>
+                        <th>03</th>
+                        <th>04</th>
+                        <th>05</th>
+                        <th>06</th>
+                        <th>07</th>
+                        <th>08</th>
+                        <th>09</th>
+                        <th>10</th>
+                        <th>11</th>
+                        <th>12</th>
+                        <th>13</th>
+                        <th>14</th>
+                        <th>15</th>
+                        <th>16</th>
+                        <th>17</th>
+                        <th>18</th>
+                        <th>19</th>
+                        <th>20</th>
+                        <th>21</th>
+                        <th>22</th>
+                        <th>23</th>
+                        <th>24</th>
+                        <th>25</th>
+                        <th>26</th>
+                        <th>27</th>
+                        <th>28</th>
+                        <th>29</th>
+                        <th>30</th>
+                        <th>31</th>
+
+
+
+                    </tr>
+
+                </thead>
+                <tbody>
+
+                    @{
+                        string year = Session["Year"].ToString();
+                        string month = Session["Month"].ToString();
+                    }
+
+                    @foreach (var item in Model.DashoardList)
+                    {
+
+
+                        <tr>
+                            <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+                            <td><input class="ml-2" id="@item.ImoNo" name="case1" type="checkbox" />    &nbsp; </td>
+                            <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+
+
+
+                            <td style="font-size:x-small;font-weight:bold;padding:0px;margin:0px">
+                                @*@Html.DisplayFor(modelItem => item.first)*@
+                                @{
+                                    string vslid = item.ImoNo;
+                                    string rptdt = year + "-" + month + "-" + 1;
+
+                                    string t1 = item.first;
+
+                                    int freq1 = t1.Count(f => (f == 'D'));
+                                    int freqC1 = t1.Count(f => (f == 'C'));
+
+                                    if (t1.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">N</a>
+                                    }
+                                    if (t1.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">A</a>
+                                    }
+                                    if (t1.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">B</a>
+                                    }
+                                    if (freq1 == 2)
+                                    {
+                                        if (t1.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">D</a>
+                                        }
+                                    }
+                                    if (freq1 == 1 && freqC1 == 0)
+                                    {
+                                        if (t1.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">D</a>
+                                        }
+                                    }
+                                    if (t1.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">L</a>
+                                    }
+                                    if (t1.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt&vesselid=@vslid">DC</a>
+                                    }
+
+                                }
+
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.second)*@
+                                @{
+                                    string vslid2 = item.ImoNo;
+                                    string rptdt2 = year + "-" + month + "-" + 2;
+
+                                    string t2 = item.second;
+                                    int freq2 = t2.Count(f => (f == 'D'));
+                                    int freqC2 = t2.Count(f => (f == 'C'));
+                                    if (t2.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">N</a>
+                                    }
+                                    if (t2.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">A</a>
+                                    }
+                                    if (t2.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">B</a>
+                                    }
+                                    if (freq2 == 2)
+                                    {
+                                        if (t2.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">D</a>
+                                        }
+                                    }
+                                    if (freq2 == 1 && freqC2 == 0)
+                                    {
+                                        if (t2.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">D</a>
+                                        }
+                                    }
+                                    if (t2.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">L</a>
+                                    }
+                                    if (t2.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt2&vesselid=@vslid2">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.third)*@
+                                @{
+                                    string vslid3 = item.ImoNo;
+                                    string rptdt3 = year + "-" + month + "-" + 3;
+
+                                    string t3 = item.third;
+                                    int freq3 = t3.Count(f => (f == 'D'));
+                                    int freqC3 = t3.Count(f => (f == 'C'));
+                                    if (t3.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">N</a>
+                                    }
+                                    if (t3.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">A</a>
+                                    }
+                                    if (t3.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">B</a>
+                                    }
+                                    if (freq3 == 2)
+                                    {
+                                        if (t3.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">D</a>
+                                        }
+                                    }
+                                    if (freq3 == 1 && freqC3 == 0)
+                                    {
+                                        if (t3.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">D</a>
+                                        }
+                                    }
+                                    if (t3.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">L</a>
+                                    }
+                                    if (t3.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt3&vesselid=@vslid3">DC</a>
+                                    }
+                                }
+
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.fourth)*@
+                                @{
+                                    string vslid4 = item.ImoNo;
+                                    string rptdt4 = year + "-" + month + "-" + 4;
+
+                                    string t4 = item.fourth;
+                                    int freq4 = t4.Count(f => (f == 'D'));
+                                    int freqC4 = t4.Count(f => (f == 'C'));
+                                    if (t4.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">N</a>
+                                    }
+                                    if (t4.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">A</a>
+                                    }
+                                    if (t4.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">B</a>
+                                    }
+                                    if (freq4 == 2)
+                                    {
+                                        if (t4.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">D</a>
+                                        }
+                                    }
+                                    if (freq4 == 1 && freqC4 == 0)
+                                    {
+                                        if (t4.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">D</a>
+                                        }
+                                    }
+                                    if (t4.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">L</a>
+                                    }
+                                    if (t4.Contains("DC") == true)
+                                    {
+                                        <a href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt4&vesselid=@vslid4">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.fifth)*@
+                                @{
+                                    string vslid5 = item.ImoNo;
+                                    string rptdt5 = year + "-" + month + "-" + 5;
+
+                                    string t5 = item.fifth;
+                                    int freq5 = t5.Count(f => (f == 'D'));
+                                    int freqC5 = t5.Count(f => (f == 'C'));
+                                    if (t5.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">N</a>
+                                    }
+                                    if (t5.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">A</a>
+                                    }
+                                    if (t5.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">B</a>
+                                    }
+                                    if (freq5 == 2)
+                                    {
+                                        if (t5.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">D</a>
+                                        }
+                                    }
+                                    if (freq5 == 1 && freqC5 == 0)
+                                    {
+                                        if (t5.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">D</a>
+                                        }
+                                    }
+                                    if (t5.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">L</a>
+                                    }
+                                    if (t5.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt5&vesselid=@vslid5">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.sixth)*@
+                                @{
+                                    string vslid6 = item.ImoNo;
+                                    string rptdt6 = year + "-" + month + "-" + 6;
+
+                                    string t6 = item.sixth;
+                                    int freq6 = t6.Count(f => (f == 'D'));
+                                    int freqC6 = t6.Count(f => (f == 'C'));
+                                    if (t6.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">N</a>
+                                    }
+                                    if (t6.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">A</a>
+                                    }
+                                    if (t6.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">B</a>
+                                    }
+                                    if (freq6 == 2)
+                                    {
+                                        if (t6.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">D</a>
+                                        }
+                                    }
+                                    if (freq6 == 1 && freqC6 == 0)
+                                    {
+                                        if (t6.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">D</a>
+                                        }
+                                    }
+                                    if (t6.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">L</a>
+                                    }
+                                    if (t6.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt6&vesselid=@vslid6">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.seventh)*@
+                                @{
+                                    string vslid7 = item.ImoNo;
+                                    string rptdt7 = year + "-" + month + "-" + 7;
+
+                                    string t7 = item.seventh;
+                                    int freq7 = t7.Count(f => (f == 'D'));
+                                    int freqC7 = t7.Count(f => (f == 'C'));
+                                    if (t7.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">N</a>
+                                    }
+                                    if (t7.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">A</a>
+                                    }
+                                    if (t7.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">B</a>
+                                    }
+                                    if (freq7 == 2)
+                                    {
+                                        if (t7.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">D</a>
+                                        }
+                                    }
+                                    if (freq7 == 1 && freqC7 == 0)
+                                    {
+                                        if (t7.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">D</a>
+                                        }
+                                    }
+                                    if (t7.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">L</a>
+                                    }
+                                    if (t7.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt7&vesselid=@vslid7">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.eighth)*@
+                                @{
+                                    string vslid8 = item.ImoNo;
+                                    string rptdt8 = year + "-" + month + "-" + 8;
+
+                                    string t8 = item.eighth;
+                                    int freq8 = t8.Count(f => (f == 'D'));
+                                    int freqC8 = t8.Count(f => (f == 'C'));
+                                    if (t8.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">N</a>
+                                    }
+                                    if (t8.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">A</a>
+                                    }
+                                    if (t8.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">B</a>
+                                    }
+                                    if (freq8 == 2)
+                                    {
+                                        if (t8.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">D</a>
+                                        }
+                                    }
+                                    if (freq8 == 1 && freqC8 == 0)
+                                    {
+                                        if (t8.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">D</a>
+                                        }
+                                    }
+                                    if (t8.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">L</a>
+                                    }
+                                    if (t8.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt8&vesselid=@vslid8">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.ninth)*@
+
+                                @{
+                                    string vslid9 = item.ImoNo;
+                                    string rptdt9 = year + "-" + month + "-" + 9;
+
+                                    string t9 = item.ninth;
+                                    int freq9 = t9.Count(f => (f == 'D'));
+                                    int freqC9 = t9.Count(f => (f == 'C'));
+                                    if (t9.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">N</a>
+                                    }
+                                    if (t9.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">A</a>
+                                    }
+                                    if (t9.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">B</a>
+                                    }
+                                    if (freq9 == 2)
+                                    {
+                                        if (t9.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">D</a>
+                                        }
+                                    }
+                                    if (freq9 == 1 && freqC9 == 0)
+                                    {
+                                        if (t9.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">D</a>
+                                        }
+                                    }
+                                    if (t9.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">L</a>
+                                    }
+                                    if (t9.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt9&vesselid=@vslid9">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.tenth)*@
+                                @{
+                                    string vslid10 = item.ImoNo;
+                                    string rptdt10 = year + "-" + month + "-" + 10;
+
+                                    string t10 = item.tenth;
+                                    int freq10 = t10.Count(f => (f == 'D'));
+                                    int freqC10 = t10.Count(f => (f == 'C'));
+                                    if (t10.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">N</a>
+                                    }
+                                    if (t10.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">A</a>
+                                    }
+                                    if (t10.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">B</a>
+                                    }
+                                    if (freq10 == 2)
+                                    {
+                                        if (t10.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">D</a>
+                                        }
+                                    }
+                                    if (freq10 == 1 && freqC10 == 0)
+                                    {
+                                        if (t10.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">D</a>
+                                        }
+                                    }
+                                    if (t10.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">L</a>
+                                    }
+                                    if (t10.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt10&vesselid=@vslid10">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.eleven)*@
+                                @{
+                                    string vslid11 = item.ImoNo;
+                                    string rptdt11 = year + "-" + month + "-" + 11;
+
+                                    string t11 = item.eleven;
+                                    int freq11 = t11.Count(f => (f == 'D'));
+                                    int freqC11 = t11.Count(f => (f == 'C'));
+                                    if (t11.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">N</a>
+                                    }
+                                    if (t11.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">A</a>
+                                    }
+                                    if (t11.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">B</a>
+                                    }
+                                    if (freq11 == 2)
+                                    {
+                                        if (t11.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">D</a>
+                                        }
+                                    }
+                                    if (freq11 == 1 && freqC11 == 0)
+                                    {
+                                        if (t11.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">D</a>
+                                        }
+                                    }
+                                    if (t11.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">L</a>
+                                    }
+                                    if (t11.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt11&vesselid=@vslid11">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twelve)*@
+
+                                @{
+                                    string vslid12 = item.ImoNo;
+                                    string rptdt12 = year + "-" + month + "-" + 12;
+
+                                    string t12 = item.twelve;
+                                    int freq12 = t12.Count(f => (f == 'D'));
+                                    int freqC12 = t12.Count(f => (f == 'C'));
+                                    if (t12.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">N</a>
+                                    }
+                                    if (t12.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">A</a>
+                                    }
+                                    if (t12.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">B</a>
+                                    }
+                                    if (freq12 == 2)
+                                    {
+                                        if (t12.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">D</a>
+                                        }
+                                    }
+                                    if (freq12 == 1 && freqC12 == 0)
+                                    {
+                                        if (t12.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">D</a>
+                                        }
+                                    }
+                                    if (t12.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">L</a>
+                                    }
+                                    if (t12.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt12&vesselid=@vslid12">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.thirteen)*@
+                                @{
+                                    string vslid13 = item.ImoNo;
+                                    string rptdt13 = year + "-" + month + "-" + 13;
+
+                                    string t13 = item.thirteen;
+                                    int freq13 = t13.Count(f => (f == 'D'));
+                                    int freqC13 = t13.Count(f => (f == 'C'));
+                                    if (t13.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">N</a>
+                                    }
+                                    if (t13.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">A</a>
+                                    }
+                                    if (t13.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">B</a>
+                                    }
+                                    if (freq13 == 2)
+                                    {
+                                        if (t13.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">D</a>
+                                        }
+                                    }
+                                    if (freq13 == 1 && freqC13 == 0)
+                                    {
+                                        if (t13.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">D</a>
+                                        }
+                                    }
+                                    if (t13.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">L</a>
+                                    }
+                                    if (t13.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt13&vesselid=@vslid13">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.fourteen)*@
+                                @{
+                                    string vslid14 = item.ImoNo;
+                                    string rptdt14 = year + "-" + month + "-" + 14;
+
+                                    string t14 = item.fourteen;
+                                    int freq14 = t14.Count(f => (f == 'D'));
+                                    int freqC14 = t14.Count(f => (f == 'C'));
+                                    if (t14.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">N</a>
+                                    }
+                                    if (t14.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">A</a>
+                                    }
+                                    if (t14.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">B</a>
+                                    }
+                                    if (freq14 == 2)
+                                    {
+                                        if (t14.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">D</a>
+                                        }
+                                    }
+                                    if (freq14 == 1 && freqC14 == 0)
+                                    {
+                                        if (t14.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">D</a>
+                                        }
+                                    }
+                                    if (t14.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">L</a>
+                                    }
+                                    if (t14.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt14&vesselid=@vslid14">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.fifteen)*@
+                                @{
+                                    string vslid15 = item.ImoNo;
+                                    string rptdt15 = year + "-" + month + "-" + 15;
+
+                                    string t15 = item.fifteen;
+                                    int freq15 = t15.Count(f => (f == 'D'));
+                                    int freqC15 = t15.Count(f => (f == 'C'));
+                                    if (t15.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">N</a>
+                                    }
+                                    if (t15.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">A</a>
+                                    }
+                                    if (t15.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">B</a>
+                                    }
+                                    if (freq15 == 2)
+                                    {
+                                        if (t15.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">D</a>
+                                        }
+                                    }
+                                    if (freq15 == 1 && freqC15 == 0)
+                                    {
+                                        if (t15.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">D</a>
+                                        }
+                                    }
+                                    if (t15.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">L</a>
+                                    }
+                                    if (t15.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt15&vesselid=@vslid15">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.sixteen)*@
+                                @{
+                                    string vslid16 = item.ImoNo;
+                                    string rptdt16 = year + "-" + month + "-" + 16;
+
+                                    string t16 = item.sixteen;
+                                    int freq16 = t16.Count(f => (f == 'D'));
+                                    int freqC16 = t16.Count(f => (f == 'C'));
+
+                                    if (t16.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">N</a>
+                                    }
+                                    if (t16.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">A</a>
+                                    }
+                                    if (t16.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">B</a>
+                                    }
+
+                                    if (freq16 == 2)
+                                    {
+                                        if (t16.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">D</a>
+                                        }
+                                    }
+                                    if (freq16 == 1 && freqC16 == 0)
+                                    {
+                                        if (t16.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">D</a>
+                                        }
+                                    }
+
+
+
+                                    if (t16.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">L</a>
+                                    }
+                                    if (t16.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt16&vesselid=@vslid16">DC</a>
+                                    }
+                                }
+
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.seventeen)*@
+
+                                @{
+                                    string vslid17 = item.ImoNo;
+                                    string rptdt17 = year + "-" + month + "-" + 17;
+
+                                    string t17 = item.seventeen;
+                                    int freq17 = t17.Count(f => (f == 'D'));
+                                    int freqC17 = t17.Count(f => (f == 'C'));
+                                    if (t17.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">N</a>
+                                    }
+                                    if (t17.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">A</a>
+                                    }
+                                    if (t17.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">B</a>
+                                    }
+                                    if (freq17 == 2)
+                                    {
+                                        if (t17.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">D</a>
+                                        }
+                                    }
+                                    if (freq17 == 1 && freqC17 == 0)
+                                    {
+                                        if (t17.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">D</a>
+                                        }
+                                    }
+                                    if (t17.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">L</a>
+                                    }
+                                    if (t17.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt17&vesselid=@vslid17">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.eighteen)*@
+                                @{
+                                    string vslid18 = item.ImoNo;
+                                    string rptdt18 = year + "-" + month + "-" + 18;
+
+                                    string t18 = item.eighteen;
+                                    int freq18 = t18.Count(f => (f == 'D'));
+                                    int freqC18 = t18.Count(f => (f == 'C'));
+                                    if (t18.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">N</a>
+                                    }
+                                    if (t18.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">A</a>
+                                    }
+                                    if (t18.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">B</a>
+                                    }
+                                    if (freq18 == 2)
+                                    {
+                                        if (t18.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">D</a>
+                                        }
+                                    }
+                                    if (freq18 == 1 && freqC18 == 0)
+                                    {
+                                        if (t18.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">D</a>
+                                        }
+                                    }
+                                    if (t18.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">L</a>
+                                    }
+                                    if (t18.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt18&vesselid=@vslid18">DC</a>
+                                    }
+                                }
+
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.ninteen)*@
+                                @{
+                                    string vslid19 = item.ImoNo;
+                                    string rptdt19 = year + "-" + month + "-" + 19;
+
+                                    string t19 = item.ninteen;
+                                    int freq19 = t19.Count(f => (f == 'D'));
+                                    int freqC19 = t19.Count(f => (f == 'C'));
+                                    if (t19.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">N</a>
+                                    }
+                                    if (t19.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">A</a>
+                                    }
+                                    if (t19.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">B</a>
+                                    }
+                                    if (freq19 == 2)
+                                    {
+                                        if (t19.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">D</a>
+                                        }
+                                    }
+                                    if (freq19 == 1 && freqC19 == 0)
+                                    {
+                                        if (t19.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">D</a>
+                                        }
+                                    }
+                                    if (t19.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">L</a>
+                                    }
+                                    if (t19.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt19&vesselid=@vslid19">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twenty)*@
+                                @{
+                                    string vslid20 = item.ImoNo;
+                                    string rptdt20 = year + "-" + month + "-" + 20;
+
+                                    string t20 = item.twenty;
+                                    int freq20 = t20.Count(f => (f == 'D'));
+                                    int freqC20 = t20.Count(f => (f == 'C'));
+                                    if (t20.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">N</a>
+                                    }
+                                    if (t20.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">A</a>
+                                    }
+                                    if (t20.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">B</a>
+                                    }
+                                    if (freq20 == 2)
+                                    {
+                                        if (t20.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">D</a>
+                                        }
+                                    }
+                                    if (freq20 == 1 && freqC20 == 0)
+                                    {
+                                        if (t20.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">D</a>
+                                        }
+                                    }
+                                    if (t20.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">L</a>
+                                    }
+                                    if (t20.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt20&vesselid=@vslid20">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size: x-small; font-weight: bold;">
+                                @*@Html.DisplayFor(modelItem => item.twentyone)*@
+
+                                @{
+                                    string vslid21 = item.ImoNo;
+                                    string rptdt21 = year + "-" + month + "-" + 21;
+
+                                    string t21 = item.twentyone;
+                                    int freq21 = t21.Count(f => (f == 'D'));
+                                    int freqC21 = t21.Count(f => (f == 'C'));
+
+                                    if (t21.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">N</a>
+                                    }
+                                    if (t21.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">A</a>
+                                    }
+                                    if (t21.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">B</a>
+                                    }
+                                    if (freq21 == 2)
+                                    {
+                                        if (t21.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">D</a>
+                                        }
+                                    }
+                                    if (freq21 == 1 && freqC21 == 0)
+                                    {
+                                        if (t21.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">D</a>
+                                        }
+                                    }
+
+                                    @*if (t21.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">D</a>
+                                        }*@
+                                    if (t21.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">L</a>
+                                    }
+                                    if (t21.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt21&vesselid=@vslid21">DC</a>
+                                    }
+                                }
+
+
+                            </td>
+
+
+
+
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentytwo)*@
+                                @{
+                                    string vslid22 = item.ImoNo;
+                                    string rptdt22 = year + "-" + month + "-" + 22;
+
+
+
+                                    string t22 = item.twentytwo;
+
+                                    int freq22 = t22.Count(f => (f == 'D'));
+                                    int freqC22 = t22.Count(f => (f == 'C'));
+
+                                    //int count = t22.Split('D').Length;
+
+                                    if (t22.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">N</a>
+                                    }
+                                    if (t22.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">A</a>
+                                    }
+                                    if (t22.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">B</a>
+                                    }
+                                    if (freq22 == 2)
+                                    {
+                                        if (t22.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">D</a>
+                                        }
+                                    }
+                                    if (freq22 == 1 && freqC22 == 0)
+                                    {
+                                        if (t22.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">D</a>
+                                        }
+                                    }
+
+
+                                    if (t22.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">L</a>
+                                    }
+                                    if (t22.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt22&vesselid=@vslid22">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentythree)*@
+                                @{
+                                    string vslid23 = item.ImoNo;
+                                    string rptdt23 = year + "-" + month + "-" + 23;
+
+                                    string t23 = item.twentythree;
+                                    int freq23 = t23.Count(f => (f == 'D'));
+                                    int freqC23 = t23.Count(f => (f == 'C'));
+                                    if (t23.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">N</a>
+                                    }
+                                    if (t23.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">A</a>
+                                    }
+                                    if (t23.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">B</a>
+                                    }
+                                    if (freq23 == 2)
+                                    {
+                                        if (t23.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">D</a>
+                                        }
+                                    }
+                                    if (freq23 == 1 && freqC23 == 0)
+                                    {
+                                        if (t23.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">D</a>
+                                        }
+                                    }
+                                    if (t23.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">L</a>
+                                    }
+                                    if (t23.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt23&vesselid=@vslid23">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentyfour)*@
+                                @{
+                                    string vslid24 = item.ImoNo;
+                                    string rptdt24 = year + "-" + month + "-" + 24;
+
+                                    string t24 = item.twentyfour;
+                                    int freq24 = t24.Count(f => (f == 'D'));
+                                    int freqC24 = t24.Count(f => (f == 'C'));
+                                    if (t24.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">N</a>
+                                    }
+                                    if (t24.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">A</a>
+                                    }
+                                    if (t24.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">B</a>
+                                    }
+                                    if (freq24 == 2)
+                                    {
+                                        if (t24.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">D</a>
+                                        }
+                                    }
+                                    if (freq24 == 1 && freqC24 == 0)
+                                    {
+                                        if (t24.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">D</a>
+                                        }
+                                    }
+                                    if (t24.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">L</a>
+                                    }
+                                    if (t24.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt24&vesselid=@vslid24">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentyfive)*@
+                                @{
+                                    string vslid25 = item.ImoNo;
+                                    string rptdt25 = year + "-" + month + "-" + 25;
+
+                                    string t25 = item.twentyfive;
+                                    int freq25 = t25.Count(f => (f == 'D'));
+                                    int freqC25 = t25.Count(f => (f == 'C'));
+                                    if (t25.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt25&vesselid=@vslid25">N</a>
+                                    }
+                                    if (t25.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt25&vesselid=@rptdt25">A</a>
+                                    }
+                                    if (t25.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt25&vesselid=@vslid25">B</a>
+                                    }
+                                    if (freq25 == 2)
+                                    {
+                                        if (t25.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt25&vesselid=@vslid25">D</a>
+                                        }
+                                    }
+                                    if (freq25 == 1 && freqC25 == 0)
+                                    {
+                                        if (t25.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt25&vesselid=@vslid25">D</a>
+                                        }
+                                    }
+                                    if (t25.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt25&vesselid=@rptdt25">L</a>
+                                    }
+                                    if (t25.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt25&vesselid=@rptdt25">DC</a>
+                                    }
+                                }
+
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentysix)*@
+                                @{
+                                    string vslid26 = item.ImoNo;
+                                    string rptdt26 = year + "-" + month + "-" + 26;
+
+                                    string t26 = item.twentysix;
+                                    int freq26 = t26.Count(f => (f == 'D'));
+                                    int freqC26 = t26.Count(f => (f == 'C'));
+                                    if (t26.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">N</a>
+                                    }
+                                    if (t26.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">A</a>
+                                    }
+                                    if (t26.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">B</a>
+                                    }
+                                    if (freq26 == 2)
+                                    {
+                                        if (t26.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">D</a>
+                                        }
+                                    }
+                                    if (freq26 == 1 && freqC26 == 0)
+                                    {
+                                        if (t26.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">D</a>
+                                        }
+                                    }
+                                    if (t26.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">L</a>
+                                    }
+                                    if (t26.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt26&vesselid=@vslid26">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentyseven)*@
+                                @{
+                                    string vslid27 = item.ImoNo;
+                                    string rptdt27 = year + "-" + month + "-" + 27;
+
+                                    string t27 = item.twentyseven;
+                                    int freq27 = t27.Count(f => (f == 'D'));
+                                    int freqC27 = t27.Count(f => (f == 'C'));
+                                    if (t27.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">N</a>
+                                    }
+                                    if (t27.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">A</a>
+                                    }
+                                    if (t27.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">B</a>
+                                    }
+                                    if (freq27 == 2)
+                                    {
+                                        if (t27.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">D</a>
+                                        }
+                                    }
+                                    if (freq27 == 1 && freqC27 == 0)
+                                    {
+                                        if (t27.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">D</a>
+                                        }
+                                    }
+                                    if (t27.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">L</a>
+                                    }
+                                    if (t27.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt27&vesselid=@vslid27">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentyeight)*@
+                                @{
+                                    string vslid28 = item.ImoNo;
+                                    string rptdt28 = year + "-" + month + "-" + 28;
+
+                                    string t28 = item.twentyeight;
+                                    int freq28 = t28.Count(f => (f == 'D'));
+                                    int freqC28 = t28.Count(f => (f == 'C'));
+                                    if (t28.Contains("N") == true)
+                                    {
+                                        <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">N</a>
+                                    }
+                                    if (t28.Contains("A") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">A</a>
+                                    }
+                                    if (t28.Contains("B") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">B</a>
+                                    }
+                                    if (freq28 == 2)
+                                    {
+                                        if (t28.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">D</a>
+                                        }
+                                    }
+                                    if (freq28 == 1 && freqC28 == 0)
+                                    {
+                                        if (t28.Contains("D") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">D</a>
+                                        }
+                                    }
+                                    if (t28.Contains("L") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">L</a>
+                                    }
+                                    if (t28.Contains("DC") == true)
+                                    {
+                                        <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt28&vesselid=@vslid28">DC</a>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.twentynine)*@
+                                @{
+                                    string vslid29 = item.ImoNo;
+                                    string rptdt29 = year + "-" + month + "-" + 29;
+
+                                    string t29 = item.twentynine;
+
+                                    if (t29 != null)
+                                    {
+                                        int freq29 = t29.Count(f => (f == 'D'));
+                                        int freqC29 = t29.Count(f => (f == 'C'));
+                                        if (t29.Contains("N") == true)
+                                        {
+                                            <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">N</a>
+                                        }
+                                        if (t29.Contains("A") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">A</a>
+                                        }
+                                        if (t29.Contains("B") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">B</a>
+                                        }
+                                        if (freq29 == 2)
+                                        {
+                                            if (t29.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">D</a>
+                                            }
+                                        }
+                                        if (freq29 == 1 && freqC29 == 0)
+                                        {
+                                            if (t29.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">D</a>
+                                            }
+                                        }
+                                        if (t29.Contains("L") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">L</a>
+                                        }
+                                        if (t29.Contains("DC") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt29&vesselid=@vslid29">DC</a>
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.thirty)*@
+                                @{
+                                    string vslid30 = item.ImoNo;
+                                    string rptdt30 = year + "-" + month + "-" + 30;
+
+                                    string t30 = item.thirty;
+
+                                    if (t30 != null)
+                                    {
+                                        int freq30 = t30.Count(f => (f == 'D'));
+                                        int freqC30 = t30.Count(f => (f == 'C'));
+
+                                        if (t30.Contains("N") == true)
+                                        {
+                                            <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">N</a>
+                                        }
+                                        if (t30.Contains("A") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">A</a>
+                                        }
+                                        if (t30.Contains("B") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">B</a>
+                                        }
+                                        if (freq30 == 2)
+                                        {
+                                            if (t30.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">D</a>
+                                            }
+                                        }
+                                        if (freq30 == 1 && freqC30 == 0)
+                                        {
+                                            if (t30.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">D</a>
+                                            }
+                                        }
+                                        if (t30.Contains("L") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">L</a>
+                                        }
+                                        if (t30.Contains("DC") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt30&vesselid=@vslid30">DC</a>
+                                        }
+
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:x-small;font-weight:bold">
+                                @*@Html.DisplayFor(modelItem => item.thirtyone)*@
+                                @{
+                                    string vslid31 = item.ImoNo;
+                                    string rptdt31 = year + "-" + month + "-" + 31;
+
+                                    string t31 = item.thirtyone;
+                                    if (t31 != null)
+                                    {
+                                        int freq31 = t31.Count(f => (f == 'D'));
+                                        int freqC31 = t31.Count(f => (f == 'C'));
+
+                                        if (t31.Contains("N") == true)
+                                        {
+                                            <a target="_blank" href="/Report/DailyNoon/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">N</a>
+                                        }
+                                        if (t31.Contains("A") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Arrival/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">A</a>
+                                        }
+                                        if (t31.Contains("B") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Berthing/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">B</a>
+                                        }
+                                        if (freq31 == 2)
+                                        {
+                                            if (t31.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">D</a>
+                                            }
+                                        }
+                                        if (freq31 == 1 && freqC31 == 0)
+                                        {
+                                            if (t31.Contains("D") == true)
+                                            {
+                                                <a target="_blank" href="/Report/Departure/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">D</a>
+                                            }
+                                        }
+                                        if (t31.Contains("L") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Loading/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">L</a>
+                                        }
+                                        if (t31.Contains("DC") == true)
+                                        {
+                                            <a target="_blank" href="/Report/Discharging/EditFromDashboard?reportdate=@rptdt31&vesselid=@vslid31">DC</a>
+                                        }
+                                    }
+                                }
+                            </td>
+
+
+                        </tr>
+                    }
+
+
+                </tbody>
+            </table>
+            <!-- Codes by Quackit.com -->
+
+            <nav aria-label="Page navigation example">
+
+            </nav>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+<script>
+
+    $("#btnSearch").click(function () {
+
+
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+        var vsl = $("#VesselId").val();
+        var cpid = $("#CPID").val();
+
+
+        debugger;
+
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+
+
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "" && vsl == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        //if (vsl == "") {
+        //    alert("Please choose vessel first");
+        //    return;
+        //}
+        else {
+
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/NoonConsumption/Index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT + '&Vessel=' + vsl + '&CPID=' + cpid,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+
+
+                    $("#test").html('');
+                    $("#test").html(data);
+
+
+
+                },
+
+            });
+
+        }
+
+
+
+    });
+
+</script>
+<script>
+    function GetCP(t) {
+
+
+        var Id = t.value;
+        var Vslid = $("#VesselId option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/NoonConsumption/BindCP?VesselId=' + Vslid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+                    $('#CPID').empty();
+
+
+                    // $('#cpid').val(response.CPID);
+                    // alert(ddd);
+
+                    debugger;
+                    $('#CPID').append('<option value="">None Selected</option>');
+                    for (var i = 0; i < response.Data.length; i++) {
+                        debugger;
+                        var txt = response.Data[i].Text;
+                        var valu = response.Data[i].Value;
+                        // alert(txt);
+                        $('#CPID').append('<option value="' + valu + '">' + txt + '</option>');
+
+                    }
+                    // $('#RankId').append('<option value="">Other</option>');
+                    //$("#LegPortId option[value=5]").attr('selected', 'selected');
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+<script>
+    function selectall(source) {
+        checkboxes = document.getElementsByName('case1');
+        for (var i = 0, n = checkboxes.length; i < n; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+</script>
+<script>
+    function GetCPDate(t) {
+
+
+        var Id = t.value;
+        var cpid = $("#CPID option:selected").val();
+        //alert(portName);
+
+
+
+        $.ajax({
+            type: 'GET',
+            url: '/Report/NoonConsumption/BindCPDate?Cpid=' + cpid,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+
+                if (response.Result === true) {
+
+                    //alert(response.StartDate);
+                    var mindate = new Date(response.StartDate);
+                    var maxdate = new Date(response.EndDate);
+
+                    $('input[name="datefilter"]').daterangepicker({
+                        autoUpdateInput: false,
+                        "minDate": mindate,
+                        "maxDate": maxdate,
+                        locale: {
+                            cancelLabel: 'Clear',
+
+
+
+                        }
+                    });
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+
+
+    };
+</script>
+
+<script type="text/javascript">
+
+
+    function ChangeYear(obj) {
+        //alert(obj.value);
+        $("#hfYear").val(obj.value);
+        //window.location.href = '@Url.Action("Index","DropDown")?Year=' + obj.value;
+    }
+
+    function ChangeMonth(obj) {
+
+        $("#hfMonth").val(obj.value);
+
+    }
+
+</script>
+
+<script type="text/javascript" src="~/Content/userPage_multiselect.js"></script>
+<script>
+
+    $('#VesselIDs').multiselect({
+        includeSelectAllOption: true,
+        enableCaseInsensitiveFiltering: true,
+        maxHeight: 350,
+        numberDisplayed: 1,
+        onSelectAll: function () {
+        }
+    });
+</script>
+<script>
+
+    $('.importexport').multiselect({
+        includeSelectAllOption: false,
+        enableCaseInsensitiveFiltering: true,
+        maxHeight: 350,
+        numberDisplayed: 1,
+        onChange: function (option, checked) {
+            // Get selected options.
+            var selectedOptions = $('.importexport option:selected');
+
+            if (selectedOptions.length >= 1) {
+                // Disable all other checkboxes.
+                var nonSelectedOptions = $('.importexport option').filter(function () {
+                    return !$(this).is(':selected');
+                });
+
+                nonSelectedOptions.each(function () {
+                    var input = $('input[value="' + $(this).val() + '"]');
+                    input.prop('disabled', true);
+                    input.parent('li').addClass('disabled');
+                });
+            }
+            else {
+                // Enable all checkboxes.
+                $('.importexport option').each(function () {
+                    var input = $('input[value="' + $(this).val() + '"]');
+                    input.prop('disabled', false);
+                    input.parent('li').addClass('disabled');
+                });
+            }
+        }
+    });
+
+</script>
+
+
+
+
+@*<script>
+        $(document).ready(function () {
+            $('#btnAutoSync').click(getChecked);
+        });
+    </script>*@
+
+<input style="display:none" type="text"  id="avlblVsl">
+<input style="display:none" type="text"  id="notavlblVsl">
+<script type="text/javascript">
+
+
+
+
+    /*    function getChecked() {*/
+    $("#btnAutoSync").click(function () {
+        debugger;
+        //alert(23);
+        $('#loader').show();
+        $('#cover-spin').show();
+
+
+
+        var checkboxes = document.querySelectorAll('input[name="case1"]');
+        var values = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked == true) {
+                values.push(checkboxes[i].id);
+            }
+        }
+
+        var vslSync = values;
+
+
+        debugger;
+       // alert(vslSync);
+
+        $.ajax({
+            type: 'GET',
+            url: '/adminDashboard/Dashboard/vesselwiseSync?vslSync=' + vslSync,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response.Result === true) {
+                    $('#loader').hide();
+                    $('#cover-spin').hide();
+                   /* OpenBootstrapPopup();*/
+                    var upldvsl = response.UploadVessel;
+                    var noupldvsl = response.NoUploadVessel;
+                   
+
+                   
+                   
+
+                    document.getElementById("avlblVsl").value = "All Available data has been synchronized for Vessel: " + upldvsl;
+                    document.getElementById("notavlblVsl").value = "There was NO data availabe for Vessel: " + noupldvsl;
+
+                    let inputAvl = document.getElementById("avlblVsl");
+                    let inputNotAvl = document.getElementById("notavlblVsl");
+
+                 
+
+                    if (upldvsl != "") {
+
+                        if (noupldvsl != "") {
+                            let total = (inputAvl.value + '\n' + inputNotAvl.value + '\n');
+                            alert(total);
+                        }
+                        if (noupldvsl == "") {
+                            let total = (inputAvl.value + '\n');
+                            alert(total);
+                        }
+                    }
+                    if (upldvsl == "") {
+
+                       /* if (noupldvsl != "") {*/
+                            let total = (inputNotAvl.value + '\n');
+                            alert(total);
+                        //}
+                        //if (noupldvsl == "") {
+
+                        //    let total = (inputAvl.value + '\n' + inputNotAvl.value + '\n');
+                        //    let total = (inputAvl.value + '\n');
+                        //    alert(total);
+                        //}
+                    }
+
+                    //setTimeout(function () {
+                    //    $('#simpleModal').modal('hide')
+                    //}, 4000);
+                    //sleep(2000);
+
+                
+                }
+                else {
+                    toastr["error"](response.Message);
+                }
+            },
+            failure: function (response) {
+                toastr["error"](response.Message);
+            }
+        });
+
+
+          @*$.ajax({
+            url: '@Url.Action("vesselwiseSync", "Dashboard")',
+              type: "POST",
+              data: { vslSync: vslSync.toString() },
+            dataType: "json",
+              beforeSend: function (x) {
+                  $('#cover-spin').show();
+                if (x && x.overrideMimeType) {
+
+                    x.overrideMimeType("application/j-son;charset=UTF-8");
+                }
+            },
+              success: function (result) {
+                  $('#cover-spin').hide();
+                  alert("fdfdf dfdfdf !");
+                  var ss = result.UploadVessel;
+                  alert(ss);
+                  alert("Data Sync Successfully !");
+                //$('#cover-spin').hide();
+                //window.location.href = window.location.origin + result;
+
+            },
+            error: function (result) {
+                $('#cover-spin').hide();
+                window.location.href = window.location.origin + result;
+            }
+
+        });*@
+
+
+    });
+</script>
+@*<script>
+        function sleep(milliseconds) {
+            const date = Date.now();
+            let currentDate = null;
+            do {
+                currentDate = Date.now();
+            } while (currentDate - date < milliseconds);
+        }
+    </script>
+    <script>
+        setTimeout(function () {
+            $('#simpleModal').modal('hide')
+        }, 4000);
+    </script>*@
+

@@ -1,0 +1,224 @@
+﻿@model DataBuildingLayer.DailyNoonReport
+
+@if (ViewBag.Message != null)
+{
+    <script type="text/javascript">
+
+            window.onload = function () {
+                alert("@ViewBag.Message");
+            };
+    </script>
+
+}
+
+
+
+<div id="test">
+        <div>
+            <div class="row" style="border-bottom: solid 1px #676969; margin-bottom: 20px; margin-top: 10px;">
+                <div class="col-md">
+                    <h2>Noon Consumption Report</h2>
+                </div>
+            </div>
+        </div>
+        <div id="idMaindiv" class="container">
+            <div>
+                <div class="search-row">
+                    <div class="col m-1">
+
+                        @Html.DropDownListFor(model => model.VesselId, new SelectList(Model.VesselList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select md-form form-control bottom-border-input select2", @required = "true", })
+                    </div>
+                    <div style="display:none" class="col m-1">
+
+                        <input id="idFirst" placeholder="search by : voyage no." autocomplete="off" class="form-control" type="text">
+
+                    </div>
+
+                    <div class="col m-1">
+
+
+                        <input id="idSecond" autocomplete="off" name="datefilter" placeholder="yyyy-mm-dd - yyyy-mm-dd" class="form-control" type="text">
+
+                    </div>
+
+                    <button id="btnSearch" class="function-button submit-button m-1">Search</button>
+
+
+
+
+
+                    <button style="display:none" id="idExport" class="function-button submit-button m-1">Export</button>
+
+                    <button onClick="window.location.reload();" class="function-button submit-button m-1">
+                        Reset
+                    </button>
+
+                </div>
+
+                <table class="GeneratedTable centered-table">
+                    <thead>
+                        <tr>
+                            <th style="display:none">Id</th>
+
+                            <th>Vessel Name</th>
+                            <th>Voyage Number</th>
+                            <th>Report Date</th>
+                            <th>Laden/Ballast</th>
+                            <th>Sea/Port</th>
+
+                        </tr>
+
+                    </thead>
+                    <tbody>
+
+                        @foreach (var item in Model.GetNoonRList)
+                        {
+                            <tr>
+                                <td style="display:none"> @Html.DisplayFor(modelItem => item.Id)</td>
+
+                                <td> @Html.DisplayFor(modelItem => item.VesselName)</td>
+                                <td> @Html.DisplayFor(modelItem => item.voyagenumber)</td>
+
+                                <td>
+                                    @{ DateTime? cdt1 = item.Date;
+                                        if (cdt1 != null)
+                                        {
+                                            @Html.Raw(cdt1.Value.ToString("dd-MMM-yyyy")) } }
+                                </td>
+
+                                <td> @Html.DisplayFor(modelItem => item.VesselStatus)</td>
+                                <td> @Html.DisplayFor(modelItem => item.AtSeaOrPort)</td>
+
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+
+
+
+
+
+            </div>
+        </div>
+
+
+    </div>
+
+
+<script type="text/javascript">
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+</script>
+<script>
+
+    $("#btnSearch").click(function () {
+
+
+
+        var firstVal = $("#idFirst").val();
+        var secondVal = $("#idSecond").val();
+        var vsl = $("#VesselId").val();
+
+
+        debugger;
+
+
+        var dateF = $('#idSecond').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var dateT = $('#idSecond').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+
+
+
+        if (secondVal == "") {
+            dateF = "";
+            dateT = "";
+        }
+
+        if (firstVal == "" && secondVal == "" && vsl == "" && secondVal == "") {
+            alert("Please enter atleast 1 value for search.");
+            return;
+        }
+        //if (vsl == "") {
+        //    alert("Please choose vessel first");
+        //    return;
+        //}
+        else {
+
+
+
+            $.ajax({
+                type: 'GET',
+                url: '/Report/NoonConsumption/Index?pageNo=1&firstVal=' + firstVal + '&dateF=' + dateF + '&dateT=' + dateT + '&Vessel=' + vsl,
+                datatype: 'json',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                processData: false,
+                success: function (data) {
+
+
+                    $("#test").html('');
+                    $("#test").html(data);
+
+
+
+                },
+
+            });
+
+        }
+
+
+
+    });
+
+</script>
+
+<script>
+
+    $("#idExport").click(function () {
+
+        var chk = '@Model.GetNoonRList.Count()';
+        //alert(chk);
+
+        if (chk ==0) {
+            alert("Please search for particular vessel");
+            return;
+        }
+
+        else {
+
+            $.ajax({
+                //url: $(this).attr("href"),
+                url: '/Report/NoonConsumption/DownloadExcel',
+                success: function () {
+                     window.location = '@Url.Action("DownloadExcel", "NoonConsumption")';
+                }
+            });
+
+
+
+        }
+
+
+
+    });
+
+</script>

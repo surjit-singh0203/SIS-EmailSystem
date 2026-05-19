@@ -1,0 +1,102 @@
+﻿@using DataBuildingLayer;
+@model DataBuildingLayer.DNVGLReport
+
+
+<style>
+td#newset {
+    width: 450px!important;
+    word-break: break-all;
+    white-space: normal;
+}
+a#FormatforPrint {
+    display: none;
+}
+
+</style>
+<div id="test1">
+    <table id="tblDNVGLReport" class="GeneratedTable centered-table">
+        <thead>
+            <tr>
+                <th width="150px">Vessel Name</th>
+                <th width="80px">Action</th>
+            </tr>
+
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model.VesselList)
+            {
+                <tr>
+
+                    <td> @Html.DisplayFor(modelItem => item.Text)</td>
+                    <td> <a onclick="downloadReprot(@item.Value)" class="btn btn-success">Download Report</a></td>
+
+                </tr>
+            }
+
+
+        </tbody>
+    </table>
+
+</div>
+
+
+<script>
+
+    function downloadReprot(Ship_CD) {
+        debugger
+
+        var year = 2023;
+
+        //Ship_CD = $("#VesselIDs").val();
+
+
+      //  var result = 0;
+
+       // if (Ship_CD == "") {
+            result = 1;
+     //   }
+
+
+      //  if (result == 0) {
+
+            var ai = {
+
+                Ship_CD: Ship_CD,
+            }
+            $.ajax({
+                url: '/Report/DNVGL/DNVGLReport?year=' + year + '&Ship_CD=' + Ship_CD,
+                method: 'GET',
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (data) {
+                    $("#spinner").hide();
+
+                    var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                    var downloadUrl = URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = "DNVGLReport.xlsx";
+                    document.body.appendChild(a);
+                    a.click();
+
+                    document.body.removeChild(a);
+
+                    URL.revokeObjectURL(downloadUrl);
+                },
+                error: function (xhr, status, error) {
+                    console.error("There was an error downloading the file: ", error);
+                }
+            });
+      //  }
+
+        //if (result == 1) {
+        //    alert("Please Select Vessel from Dropdown.");
+        //    return;
+        //}
+
+    }
+
+</script>

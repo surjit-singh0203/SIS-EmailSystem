@@ -1,0 +1,54 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* === Responsive table fix (Action/Download overflow) === */
+.container, .container-fluid {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+table {
+    width: 100%;
+    table-layout: auto;
+    word-wrap: break-word;
+}
+td, th {
+    white-space: nowrap;
+    padding: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+td:last-child, th:last-child,
+td:nth-last-child(2), th:nth-last-child(2) {
+    white-space: nowrap;
+    min-width: 120px;
+}

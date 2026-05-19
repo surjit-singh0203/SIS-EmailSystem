@@ -1,0 +1,393 @@
+﻿
+@using DataBuildingLayer;
+@model DataBuildingLayer.CharterPartyClass
+
+@{
+    ViewBag.Title = "AddCP_Part3";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row mt-2" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div class="col-md">
+            <h2>
+                Add Charter Party Other-Consumption
+            </h2>
+            
+			</div>
+                <div class="col-md button-row-top">
+            <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width m-1"> &lt;&lt; Go Back</a>
+
+        </div>
+    </div>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div class="container">
+        <table id="tblOtherCONSUMPTION" class="GeneratedTable centered-table" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Consumption</th>
+                    <th>AE_VLSFO</th>
+                    <th>AE_MDO</th>
+                    <th>BOILER_MDO</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (CPOtherCONSUMPTIONClass customer3 in Model.OtherCONSUMPTION)
+                {
+                    <tr>
+                        <td>@customer3.Consumption</td>
+                        <td>@customer3.AE_VLSFO</td>
+                        <td>@customer3.AE_MDO</td>
+                        <td>@customer3.BOILER_MDO</td>
+
+                        <td><input id="button3" type="button" value="Remove" onclick="Remove3(this)" /></td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    @*<td><input type="text" id="txtConsumption" class="btn btn-info"/></td>*@
+                    <td>@Html.DropDownListFor(model => model.ConsType, new SelectList(Model.ConsumptionTypeList, "Value", "Text"), "", htmlAttributes: new { @class = "mdb-select  bottom-border-input select2", @required = "true", })</td>
+                    <td><input type="text" id="txtOAE_VLSFO" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                    <td><input type="text" id="txtAE_MDO" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                    <td><input type="text" id="txtBOILER_MDO" onkeyup="requiredValue(this)" onkeypress="return isNumberKey(event)" /></td>
+                    <td>
+
+                        @if (StaticHelper.UserRole == "Administrator" || StaticHelper.UserRole == "Superintendent")
+                        {
+                            <input type="button" id="btnAdd3" class="btn btn-info" value="Add" />
+                        }
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+
+        <br />
+        <input type="button" id="btnSave" value="Save All" class="btn btn-info" />
+    </div>
+    <script type="text/javascript" src="~/js/forAdd.js"></script>
+    <script type="text/javascript" src="~/js/forAdd1.js"></script>
+
+
+    <script>
+        // 3rd Grid
+        $("body").on("click", "#btnAdd3", function () {
+            //Reference the Name and Country TextBoxes.
+            var ConsType = $("#ConsType");
+            var txtOAE_VLSFO = $("#txtOAE_VLSFO");
+            var txtAE_MDO = $("#txtAE_MDO");
+            var txtBOILER_MDO = $("#txtBOILER_MDO");
+            //var txtAE_DO = $("#txtAE_DO");
+
+
+            if (ConsType.val() == "") {
+                alert("Please Choose Consumption Type");
+                return;
+            }
+            if (txtOAE_VLSFO.val() == "") {
+                alert("Please Enter AE VLSFO");
+                return;
+            }
+            if (txtAE_MDO.val() == "") {
+                alert("Please Enter AE MDO");
+                return;
+            }
+            if (txtBOILER_MDO.val() == "") {
+                alert("Please Enter Boiler MDO");
+                return;
+            }
+
+
+
+            //Get the reference of the Table's TBODY element.
+            var tBody3 = $("#tblOtherCONSUMPTION > TBODY")[0];
+
+            //Add Row.
+            var row3 = tBody3.insertRow(-1);
+
+            //Add Speed cell.
+            var cell3 = $(row3.insertCell(-1));
+            cell3.html(ConsType.val());
+
+            //Add txtOAE_VLSFO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtOAE_VLSFO.val());
+
+            //Add txtAE_MDO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtAE_MDO.val());
+
+            //Add AE_VLSFO cell.
+            cell3 = $(row3.insertCell(-1));
+            cell3.html(txtBOILER_MDO.val());
+
+            //Add AE_DO cell.
+            //cell3 = $(row3.insertCell(-1));
+            //cell3.html(txtAE_DO.val());
+
+            //Add Button cell.
+            cell3 = $(row3.insertCell(-1));
+            var btnRemove = $("<input />");
+            btnRemove.attr("id", "button3");
+            btnRemove.attr("type", "button");
+            btnRemove.attr("onclick", "Remove3(this);");
+            btnRemove.val("Remove");
+            cell3.append(btnRemove);
+
+            //Clear the TextBoxes.
+            ConsType.val("");
+            txtOAE_VLSFO.val("");
+            txtAE_MDO.val("");
+            txtBOILER_MDO.val("");
+
+            ConsType.val('').trigger('change');
+
+        });
+
+        function Remove3(button) {
+            //Determine the reference of the Row using the Button.
+            var row3 = $(button).closest("TR");
+            var name = $("TD", row3).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                //Get the reference of the Table.
+                var table3 = $("#tblOtherCONSUMPTION")[0];
+
+                //Delete the Table row using it's Index.
+                table3.deleteRow(row3[0].rowIndex);
+            }
+        };
+
+
+
+    </script>
+
+    <script type="text/javascript">
+        function requiredValue(arg) {
+            debugger;
+            var id = arg.getAttribute('id');
+            var value = arg.value;
+
+            var dec = document.getElementById(id).value;
+            if (dec.includes(".")) {
+                var res = dec.substring(dec.indexOf(".") + 2);
+                var kl = res.split("");
+                if (kl.length > 2) {
+                    document.getElementById(id).value = (parseInt(dec * 100) /
+                        100).toFixed(3);
+                }
+            }
+            if (value > 999.999) {
+
+                $("#" + id + "").val('');
+            }
+
+        }
+    </script>
+
+
+
+    <script type="text/javascript">
+        function isNumberKey(evt) {
+            var charCode = (evt.which) ? evt.which : event.keyCode;
+            if (charCode != 46 && charCode > 31
+                && (charCode < 48 || charCode > 57))
+                return false;
+
+            return true;
+        }
+    </script>
+    <script>
+
+        // For Save All
+        $("body").on("click", "#btnSave", function () {
+
+            //Loop through the Table rows and build a JSON array.
+            //var CPVesselInfo = new Array();
+            //$("#tblCPVessel TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer.VesselID = row.find("TD").eq(0).html();
+            //    customer.VesselName = row.find("TD").eq(1).html();
+            //    customer.StartDate = row.find("TD").eq(2).html();
+            //    customer.EndDate = row.find("TD").eq(3).html();
+            //    customer.VoyageType = row.find("TD").eq(4).html();
+            //    //Model.CPVesselInfo.VesselID = customer.VesselID;
+            //    //Model.CPVesselInfo.VesselName = customer.VesselName;
+            //    //Model.CPVesselInfo.StartDate = customer.StartDate;
+            //    //Model.CPVesselInfo.EndDate = customer.EndDate;
+            //    //Model.CPVesselInfo.VoyageType = customer.VoyageType;
+            //    CPVesselInfo.push(customer);
+            //});
+
+            //Loop through the Table rows and build a JSON array.
+            //var MainCONSUMPTION = new Array();
+            //$("#tblMainCONSUMPTION TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer2 = {};
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer2.Speed = row.find("TD").eq(0).html();
+            //    customer2.ME_LADEN = row.find("TD").eq(1).html();
+            //    customer2.ME_BALLAST = row.find("TD").eq(2).html();
+            //    customer2.AE_VLSFO = row.find("TD").eq(3).html();
+            //    customer2.AE_DO = row.find("TD").eq(4).html();
+
+            //    MainCONSUMPTION.push(customer2);
+            //});
+
+
+            //Loop through the Table rows and build a JSON array.
+            var OtherCONSUMPTION = new Array();
+            var check = 0;
+            //$("#tblOtherCONSUMPTION TBODY TR").each(function () {
+            //    var row = $(this);
+            //    var customer3 = {};
+            //    check = 1;
+            //    //customer.ID = row.find("TD").eq(0).html();
+            //    customer3.Consumption = row.find("TD").eq(0).html();
+            //    customer3.AE_VLSFO = row.find("TD").eq(1).html();
+            //    customer3.AE_MDO = row.find("TD").eq(2).html();
+            //    customer3.BOILER_MDO = row.find("TD").eq(3).html();
+            //    OtherCONSUMPTION.push(customer3);
+            //});
+            if (check == 0) {
+
+                var ConsType = $("#ConsType");
+                var txtOAE_VLSFO = $("#txtOAE_VLSFO");
+                var txtAE_MDO = $("#txtAE_MDO");
+                var txtBOILER_MDO = $("#txtBOILER_MDO");
+                //var txtAE_DO = $("#txtAE_DO");
+
+
+                if (ConsType.val() == "") {
+                    alert("Please Choose Consumption Type");
+                    return;
+                }
+                if (txtOAE_VLSFO.val() == "") {
+                    alert("Please Enter AE VLSFO");
+                    return;
+                }
+                if (txtAE_MDO.val() == "") {
+                    alert("Please Enter AE MDO");
+                    return;
+                }
+                if (txtBOILER_MDO.val() == "") {
+                    alert("Please Enter Boiler MDO");
+                    return;
+                }
+
+
+
+                //Get the reference of the Table's TBODY element.
+                var tBody3 = $("#tblOtherCONSUMPTION > TBODY")[0];
+
+                //Add Row.
+                var row3 = tBody3.insertRow(-1);
+
+                //Add Speed cell.
+                var cell3 = $(row3.insertCell(-1));
+                cell3.html(ConsType.val());
+
+                //Add txtOAE_VLSFO cell.
+                cell3 = $(row3.insertCell(-1));
+                cell3.html(txtOAE_VLSFO.val());
+
+                //Add txtAE_MDO cell.
+                cell3 = $(row3.insertCell(-1));
+                cell3.html(txtAE_MDO.val());
+
+                //Add AE_VLSFO cell.
+                cell3 = $(row3.insertCell(-1));
+                cell3.html(txtBOILER_MDO.val());
+
+                var OtherCONSUMPTION1 = new Array();
+                $("#tblOtherCONSUMPTION TBODY TR").each(function () {
+                    var row = $(this);
+                    var customer3 = {};
+                    check = 1;
+                    //customer.ID = row.find("TD").eq(0).html();
+                    customer3.Consumption = row.find("TD").eq(0).html();
+                    customer3.AE_VLSFO = row.find("TD").eq(1).html();
+                    customer3.AE_MDO = row.find("TD").eq(2).html();
+                    customer3.BOILER_MDO = row.find("TD").eq(3).html();
+                    OtherCONSUMPTION1.push(customer3);
+                });
+
+
+                ConsType.val("");
+                txtOAE_VLSFO.val("");
+                txtAE_MDO.val("");
+                txtBOILER_MDO.val("");
+
+                ConsType.val('').trigger('change');
+
+                $.ajax({
+                    type: "POST",
+                    url: "/CharterParty/CP/InsertCharterParty3",
+                    data: JSON.stringify(OtherCONSUMPTION1),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        // alert(r + " record(s) inserted.");
+                        if (response.Success) {
+                            //alert("CP_Part3 Completed " + response.Data);
+
+                            alert("Other consumption added successfully !");
+
+                            window.location.href = "/CharterParty/CP/" + response.Data;
+                        } else {
+                            alert("Other consumption Error");
+                            //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                        }
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/CharterParty/CP/InsertCharterParty3",
+                    data: JSON.stringify(OtherCONSUMPTION),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        // alert(r + " record(s) inserted.");
+                        if (response.Success) {
+                            //alert("CP_Part3 Completed " + response.Data);
+                            alert("Other consumption added successfully !");
+                            window.location.href = "/CharterParty/CP/" + response.Data;
+                        } else {
+                            alert("Other consumption Error");
+                            //window.location.href = "/CharterParty/CP/AddCP_Part1"
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
+
+        $('#Menu1').removeClass('active');
+        $('#Menu2').removeClass('active');
+        $('#Menu3').addClass('active');
+        $('#Menu4').removeClass('active');
+        $('#Menu5').removeClass('active');
+
+
+    </script>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

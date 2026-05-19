@@ -1,0 +1,187 @@
+﻿@using DataBuildingLayer;
+@model DailyNoonReportAllow
+
+@{
+    ViewBag.Title = "AddNoonReportallow";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+@using (Html.BeginForm("AddNoonReportallow", "DailyNoon", FormMethod.Post, new { onsubmit = "ValidateAddNoonReportallow();", area = "Report" }))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.HiddenFor(e => e.Id)
+    @Html.HiddenFor(e => e.allow_Noondate)
+
+    <div class="row">
+        <div class="page-heading page-header-flex mt-1" style="border-bottom: solid 1px #676969; margin-bottom: 20px;">
+            <div>
+
+                <h2>
+                    @{
+                        var idcheck = Model.Id.ToString();
+                        var addEdit = "";
+                        if (idcheck == "0")
+                        {
+                            addEdit = "Add";
+                        }
+                        else
+                        {
+                            addEdit = "Edit";
+                        }
+                    }
+
+
+                    @addEdit Noon Report By-Pass Date
+                </h2>
+
+                @if (TempData["Error"] != null)
+                {
+                    <p class="alert alert-danger" id="errorMessage">@TempData["Error"]</p>
+                }
+                @if (TempData["Success"] != null)
+                {
+                    <p class="alert alert-success" id="successMessage">@TempData["Success"]</p>
+                }
+
+            </div>
+            <div class="col-md button-row-top">
+                @*<i class="uil uil-check mr-2"></i>*@
+                <button name="Submit" type="submit" class="btn btn-success btn-width">Submit</button>
+                @*<button name="Reset" onClick="window.location.reload();" type="reset" id="btnReset" class="btn btn-danger btn-width"><i class="uil uil-redo mr-2"></i>Reset</button>*@
+                <a name="back" id="btnBack" onclick="goBack()" class="btn btn-primary btn-width"> << Go Back</a>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="page-wrapper" class="content">
+        <div class="wrapper wrapper-content">
+            <div class="container">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            @*<div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Report Type<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        @Html.EditorFor(model => model.CPNo, new { htmlAttributes = new { @autocomplete = "off", @class = "form-control", @maxlength = 50, @required = "true", } })
+                                        <div class="error"></div>
+                                    </div>
+                                </div>*@
+
+                            <div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">Vessel<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    @Html.DropDownListFor(model => model.VesselID, new SelectList(Model.VesselList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", })
+                                    @*<div class="error"></div>*@
+                                </div>
+                            </div>
+
+                            <div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">By-Pass Noon Report Date<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">
+                                    <input type="date" class="form-control" id="AllowNoonDate" name="AllowNoonDate"
+                                           value="@Model.allow_Noondate">
+                                    @*<span id="messageImo"></span>*@
+                                </div>
+                            </div>
+                            <!--<div class="row form-group ">
+                                <label class="col-sm-4 col-form-label">
+                                    <label class="control-label">End Date<sup>*</sup></label>
+                                </label>
+                                <div class="col-sm-8">-->
+                            @*@Html.TextBoxFor(model => model.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "yyyy-mm-dd", @autocomplete = "off", @type = "date", @onkeydown = "return false", @required = "true" })*@
+
+                            @*@Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @autocomplete = "off", @required = "true", @class = "form-control", @type = "date" } })*@
+
+                            <!--<input type="date" id="EndDate" class="form-control" name="EndDate"
+                                           value="Model.enddt">
+
+                                    <span id="messageImo"></span>
+                                </div>
+                            </div>-->
+                            @*<div class="row form-group ">
+                                    <label class="col-sm-4 col-form-label">
+                                        <label class="control-label">Voyage Type<sup>*</sup></label>
+                                    </label>
+                                    <div class="col-sm-8">
+
+                                        @Html.DropDownListFor(model => model.VoyageType, new SelectList(Model.VoyageTypeList, "Value", "Text"), "None Selected", htmlAttributes: new { @class = "form-control select2", @required = "true", })
+                                        <div class="error"></div>
+                                    </div>
+                                </div>*@
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+<script>
+
+    $('#Menu1').removeClass('active');
+    $('#Menu2').removeClass('active');
+    $('#Menu3').addClass('active');
+    $('#Menu4').removeClass('active');
+    $('#Menu5').removeClass('active');
+
+
+</script>
+
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script>
+
+    function ValidateAddNoonReportallow() {
+        debugger
+        /* event = event || window.event || event.srcElement;*/
+        var return_val = false;
+        var VesselID = $("#VesselID option:selected").val();
+        var Allow_Noondate = $("#AllowNoonDate").val();
+
+        if (VesselID != "") {
+            if (Allow_Noondate != "") {
+                $("#allow_Noondate").val(Allow_Noondate);
+                return_val = true;
+            }
+            else {
+                alert("Please Select Date");
+            }
+        }
+        else {
+            alert("Please Select Vessel");
+        }
+
+        if (return_val == false) {
+            event.preventDefault();
+        }
+    }
+
+</script>
+
+<script type="text/javascript">
+
+    setTimeout(function () {
+
+        $('#successMessage').fadeOut('fast');
+        $('#errorMessage').fadeOut('fast');
+    }, 3000);
+
+
+</script>
+
