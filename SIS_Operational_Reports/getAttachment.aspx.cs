@@ -577,6 +577,12 @@ namespace SIS_Operational_Reports
         int checkError = 0;
         private List<string> _savedReportFilesForCurrentImport = new List<string>();
 
+        // Per (reportType|vesselId), tracks the path of the file whose source row in the imported
+        // Excel had the maximum ModifiedDate. SendImportCompletionEmail attaches only these winner
+        // files. Cleared at the start of each .eml import below.
+        private Dictionary<string, string> _latestFilePathPerGroup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, DateTime> _latestModDatePerGroup = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+
         private async void ImportData()
         {
             try
@@ -595,6 +601,8 @@ namespace SIS_Operational_Reports
                 foreach (FileInfo m in Files)
                 {
                     _savedReportFilesForCurrentImport.Clear();
+                    _latestFilePathPerGroup.Clear();
+                    _latestModDatePerGroup.Clear();
                     location = Server.MapPath("~/Inbox/");
                     location += m.Name;
 
@@ -701,10 +709,6 @@ namespace SIS_Operational_Reports
                         {
                             try { SendImportCompletionEmail(_savedReportFilesForCurrentImport, m.Name); }
                             catch (Exception exEmail) { /* log if needed */ }
-                        }
-                        else
-                        {
-                            try { SweepFilesKeepLatestDatePerReport(); } catch { }
                         }
 
                         //File.Copy(Path.Combine(source, destination),
@@ -1391,7 +1395,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -1914,46 +1918,42 @@ namespace SIS_Operational_Reports
         }
 
         /// <summary>
-        /// In filesPath, keep only the .xlsx file with the latest dd_MM_yyyy in its filename for the
-        /// given reportType + vesselId; delete all older-date matches. Ensures only one file per
-        /// (reportType, vesselId) remains in ~/Files/.
+        /// Records <paramref name="fullPath"/> as the winner file for (reportType, vesselId) if the
+        /// supplied <paramref name="rowModifiedDate"/> exceeds the currently tracked max. Each
+        /// Save*ReportExcelToFiles method calls this immediately after writing a file, using the
+        /// row's ModifiedDate from the imported Excel — that is the source of truth for which file
+        /// represents the vessel's latest noon/arrival/etc. entry.
         /// </summary>
-        private void KeepOnlyLatestDateExcel(string filesPath, string reportType, int vesselId)
+        private void TrackLatestModifiedRowForGroup(string reportType, int vesselId, DateTime rowModifiedDate, string fullPath)
         {
-            try
+            if (string.IsNullOrEmpty(reportType) || vesselId <= 0 || string.IsNullOrEmpty(fullPath)) return;
+            string key = reportType + "|" + vesselId;
+            DateTime cur;
+            if (!_latestModDatePerGroup.TryGetValue(key, out cur) || rowModifiedDate > cur)
             {
-                if (string.IsNullOrEmpty(filesPath) || !Directory.Exists(filesPath)) return;
-                string pattern = reportType + "_" + vesselId + "_*.xlsx";
-                string[] matches = Directory.GetFiles(filesPath, pattern);
-                if (matches == null || matches.Length <= 1) return;
-
-                string latestPath = null;
-                DateTime latestDate = DateTime.MinValue;
-                var parsedByPath = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-                foreach (string f in matches)
-                {
-                    string fn = Path.GetFileName(f);
-                    if (!TryParseSyncReportExportFileName(fn, out string rType, out int vId, out string dPart, out _)) continue;
-                    if (!string.Equals(rType, reportType, StringComparison.OrdinalIgnoreCase) || vId != vesselId) continue;
-                    DateTime d;
-                    if (!DateTime.TryParseExact(dPart, "dd_MM_yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out d)) continue;
-                    parsedByPath[f] = d;
-                    if (d > latestDate)
-                    {
-                        latestDate = d;
-                        latestPath = f;
-                    }
-                }
-                if (latestPath == null) return;
-                foreach (var kv in parsedByPath)
-                {
-                    if (string.Equals(kv.Key, latestPath, StringComparison.OrdinalIgnoreCase)) continue;
-                    try { if (File.Exists(kv.Key)) File.Delete(kv.Key); } catch { }
-                }
+                _latestModDatePerGroup[key] = rowModifiedDate;
+                _latestFilePathPerGroup[key] = fullPath;
             }
-            catch { }
         }
 
+        /// <summary>
+        /// Returns the parsed ModifiedDate (or ModifyDate fallback) from the imported Excel row.
+        /// Returns DateTime.MinValue when no parseable value is present, so the very first valid
+        /// row will always win the comparison.
+        /// </summary>
+        private DateTime ReadRowModifiedDate(DataRow row)
+        {
+            if (row == null) return DateTime.MinValue;
+            string[] candidates = { "ModifiedDate", "ModifyDate" };
+            foreach (string col in candidates)
+            {
+                if (!row.Table.Columns.Contains(col)) continue;
+                if (row[col] == DBNull.Value || row[col] == null) continue;
+                DateTime d;
+                if (DateTime.TryParse(row[col].ToString(), out d)) return d;
+            }
+            return DateTime.MinValue;
+        }
 
         private void LogReportExport(string reportType, int vesselId, string datePart, string fileName, string action)
         {
@@ -2119,7 +2119,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -2306,7 +2306,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -2656,117 +2656,32 @@ namespace SIS_Operational_Reports
         }
 
 
-        /// <summary>
-        /// Folder-wide cleanup of ~/Files/: for every report type + vessel, keeps only the .xlsx whose
-        /// filename has the latest dd_MM_yyyy date and deletes all older-date duplicates. Runs
-        /// unconditionally so accumulated stale files from prior runs are removed too.
-        /// </summary>
-        private void SweepFilesKeepLatestDatePerReport()
-        {
-            try
-            {
-                string filesDirSweep = Server.MapPath("~/Files/");
-                if (!Directory.Exists(filesDirSweep)) return;
-                var latestPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var latestDate = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-                foreach (string f in Directory.GetFiles(filesDirSweep, "*.xlsx"))
-                {
-                    string fnSweep = Path.GetFileName(f);
-                    if (!TryParseSyncReportExportFileName(fnSweep, out string rType, out int vId, out string dPart, out _))
-                        continue;
-                    DateTime parsed;
-                    if (!DateTime.TryParseExact(dPart, "dd_MM_yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
-                        continue;
-                    string key = (rType ?? "") + "|" + vId;
-                    if (!latestPath.TryGetValue(key, out string existing))
-                    {
-                        latestPath[key] = f;
-                        latestDate[key] = parsed;
-                        continue;
-                    }
-                    string older;
-                    if (parsed > latestDate[key])
-                    {
-                        older = existing;
-                        latestPath[key] = f;
-                        latestDate[key] = parsed;
-                    }
-                    else
-                    {
-                        older = f;
-                    }
-                    try { if (File.Exists(older)) File.Delete(older); } catch { }
-                }
-            }
-            catch { }
-        }
-
         private void SendImportCompletionEmail(List<string> savedFilePaths, string importedFileName)
         {
-            // Always sweep ~/Files/ first so older-date duplicates are removed even if no new emails
-            // go out this run (e.g. all reports already sent today).
-            SweepFilesKeepLatestDatePerReport();
-
             var vesselID = 0;
             if (savedFilePaths == null || savedFilePaths.Count == 0) return;
 
-            // Scan the Files folder directly (source of truth) so we always see the actual latest saved file,
-            // even if `savedFilePaths` is stale or partial due to overlapping imports. For each (reportType, vesselId)
-            // group, query the DB ModifiedDate via spCommonEditListReport_Dashboard and pick the file whose DB
-            // ModifiedDate is the greatest; report date in filename is the tiebreaker / fallback.
-            string filesDirForScan = Server.MapPath("~/Files/");
-            string[] candidateFiles = Directory.Exists(filesDirForScan)
-                ? Directory.GetFiles(filesDirForScan, "*.xlsx")
-                : new string[0];
-
-            var latestPerGroup = new Dictionary<string, (string Path, DateTime DbModified, DateTime ReportDate)>(StringComparer.OrdinalIgnoreCase);
-            foreach (string path in candidateFiles)
+            // Pick the winner file per (reportType, vesselId) from the in-memory map populated
+            // during the Save*ReportExcelToFiles calls. The winner is the file whose source row in
+            // the imported Excel had the maximum ModifiedDate — i.e., the latest noon/arrival/etc.
+            // the vessel submitted. We do NOT scan ~/Files/ or query the DB: the imported sheet
+            // is the source of truth, and the DB ModifiedDate may have been bumped by later in-app
+            // edits on older rows, which would otherwise mis-win here.
+            var toSend = new List<string>();
+            foreach (var kv in _latestFilePathPerGroup)
             {
-                if (string.IsNullOrEmpty(path) || !File.Exists(path)) continue;
-                string fn = Path.GetFileName(path);
+                string winnerPath = kv.Value;
+                if (string.IsNullOrEmpty(winnerPath) || !File.Exists(winnerPath)) continue;
+
+                string fn = Path.GetFileName(winnerPath);
                 if (!TryParseSyncReportExportFileName(fn, out string reportType, out int vesselId, out string datePart, out _))
                     continue;
-
-                // Convert datePart "dd_MM_yyyy" → DateTime (also used as fallback when DB ModifiedDate is missing)
-                var parts = datePart.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 3) continue;
-                if (!int.TryParse(parts[0], out int dd) || !int.TryParse(parts[1], out int mm) || !int.TryParse(parts[2], out int yy)) continue;
-                DateTime reportDate;
-                try { reportDate = new DateTime(yy, mm, dd); }
-                catch { continue; }
-                string reportdateForSp = reportDate.ToString("yyyy-MM-dd");
-
-                // Pull ModifiedDate from DB for this report record
-                DateTime dbModified = DateTime.MinValue;
-                try
-                {
-                    using (var adp = new SqlDataAdapter("spCommonEditListReport_Dashboard", ConnectionBulder.con))
-                    {
-                        adp.SelectCommand.CommandType = CommandType.StoredProcedure;
-                        adp.SelectCommand.Parameters.AddWithValue("@date", reportdateForSp);
-                        adp.SelectCommand.Parameters.AddWithValue("@VesselId", vesselId);
-                        adp.SelectCommand.Parameters.AddWithValue("@Action", reportType);
-                        DataTable dt = new DataTable();
-                        adp.Fill(dt);
-                        if (dt.Rows.Count > 0 && dt.Columns.Contains("ModifiedDate") && dt.Rows[0]["ModifiedDate"] != DBNull.Value)
-                            dbModified = Convert.ToDateTime(dt.Rows[0]["ModifiedDate"]);
-                    }
-                }
-                catch { /* fall through with MinValue; reportDate fallback will be used */ }
 
                 vesselID = vesselId;
                 if (IsReportEmailAlreadySent(reportType, vesselId, datePart)) continue;
 
-                string groupKey = reportType + "|" + vesselId;
-                if (!latestPerGroup.TryGetValue(groupKey, out var existing)
-                    || dbModified > existing.DbModified
-                    || (dbModified == existing.DbModified && reportDate > existing.ReportDate))
-                {
-                    latestPerGroup[groupKey] = (path, dbModified, reportDate);
-                }
+                toSend.Add(winnerPath);
             }
-            var toSend = new List<string>();
-            foreach (var kv in latestPerGroup.Values) toSend.Add(kv.Path);
             if (toSend.Count == 0) return;
 
             string from = ConfigurationManager.AppSettings["mailmsg"] ?? "noreply@mooringplan.com";
@@ -3593,7 +3508,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -4123,7 +4038,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -4414,7 +4329,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -4708,7 +4623,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -5183,7 +5098,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -5583,7 +5498,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -5785,7 +5700,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
@@ -5907,7 +5822,7 @@ namespace SIS_Operational_Reports
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
-                KeepOnlyLatestDateExcel(filesPath, reportType, vesselId);
+                TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
         }
 
