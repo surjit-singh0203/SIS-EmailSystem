@@ -17,12 +17,12 @@ namespace SIS_Operational_Reports.Common
     /// </summary>
     public static class FreshWaterReportEmailTemplate
     {
-        private const string DateFormat = "dd-MMM-yyyy";
-        private const string DateTimeFormat = "dd-MMM-yyyy HH:mm";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/FreshWaterReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime dt) => dt != DateTime.MinValue ? dt.ToString(DateTimeFormat) : "-";
 
@@ -88,16 +88,16 @@ namespace SIS_Operational_Reports.Common
             string portDisplay = ResolvePortDisplay(r);
 
             var sb = new StringBuilder();
-            sb.Append(KvRow("Port", portDisplay)).Append(KvRow("Facility Name", r.Facility_Name));
-            sb.Append(KvRow("Vendor Details", r.VendorDetails));
+            sb.Append(KvRow("Port Name", portDisplay)).Append(KvRow("Facility Name", r.Facility_Name));
             sb.Append(KvRow("Received Date", Vdt(r.Received_Date)));
+            sb.Append(KvRow("Vendor Details", r.VendorDetails));
             string headerRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("Initial Meter Reading Supply (MT)", r.Intial_Meter_Reading_MT_supplied));
-            sb.Append(KvRow("Final Meter Reading (MT)", r.Final_Meter_Reading_MT));
-            sb.Append(KvRow("Difference Meter Reading (MT)", r.Difference_in_Meter_Reading_MT));
-            sb.Append(KvRow("QTY Received (MT)", r.QTY_supplied_MT));
+            sb.Append(KvRow("Initial Meter Reading Supply(MT)", r.Intial_Meter_Reading_MT_supplied));
+            sb.Append(KvRow("Final Meter Reading(MT)", r.Final_Meter_Reading_MT));
+            sb.Append(KvRow("Difference Meter Reading(MT)", r.Difference_in_Meter_Reading_MT));
+            sb.Append(KvRow("QTY Received(MT)", r.QTY_supplied_MT));
             string meterRows = sb.ToString();
 
             return template
@@ -121,24 +121,24 @@ namespace SIS_Operational_Reports.Common
             // Fresh Water Details header
             sb.Append(@"<tr><td colspan=""8"" style=""padding:12px;background:#555;color:#fff;font-size:16px;font-weight:bold;text-align:center;"">Fresh Water Report - Details (").Append(V(vesselName)).Append(@")</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Port", portDisplay)).Append(KvRow("Facility Name", r.Facility_Name));
-            sb.Append(KvRow("Vendor Details", r.VendorDetails));
+            sb.Append(KvRow("Port Name", portDisplay)).Append(KvRow("Facility Name", r.Facility_Name));
             sb.Append(KvRow("Received Date", Vdt(r.Received_Date)));
+            sb.Append(KvRow("Vendor Details", r.VendorDetails));
             sb.Append(@"</table></td></tr>");
 
             // Meter Reading & Quantity
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Meter Reading & Quantity</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Initial Meter Reading Supply (MT)", r.Intial_Meter_Reading_MT_supplied));
-            sb.Append(KvRow("Final Meter Reading (MT)", r.Final_Meter_Reading_MT));
-            sb.Append(KvRow("Difference Meter Reading (MT)", r.Difference_in_Meter_Reading_MT));
-            sb.Append(KvRow("QTY Received (MT)", r.QTY_supplied_MT));
+            sb.Append(KvRow("Initial Meter Reading Supply(MT)", r.Intial_Meter_Reading_MT_supplied));
+            sb.Append(KvRow("Final Meter Reading(MT)", r.Final_Meter_Reading_MT));
+            sb.Append(KvRow("Difference Meter Reading(MT)", r.Difference_in_Meter_Reading_MT));
+            sb.Append(KvRow("QTY Received(MT)", r.QTY_supplied_MT));
             sb.Append(@"</table></td></tr>");
 
             // Attached Document
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Attached Document</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("File Name", r.File_Name));
+            sb.Append(KvRow("Attachment", r.File_Name));
             sb.Append(@"</table></td></tr>");
 
             sb.Append(@"</table>");

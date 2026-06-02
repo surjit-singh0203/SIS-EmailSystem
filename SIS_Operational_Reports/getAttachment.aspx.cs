@@ -582,6 +582,10 @@ namespace SIS_Operational_Reports
         // files. Cleared at the start of each .eml import below.
         private Dictionary<string, string> _latestFilePathPerGroup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private Dictionary<string, DateTime> _latestModDatePerGroup = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+        // Every per-row Excel saved during this import, paired with that row's ModifiedDate.
+        // Used by SendImportCompletionEmail to give first-time recipients (LastSent == NULL)
+        // the full set of files, while returning recipients keep getting only the winners above.
+        private List<KeyValuePair<string, DateTime>> _allSavedFiles = new List<KeyValuePair<string, DateTime>>();
 
         private async void ImportData()
         {
@@ -603,6 +607,7 @@ namespace SIS_Operational_Reports
                     _savedReportFilesForCurrentImport.Clear();
                     _latestFilePathPerGroup.Clear();
                     _latestModDatePerGroup.Clear();
+                    _allSavedFiles.Clear();
                     location = Server.MapPath("~/Inbox/");
                     location += m.Name;
 
@@ -959,6 +964,13 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
+
+                    // BunkerReport is handled by its dedicated branch above (InsertUpdateBunkerReport SP)
+                    // and therefore never falls into the trailing `else` block where DailyNoon/Arrival/etc.
+                    // get their Save*ReportExcelToFiles call. Generate the per-row Excel here instead so
+                    // SendImportCompletionEmail can pick it up.
+                    try { SaveBunkerReportExcelToFiles(tbls); }
+                    catch (Exception exBunker) { }
                 }
 
                 else if (sheetName == "FreshWaterReport")
@@ -980,7 +992,7 @@ namespace SIS_Operational_Reports
                         string Received_Date = tbls.Rows[i]["Received_Date"].ToString();
                         bool Is_Active = Convert.ToBoolean(tbls.Rows[i]["Is_Active"]);
                         string Created_Date = (tbls.Rows[i]["Created_Date"]).ToString();
-                        // string Modified_Date = (tbls.Rows[i]["Modified_Date"]).ToString();
+                         string Modified_Date = (tbls.Rows[i]["Modified_Date"]).ToString();
 
                         using (SqlDataAdapter adapter = new SqlDataAdapter("spInsertFreshWaterReport", ConnectionBulder.con))
                         {
@@ -999,7 +1011,7 @@ namespace SIS_Operational_Reports
                             adapter.SelectCommand.Parameters.AddWithValue("@VesselId", VesselId);
                             adapter.SelectCommand.Parameters.AddWithValue("@Received_Date", Received_Date);
                             adapter.SelectCommand.Parameters.AddWithValue("@Created_Date", Created_Date);
-                            // adapter.SelectCommand.Parameters.AddWithValue("@Modified_Date", Modified_Date);
+                            adapter.SelectCommand.Parameters.AddWithValue("@Modified_Date", Modified_Date);
 
                             using (DataTable dataTable = new DataTable())
                             {
@@ -1008,6 +1020,12 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
+
+                    // Same reason as BunkerReport above: FreshWaterReport short-circuits the if/else-if
+                    // chain via its dedicated branch, so the Save call in the trailing `else` block never
+                    // runs for it. Trigger the per-row Excel generation here.
+                    try { SaveFreshWaterReportExcelToFiles(tbls); }
+                    catch (Exception exFreshWater) { }
                 }
 
                 else if (sheetName == "tbl_BunkerFuelType")
@@ -1148,7 +1166,7 @@ namespace SIS_Operational_Reports
                         catch (Exception exBerthing) { }
                     }
 
-                   // Generate and save Loading Report Excel to Files folder(after Update)
+                    // Generate and save Loading Report Excel to Files folder(after Update)
                     if (sheetName == "LoadingReport")
                     {
                         try
@@ -1170,25 +1188,8 @@ namespace SIS_Operational_Reports
 
 
 
-                    //// Generate and save Bunker Report Excel to Files folder (after Update)
-                    if (sheetName == "BunkerReport")
-                    {
-                        try
-                        {
-                            SaveBunkerReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exBunker) { }
-                    }
-
-                    // Generate and save Fresh Water Report Excel to Files folder (after Update)
-                    if (sheetName == "FreshWaterReport")
-                    {
-                        try
-                        {
-                            SaveFreshWaterReportExcelToFiles(tbls);
-                        }
-                        catch (Exception exFreshWater) { }
-                    }
+                    // BunkerReport and FreshWaterReport save calls live inside their dedicated branches
+                    // earlier in the if/else-if chain — they short-circuit and never reach this block.
 
 
                     ///////////////////////////////////////////////////////////////
@@ -1470,10 +1471,26 @@ namespace SIS_Operational_Reports
                     }
                     catch { }
                 }
+                // Resolve "In Port Status" label from PortStatus FK so the Excel shows
+                // "Others" instead of the raw id "7" (matches the dropdown text on the form).
+                if (string.IsNullOrWhiteSpace(portStatusText) || int.TryParse(portStatusText, out _))
+                {
+                    try
+                    {
+                        if (r.PortStatus.HasValue && r.PortStatus.Value > 0)
+                        {
+                            var portStatusList = DailyNoonReport.portSList();
+                            var psMatch = portStatusList?.FirstOrDefault(p => p.Id == r.PortStatus.Value);
+                            if (psMatch != null && !string.IsNullOrWhiteSpace(psMatch.Status))
+                                portStatusText = psMatch.Status.Trim();
+                        }
+                    }
+                    catch { }
+                }
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Status", r.VesselStatus ?? "");
-                AddKeyValueRow(ws, ref row, "Latitude", r.Latitude ?? "");
-                AddKeyValueRow(ws, ref row, "Longitude", r.Longitude ?? "");
+                AddKeyValueRow(ws, ref row, "Latitude", FormatLatLonForExcel(r.Latitude));
+                AddKeyValueRow(ws, ref row, "Longitude", FormatLatLonForExcel(r.Longitude));
                 AddKeyValueRow(ws, ref row, "At Sea/In Port", r.AtSeaOrPort ?? "");
                 AddKeyValueRow(ws, ref row, "In Port Status", portStatusText);
                 AddKeyValueRow(ws, ref row, "Displacement(MT)", r.Displacement);
@@ -1550,7 +1567,7 @@ namespace SIS_Operational_Reports
             ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
             int row = 1;
             ws.Cell(row, 1).Value = "Daily Noon Report - Engine";
-            var rngHdr = ws.Range(row, 1, row, 3);
+            var rngHdr = ws.Range(row, 1, row, 9);
             rngHdr.Merge();
             rngHdr.Style.Font.Bold = true;
             rngHdr.Style.Font.FontSize = 16;
@@ -1573,22 +1590,6 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Min Exhaust Temp (Deg Centigrade)", r.Min_Exhaust_Temp);
                 AddKeyValueRow(ws, ref row, "SW Temp (Deg Centigrade)", r.SW_Temp);
                 AddKeyValueRow(ws, ref row, "ER Temp (Deg Centigrade)", r.ER_Temp);
-            }
-            row++;
-
-            ws.Cell(row, 1).Value = "LO & HO Consumptions";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "MECC Consumption (Ltrs)", r.LO_HO_Cons_MECC);
-                AddKeyValueRow(ws, ref row, "MECC ROB (Ltrs)", r.LO_HO_Cons_MECC_ROB);
-                AddKeyValueRow(ws, ref row, "MECYL Consumption (Ltrs)", r.LO_HO_Cons_MECYL);
-                AddKeyValueRow(ws, ref row, "MECYL ROB (Ltrs)", r.LO_HO_Cons_MECYL_ROB);
-                AddKeyValueRow(ws, ref row, "AECC Consumption (Ltrs)", r.LO_HO_Cons_AECC);
-                AddKeyValueRow(ws, ref row, "AECC ROB (Ltrs)", r.LO_HO_Cons_AECC_ROB);
-                AddKeyValueRow(ws, ref row, "HYDRAULIC Oil Consumption (Ltrs)", r.LO_HO_Cons_HYDR_Oil);
-                AddKeyValueRow(ws, ref row, "HYDRAULIC Oil ROB (Ltrs)", r.LO_HO_Cons_HYDR_Oil_ROB);
             }
             row++;
 
@@ -1660,6 +1661,39 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            ws.Cell(row, 1).Value = "LO & HO Consumptions";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Consumption";
+                ws.Cell(row, 3).Value = "ROB";
+                ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "MECC (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECC);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECC_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "MECYL (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECYL);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECYL_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "AECC (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_AECC);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_AECC_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "HYDRAULIC Oil (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_HYDR_Oil);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_HYDR_Oil_ROB);
+                row++;
+            }
+            row++;
+
             ws.Cell(row, 1).Value = "Boiler's";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
@@ -1672,17 +1706,129 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            // Fuel Consumption in MT — full layout mirroring email template:
+            // Main Engine, Aux Engine, Boiler, FRAMO, IGG & Incinerator, Events, Total
             ws.Cell(row, 1).Value = "Fuel Consumption in MT";
+            ApplyLightGrayTitle(ws, row, 1, 9);
+            row++;
+            AddFuelConsEngineBlock(ws, ref row, "Main Engine", true, dtFuelCons, 2, 3, 4, 5);
+            AddFuelConsEngineBlock(ws, ref row, "Aux Engine", true, dtFuelCons, 7, 8, 9, 10);
+            AddFuelConsEngineBlock(ws, ref row, "Boiler", false, dtFuelCons, 11, 12, 13, 14);
+            AddFuelConsEngineBlock(ws, ref row, "Framo System", false, dtFuelCons, 15, 16, 17, 18);
+            AddFuelConsIggIncBlock(ws, ref row, dtFuelCons);
+            AddFuelConsEventsBlock(ws, ref row, dtFuelCons);
+            AddFuelConsTotalBlock(ws, ref row, dtFuelCons);
+
+            ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>Writes an engine-style fuel consumption block (Main/Aux/Boiler/FRAMO):
+        /// title row, header (Fuel | At Sea | MANOEUV | Anchor/Wait | Berth [| Sub Total]), VLSFO row, MDO row.</summary>
+        private void AddFuelConsEngineBlock(IXLWorksheet ws, ref int row, string title, bool showSubTotal, DataTable dtFuelCons, int ctSea, int ctMan, int ctWait, int ctBerth)
+        {
+            int cols = showSubTotal ? 6 : 5;
+            ws.Cell(row, 1).Value = title;
+            ApplyLightGrayTitle(ws, row, 1, cols);
+            row++;
+            ws.Cell(row, 1).Value = "Fuel";
+            ws.Cell(row, 2).Value = "AT SEA";
+            ws.Cell(row, 3).Value = "MANOEUV";
+            ws.Cell(row, 4).Value = "ANCHOR/WAIT";
+            ws.Cell(row, 5).Value = "BERTH";
+            if (showSubTotal) ws.Cell(row, 6).Value = "SUB TOTAL";
+            ws.Range(row, 1, row, cols).Style.Font.Bold = true;
+            row++;
+            string[] fuels = { "VLSFO", "MDO" };
+            foreach (string ft in fuels)
+            {
+                decimal vSea = GetFuelConsByTypeAndConsType(dtFuelCons, ft, ctSea);
+                decimal vMan = GetFuelConsByTypeAndConsType(dtFuelCons, ft, ctMan);
+                decimal vWait = GetFuelConsByTypeAndConsType(dtFuelCons, ft, ctWait);
+                decimal vBerth = GetFuelConsByTypeAndConsType(dtFuelCons, ft, ctBerth);
+                ws.Cell(row, 1).Value = ft;
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vSea);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vMan);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vWait);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vBerth);
+                if (showSubTotal)
+                {
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), vSea + vMan + vWait + vBerth);
+                    ws.Cell(row, 6).Style.Font.Bold = true;
+                }
+                row++;
+            }
+            row++;
+        }
+
+        /// <summary>Writes the IGG & Incinerator block: title row, header (Fuel | IGG | Incinerator), VLSFO row, MDO row.
+        /// IGG=ConsTypeId 19, Incinerator=ConsTypeId 28.</summary>
+        private void AddFuelConsIggIncBlock(IXLWorksheet ws, ref int row, DataTable dtFuelCons)
+        {
+            ws.Cell(row, 1).Value = "IGG & Incinerator";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
+            ws.Cell(row, 1).Value = "Fuel";
+            ws.Cell(row, 2).Value = "IGG";
+            ws.Cell(row, 3).Value = "Incinerator";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
+            string[] fuels = { "VLSFO", "MDO" };
+            foreach (string ft in fuels)
             {
-                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
-                AddKeyValueRow(ws, ref row, "VLSFO (Main/Aux/Boiler/Total)", FormatDec(vlsfo));
-                AddKeyValueRow(ws, ref row, "MDO (Main/Aux/Boiler/Total)", FormatDec(mdo));
+                ws.Cell(row, 1).Value = ft;
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), GetFuelConsByTypeAndConsType(dtFuelCons, ft, 19));
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), GetFuelConsByTypeAndConsType(dtFuelCons, ft, 28));
+                row++;
             }
-            ws.Columns().AdjustToContents();
+            row++;
+        }
+
+        /// <summary>Writes the Events block: title row, header (Fuel + 8 event names), VLSFO row, MDO row.
+        /// Event ConsTypeIds 20..27 = Stoppage, Deviation, SlowSteaming, BadWeather, COTPrep, CargoHeating, BWExchange, Others.</summary>
+        private void AddFuelConsEventsBlock(IXLWorksheet ws, ref int row, DataTable dtFuelCons)
+        {
+            int[] eventConsTypeIds = { 20, 21, 22, 23, 24, 25, 26, 27 };
+            string[] eventLabels = { "Stoppage", "Deviation", "Slow Steaming", "Bad Weather", "COT Prep", "Cargo Heating", "BW Exchange", "Others" };
+            ws.Cell(row, 1).Value = "Events";
+            ApplyLightGrayTitle(ws, row, 1, 9);
+            row++;
+            ws.Cell(row, 1).Value = "Fuel";
+            for (int i = 0; i < eventLabels.Length; i++) ws.Cell(row, i + 2).Value = eventLabels[i];
+            ws.Range(row, 1, row, 9).Style.Font.Bold = true;
+            row++;
+            string[] fuels = { "VLSFO", "MDO" };
+            foreach (string ft in fuels)
+            {
+                ws.Cell(row, 1).Value = ft;
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int i = 0; i < eventConsTypeIds.Length; i++)
+                    SetCellValueWithDecimalFormat(ws.Cell(row, i + 2), GetFuelConsByTypeAndConsType(dtFuelCons, ft, eventConsTypeIds[i]));
+                row++;
+            }
+            row++;
+        }
+
+        /// <summary>Writes the Total summary block: title row, then VLSFO Total and MDO Total rows
+        /// pinned to 3 decimal places (no "MT" suffix) to match the web view.</summary>
+        private void AddFuelConsTotalBlock(IXLWorksheet ws, ref int row, DataTable dtFuelCons)
+        {
+            decimal vlsfoTotal = GetFuelConsByType(dtFuelCons, "VLSFO");
+            decimal mdoTotal = GetFuelConsByType(dtFuelCons, "MDO");
+            ws.Cell(row, 1).Value = "Total";
+            ApplyLightGrayTitle(ws, row, 1, 2);
+            row++;
+            ws.Cell(row, 1).Value = "VLSFO TOTAL";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            ws.Cell(row, 2).Value = vlsfoTotal.ToString("0.000");
+            ws.Cell(row, 2).Style.Font.Bold = true;
+            row++;
+            ws.Cell(row, 1).Value = "MDO TOTAL";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            ws.Cell(row, 2).Value = mdoTotal.ToString("0.000");
+            ws.Cell(row, 2).Style.Font.Bold = true;
+            row++;
         }
 
         private void AddDailyNoonCargoSheet(XLWorkbook wb, DailyNoonReport r, List<DNR_Cargo_Tank> cargoTanks, List<DNR_Ballast_Tank> ballastTanks, List<DNR_Void_Space> voidSpaces, DataTable dtNRCargo)
@@ -1748,6 +1894,26 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            ws.Cell(row, 1).Value = "E/R Tanks";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Bilge";
+                ws.Cell(row, 3).Value = "Sludge";
+                ws.Cell(row, 4).Value = "Waste Oil";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "ROB (m3)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.ER_Bilge_ROB);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.ER_Sludge_ROB);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.ER_WasteOil_ROB);
+                row++;
+            }
+            row++;
+
             ws.Cell(row, 1).Value = "Ballast";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
@@ -1759,6 +1925,17 @@ namespace SIS_Operational_Reports
             row++;
             foreach (var vs in voidSpaces ?? new List<DNR_Void_Space>())
                 AddKeyValueRow(ws, ref row, vs.TankName ?? "", vs.Sounding);
+            row++;
+
+            ws.Cell(row, 1).Value = "Other Soundings in mtrs";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Pump Room bilge max sounding", r.PumpRoomMaxSounding);
+                AddKeyValueRow(ws, ref row, "Chain Locker 1", r.ChainLocker1);
+                AddKeyValueRow(ws, ref row, "Chain Locker 2", r.ChainLocker2);
+            }
             row++;
 
             ws.Cell(row, 1).Value = "Fresh Water";
@@ -1784,12 +1961,29 @@ namespace SIS_Operational_Reports
                 ws.Range(row, 1, row, cTanks.Count + 1).Style.Font.Bold = true;
                 row++;
                 ws.Cell(row, 1).Value = "Ullage (mtrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
                 for (int c = 0; c < cTanks.Count; c++)
                     SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), cTanks[c].Ullage);
                 row++;
                 ws.Cell(row, 1).Value = "MT Qty";
+                ws.Cell(row, 1).Style.Font.Bold = true;
                 for (int c = 0; c < cTanks.Count; c++)
                     SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), cTanks[c].Qty_MT);
+                row++;
+                ws.Cell(row, 1).Value = "Oxygen (% Volume)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int c = 0; c < cTanks.Count; c++)
+                    SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), cTanks[c].Oxygen);
+                row++;
+                ws.Cell(row, 1).Value = "H2S (PPM)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int c = 0; c < cTanks.Count; c++)
+                    SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), cTanks[c].H2S);
+                row++;
+                ws.Cell(row, 1).Value = "HC (% Volume)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int c = 0; c < cTanks.Count; c++)
+                    SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), cTanks[c].HC);
                 row++;
             }
             row++;
@@ -1806,18 +2000,27 @@ namespace SIS_Operational_Reports
                 ws.Range(row, 1, row, bTanks.Count + 1).Style.Font.Bold = true;
                 row++;
                 ws.Cell(row, 1).Value = "Sounding (mtrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
                 for (int c = 0; c < bTanks.Count; c++)
                     SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), bTanks[c].Sounding);
                 row++;
                 ws.Cell(row, 1).Value = "Cubic Vol";
+                ws.Cell(row, 1).Style.Font.Bold = true;
                 for (int c = 0; c < bTanks.Count; c++)
                     SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), bTanks[c].Qty_Vol);
+                row++;
+                ws.Cell(row, 1).Value = "HC (% Volume)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int c = 0; c < bTanks.Count; c++)
+                    SetCellValueWithDecimalFormat(ws.Cell(row, c + 2), bTanks[c].HC);
                 row++;
             }
             ws.Columns().AdjustToContents();
         }
 
-        private const string ExcelDecimalFormat = "0.000";
+        // "0.##########" strips trailing zeros in Excel display: 9.750 → 9.75, 10 → 10, 20.7 → 20.7.
+        // Matches the email template's V(decimal?) behaviour.
+        private const string ExcelDecimalFormat = "0.##########";
 
         private void AddKeyValueRow(IXLWorksheet ws, ref int row, string label, object value)
         {
@@ -1827,11 +2030,71 @@ namespace SIS_Operational_Reports
             row++;
         }
 
+        /// <summary>Like AddKeyValueRow but lets the caller force a specific Excel number format
+        /// (e.g. "0.000" for Draft Mtrs so trailing zeros are preserved).</summary>
+        private void AddKeyValueRowWithFormat(IXLWorksheet ws, ref int row, string label, object value, string numberFormat)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            SetCellValueWithDecimalFormat(ws.Cell(row, 2), value, numberFormat);
+            row++;
+        }
+
+        /// <summary>Like AddKeyValueRow but writes the value as plain text and forces the cell's
+        /// data type to Text — used for pre-formatted date strings so Excel doesn't reinterpret
+        /// "2025-10-03 06:42" through the workstation locale.</summary>
+        private void AddKeyValueTextRow(IXLWorksheet ws, ref int row, string label, string value)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            var valCell = ws.Cell(row, 2);
+            // Set format BEFORE Value so ClosedXML doesn't try to interpret the date-looking string as a number.
+            valCell.Style.NumberFormat.Format = "@";
+            valCell.SetDataType(XLCellValues.Text);
+            valCell.Value = value ?? "";
+            row++;
+        }
+
+        /// <summary>True when the Bunker Received DataTable has at least one row with a non-empty
+        /// Receipt value. Used to skip the "Bunker Received in MT" section in the Arrival Excel
+        /// when no bunker data was entered for this report.</summary>
+        private bool ArrivalBunkerHasData(DataTable dtBunker)
+        {
+            if (dtBunker == null || dtBunker.Rows.Count == 0) return false;
+            if (!dtBunker.Columns.Contains("Receipt")) return false;
+            foreach (DataRow dr in dtBunker.Rows)
+            {
+                object v = dr["Receipt"];
+                if (v == null || v == DBNull.Value) continue;
+                if (!string.IsNullOrWhiteSpace(v.ToString())) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Writes a DataRow date column to the given cell as text in "yyyy-MM-dd HH:mm"
+        /// format. Forces the cell type to Text so Excel doesn't reinterpret the date string
+        /// through the workstation locale.</summary>
+        private void AddDateTextCell(IXLCell cell, DataRow dr, string col)
+        {
+            string s = "";
+            if (dr.Table.Columns.Contains(col) && dr[col] != null && dr[col] != DBNull.Value)
+            {
+                DateTime d;
+                if (DateTime.TryParse(dr[col].ToString(), out d))
+                    s = d.ToString("yyyy-MM-dd HH:mm");
+            }
+            cell.Style.NumberFormat.Format = "@";
+            cell.SetDataType(XLCellValues.Text);
+            cell.Value = s;
+        }
+
         /// <summary>
-        /// Sets cell value; for numeric types applies decimal format only when value has fractional part (e.g. 6.75 -> 6.750).
-        /// IDs and whole numbers (e.g. Voy No. 9413779) are not forced to decimal format.
+        /// Sets cell value; for numeric values applies a format that strips trailing zeros
+        /// ("0.##########"): 9.750 → 9.75, 20.7 → 20.7. Whole numbers (66, 10, 0) skip the
+        /// format so Excel doesn't render a trailing decimal point ("66." bug). Non-numeric
+        /// strings are written as text without any formatting.
         /// </summary>
-        private void SetCellValueWithDecimalFormat(IXLCell cell, object value, string numberFormat = "0.000")
+        private void SetCellValueWithDecimalFormat(IXLCell cell, object value, string numberFormat = "0.##########")
         {
             if (value == null || value == DBNull.Value)
             {
@@ -1842,8 +2105,13 @@ namespace SIS_Operational_Reports
             if (decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out d))
             {
                 cell.Value = d;
-                // Only apply decimal format when value has fractional part; IDs/whole numbers stay as-is
-                if (d != Math.Truncate(d))
+                // Skip the decimal format for whole numbers — Excel's number-format engine
+                // renders "0.##########" as "66." (trailing dot) for integer values because
+                // the literal '.' in the format string is always emitted. Caller can still
+                // force a specific format (e.g. "0.000" for Draft Mtrs) by passing it explicitly.
+                bool isWholeNumber = d == Math.Truncate(d);
+                bool callerForcedFormat = !string.Equals(numberFormat, "0.##########", StringComparison.Ordinal);
+                if (!isWholeNumber || callerForcedFormat)
                     cell.Style.NumberFormat.Format = numberFormat;
             }
             else
@@ -1859,6 +2127,18 @@ namespace SIS_Operational_Reports
             rng.Style.Font.Bold = true;
             rng.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             rng.Style.Fill.BackgroundColor = XLColor.FromArgb(211, 211, 211);
+        }
+
+        /// <summary>Format nautical Latitude/Longitude for Excel: "21,58.29 S" → "21° 58.29' S".
+        /// Returns "" for null/empty, original trimmed string when unparseable. Mirrors the email template's FormatLatLon.</summary>
+        private string FormatLatLonForExcel(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return "";
+            s = s.Trim();
+            var m = System.Text.RegularExpressions.Regex.Match(s, @"^\s*(\d+)\s*,\s*([\d.]+)\s*([NSEWnsew])?\s*$");
+            if (!m.Success) return s;
+            string dir = m.Groups[3].Success ? (" " + m.Groups[3].Value.ToUpperInvariant()) : "";
+            return m.Groups[1].Value + "° " + m.Groups[2].Value + "'" + dir;
         }
 
         private decimal GetFuelConsByType(DataTable dt, string fuelType)
@@ -1897,12 +2177,12 @@ namespace SIS_Operational_Reports
             return sum;
         }
 
-        private string FormatDec(decimal d) { return d.ToString("0.000"); }
+        private string FormatDec(decimal d) { return d.ToString("0.##########"); }
         private string FormatCargoVal(object val)
         {
-            if (val == null || val == DBNull.Value) return "0.00";
+            if (val == null || val == DBNull.Value) return "0";
             decimal d;
-            return decimal.TryParse(val.ToString(), out d) ? d.ToString("0.00") : "0.00";
+            return decimal.TryParse(val.ToString(), out d) ? d.ToString("0.##########") : "0";
         }
 
 
@@ -1934,6 +2214,7 @@ namespace SIS_Operational_Reports
                 _latestModDatePerGroup[key] = rowModifiedDate;
                 _latestFilePathPerGroup[key] = fullPath;
             }
+            _allSavedFiles.Add(new KeyValuePair<string, DateTime>(fullPath, rowModifiedDate));
         }
 
         /// <summary>
@@ -2344,56 +2625,58 @@ namespace SIS_Operational_Reports
                     catch { }
                 }
                 if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
-                // Resolve Leg from VoyageLeg scoped by VoyageId+VesselId, trying DepLegPortId then NextLegPortId.
-                if (string.IsNullOrEmpty(legText))
+                // Resolve Dep leg and Next leg separately so the header has two distinct fields
+                // (Leg + Next Leg) matching the web view.
+                string depLegText = legText; // dtMain.Leg fallback if already populated
+                string nextLegText = "";
+                try
                 {
-                    try
+                    if (string.IsNullOrEmpty(depLegText) && r.DepLegPortId > 0)
                     {
-                        foreach (int legId in new[] { r.DepLegPortId, r.NextLegPortId })
+                        using (SqlDataAdapter adp = new SqlDataAdapter(
+                            "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.DepLegPortId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
                         {
-                            if (legId <= 0 || !string.IsNullOrEmpty(legText)) continue;
-                            using (SqlDataAdapter adp = new SqlDataAdapter(
-                                "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
-                            {
-                                DataTable dtLeg = new DataTable();
-                                adp.Fill(dtLeg);
-                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
-                            }
-                        }
-                        if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
-                        {
-                            using (SqlDataAdapter adp = new SqlDataAdapter(
-                                "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId + " and IsActive=1", ConnectionBulder.con))
-                            {
-                                DataTable dtLeg = new DataTable();
-                                adp.Fill(dtLeg);
-                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
-                            }
+                            DataTable dtLeg = new DataTable();
+                            adp.Fill(dtLeg);
+                            if (dtLeg.Rows.Count > 0) depLegText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
                         }
                     }
-                    catch { }
+                    if (r.NextLegPortId > 0)
+                    {
+                        using (SqlDataAdapter adp = new SqlDataAdapter(
+                            "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.NextLegPortId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
+                        {
+                            DataTable dtLeg = new DataTable();
+                            adp.Fill(dtLeg);
+                            if (dtLeg.Rows.Count > 0) nextLegText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                        }
+                    }
                 }
+                catch { }
+                // Header field order matches the web view: Voy No., Leg, Dep. Port, Draft Fwd,
+                // Next Leg, Next Port, ETA, Draft Mid, Report Date, Draft Aft.
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
-                AddKeyValueRow(ws, ref row, "Departure Port", r.DeparturePort ?? "");
+                AddKeyValueRow(ws, ref row, "Leg", depLegText);
+                AddKeyValueRow(ws, ref row, "Dep. Port", r.DeparturePort ?? "");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd, "0.000");
+                AddKeyValueRow(ws, ref row, "Next Leg", nextLegText);
                 AddKeyValueRow(ws, ref row, "Next Port", r.NextPort ?? "");
-                AddKeyValueRow(ws, ref row, "Report Date", r.ReportDate != null ? Convert.ToDateTime(r.ReportDate).ToString(ExcelDateFormat) : "");
-                AddKeyValueRow(ws, ref row, "ETA", r.ETA != null ? Convert.ToDateTime(r.ETA).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "Leg", legText);
-                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
-                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
-                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
+                AddKeyValueTextRow(ws, ref row, "ETA", r.ETA != null ? Convert.ToDateTime(r.ETA).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid, "0.000");
+                AddKeyValueTextRow(ws, ref row, "Report Date", r.ReportDate != null ? Convert.ToDateTime(r.ReportDate).ToString(ExcelDateFormat) : "");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft, "0.000");
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Manoeuvring & SBE/RFA";
+            // Manoeuvring section — only Hours (2 decimals) and Distance. SBE/RFA date fields
+            // are intentionally NOT rendered, matching the web view.
+            ws.Cell(row, 1).Value = "Manoeuvring";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Manoeuvring Hrs", r.Manoeuvring_Hrs);
+                AddKeyValueRowWithFormat(ws, ref row, "Manoeuvring Hours", r.Manoeuvring_Hrs, "0.00");
                 AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
-                AddKeyValueRow(ws, ref row, "SBE Date & Time", r.SBE_DateT != null ? Convert.ToDateTime(r.SBE_DateT).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "RFA Date & Time", r.RFA_DateT != null ? Convert.ToDateTime(r.RFA_DateT).ToString(ExcelDateTimeFormat) : "");
             }
             row++;
 
@@ -2415,6 +2698,21 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            // Other Receipts, Repairs, Crew Change & Landed — between Non-Routine Events and Weather.
+            ws.Cell(row, 1).Value = "Other Receipts, Repairs, Crew Change & Landed";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "CTM (Mention Currency & Amount)", r.CTM ?? "");
+                AddKeyValueRow(ws, ref row, "SPARES (Mention Revision Numbers)", r.Spares ?? "");
+                AddKeyValueRow(ws, ref row, "STORES (Mention Revision Numbers)", r.Stores ?? "");
+                AddKeyValueRow(ws, ref row, "REPAIRS CONDUCTED (Mention details)", r.RepairsConducted ?? "");
+                AddKeyValueRow(ws, ref row, "CREW CHANGE (No of Crew)", r.CrewChange);
+                AddKeyValueRow(ws, ref row, "ITEMS LANDED (Mention Details)", r.ItemsLanded ?? "");
+            }
+            row++;
+
             ws.Cell(row, 1).Value = "Weather";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
@@ -2433,7 +2731,8 @@ namespace SIS_Operational_Reports
             ws.Cell(row, 1).Value = "Departure Report Remarks";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
+            // Per spec: empty value → leave blank in Excel (no "-" placeholder).
+            AddKeyValueRow(ws, ref row, "Departure Report Remarks", r?.Remarks ?? "");
             ws.Columns().AdjustToContents();
         }
 
@@ -2443,103 +2742,158 @@ namespace SIS_Operational_Reports
             ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
             int row = 1;
             ws.Cell(row, 1).Value = "Departure Report - Engine";
-            var rngHdr = ws.Range(row, 1, row, 3);
+            var rngHdr = ws.Range(row, 1, row, 9);
             rngHdr.Merge();
             rngHdr.Style.Font.Bold = true;
             rngHdr.Style.Font.FontSize = 16;
             rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             row += 2;
 
+            if (r == null) { ws.Columns().AdjustToContents(); return; }
+
+            // Table 1: Slops / Bilge Disposed & ROB (label | Oil | Water | Total) — 3-decimal cells.
+            ws.Cell(row, 1).Value = "Slops / Bilge Disposed & ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Oil";
+            ws.Cell(row, 3).Value = "Water";
+            ws.Cell(row, 4).Value = "Total";
+            ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+            row++;
+            WriteSlopsRow(ws, ref row, "Slops Disposed(m3)", r.SlopsDisposed_Oil, r.SlopsDisposed_Water, r.SlopsDisposed_Total);
+            WriteSlopsRow(ws, ref row, "Slops ROB(m3)", r.SlopsROB_Oil, r.SlopsROB_Water, r.SlopsROB_Total);
+            WriteSlopsRow(ws, ref row, "Bilge Disposed(m3)", r.BilgesDisposed_Oil, r.BilgesDisposed_Water, r.BilgesDisposed_Total);
+            WriteSlopsRow(ws, ref row, "Bilge ROB(m3)", r.BilgesROB_Oil, r.BilgesROB_Water, r.BilgesROB_Total);
+            row++;
+
+            // Table 2: Other Disposal.
+            ws.Cell(row, 1).Value = "Other Disposal";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRowWithFormat(ws, ref row, "Sludge(m3)", r.Sludge, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "Garbage - Plastic(m3)", r.GarbagePlastic, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "Garbage - Others(m3)", r.GarbageOthers, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "Other Disposal(m3)", r.OtherDisposal, "0.000");
+            row++;
+
+            // Table 3: Date & Time (SBE / RFA). Force text type so locale can't reformat ISO string.
+            ws.Cell(row, 1).Value = "Date & Time";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueTextRow(ws, ref row, "SBE", r.SBE_DateT.HasValue ? r.SBE_DateT.Value.ToString(ExcelDateTimeFormat) : "");
+            AddKeyValueTextRow(ws, ref row, "RFA", r.RFA_DateT.HasValue ? r.RFA_DateT.Value.ToString(ExcelDateTimeFormat) : "");
+            row++;
+
+            // Table 4: Engine — 3-decimal values for SLIP%, RPM, BHP, MCR%.
             ws.Cell(row, 1).Value = "Engine";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "SLIP%", r.Slip);
-                AddKeyValueRow(ws, ref row, "RPM", r.RPM);
-                AddKeyValueRow(ws, ref row, "BHP(hp)", r.BHP);
-                AddKeyValueRow(ws, ref row, "MCR%", r.MCR);
-            }
+            AddKeyValueRowWithFormat(ws, ref row, "SLIP%", r.Slip, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "RPM", r.RPM, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "BHP(hp)", r.BHP, "0.000");
+            AddKeyValueRowWithFormat(ws, ref row, "MCR%", r.MCR, "0.000");
             row++;
 
-            ws.Cell(row, 1).Value = "Lube Oil & Hydraulic Oil";
+            // Table 5: LO & HO Consumptions — 3-col (label | Consumptions | Received | ROB).
+            ws.Cell(row, 1).Value = "LO & HO Consumptions";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Consumptions";
+            ws.Cell(row, 3).Value = "Received";
+            ws.Cell(row, 4).Value = "ROB";
+            ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+            row++;
+            WriteLoHoRow(ws, ref row, "MECC(Ltrs)", r.LO_HO_Cons_MECC, r.Bunker_LO_Rec_MECC, r.LO_HO_Cons_MECC_ROB);
+            WriteLoHoRow(ws, ref row, "MECYL(Ltrs)", r.LO_HO_Cons_MECYL, r.Bunker_LO_Rec_MECYL, r.LO_HO_Cons_MECYL_ROB);
+            WriteLoHoRow(ws, ref row, "AECC(Ltrs)", r.LO_HO_Cons_AECC, r.Bunker_LO_Rec_AECC, r.LO_HO_Cons_AECC_ROB);
+            WriteLoHoRow(ws, ref row, "HYDRAULIC Oil(Ltrs)", r.LO_HO_Cons_HYDR_Oil, r.Bunker_LO_Rec_HYDR_Oil, r.LO_HO_Cons_HYDR_Oil_ROB);
+            row++;
+
+            // Table 6: Other ROB (Full / In Use / Empty), 3-decimal values.
+            ws.Cell(row, 1).Value = "Other ROB";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Full";
+            ws.Cell(row, 3).Value = "In Use";
+            ws.Cell(row, 4).Value = "Empty";
+            ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+            row++;
+            ws.Cell(row, 1).Value = "Oxygen (Bottles)";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty, "0.000");
+            row++;
+            ws.Cell(row, 1).Value = "Acetylene (Bottles)";
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty, "0.000");
+            row++;
+            row++;
+
+            // Table 7: Fuel ROB in MT — 3-col (Fuel | SBE | RFA), 3-decimal cells.
+            ws.Cell(row, 1).Value = "Fuel ROB in MT";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "MECC Consumption (Ltrs)", r.LO_HO_Cons_MECC);
-                AddKeyValueRow(ws, ref row, "MECC ROB (Ltrs)", r.LO_HO_Cons_MECC_ROB);
-                AddKeyValueRow(ws, ref row, "MECYL Consumption (Ltrs)", r.LO_HO_Cons_MECYL);
-                AddKeyValueRow(ws, ref row, "MECYL ROB (Ltrs)", r.LO_HO_Cons_MECYL_ROB);
-                AddKeyValueRow(ws, ref row, "AECC Consumption (Ltrs)", r.LO_HO_Cons_AECC);
-                AddKeyValueRow(ws, ref row, "AECC ROB (Ltrs)", r.LO_HO_Cons_AECC_ROB);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil Consumption (Ltrs)", r.LO_HO_Cons_HYDR_Oil);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil ROB (Ltrs)", r.LO_HO_Cons_HYDR_Oil_ROB);
-            }
-            row++;
-
-            ws.Cell(row, 1).Value = "Fuel ROB in MT (SBE/RFA)";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "SBE";
+            ws.Cell(row, 3).Value = "RFA";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
             row++;
             if (dtFuelROB != null)
             {
                 foreach (DataRow dr in dtFuelROB.Rows)
                 {
-                    string sbe = dr.Table.Columns.Contains("SBE") ? dr["SBE"]?.ToString() : "";
-                    string fwe = dr.Table.Columns.Contains("RFA") ? dr["RFA"]?.ToString() : "";
-                    string robVal = string.IsNullOrEmpty(sbe) && string.IsNullOrEmpty(fwe) ? "" : (sbe ?? "-") + " / " + (fwe ?? "-");
-                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", robVal);
+                    ws.Cell(row, 1).Value = dr["FuelType"]?.ToString() ?? "";
+                    ws.Cell(row, 1).Style.Font.Bold = true;
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("SBE") ? dr["SBE"] : null, "0.000");
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("RFA") ? dr["RFA"] : null, "0.000");
+                    row++;
                 }
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Bunker Received in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            if (dtBunker != null)
-            {
-                foreach (DataRow dr in dtBunker.Rows)
-                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "");
-            }
-            row++;
-
-            ws.Cell(row, 1).Value = "Other ROB";
-            ApplyLightGrayTitle(ws, row, 1, 4);
-            row++;
-            if (r != null)
-            {
-                ws.Cell(row, 1).Value = "";
-                ws.Cell(row, 2).Value = "Full";
-                ws.Cell(row, 3).Value = "In Use";
-                ws.Cell(row, 4).Value = "Empty";
-                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
-                row++;
-                ws.Cell(row, 1).Value = "Oxygen (Bottles)";
-                ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty);
-                row++;
-                ws.Cell(row, 1).Value = "Acetylene (Bottles)";
-                ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty);
-                row++;
-            }
-            row++;
-
+            // Table 8: Fuel Consumption in MT — full 7-block layout matching Daily Noon.
             ws.Cell(row, 1).Value = "Fuel Consumption in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            ApplyLightGrayTitle(ws, row, 1, 9);
             row++;
-            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
-            {
-                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
-                AddKeyValueRow(ws, ref row, "VLSFO (Total)", FormatDec(vlsfo));
-                AddKeyValueRow(ws, ref row, "MDO (Total)", FormatDec(mdo));
-            }
+            AddFuelConsEngineBlock(ws, ref row, "Main Engine", true, dtFuelCons, 2, 3, 4, 5);
+            AddFuelConsEngineBlock(ws, ref row, "Aux Engine", true, dtFuelCons, 7, 8, 9, 10);
+            AddFuelConsEngineBlock(ws, ref row, "Boiler", true, dtFuelCons, 11, 12, 13, 14);
+            AddFuelConsEngineBlock(ws, ref row, "Framo System", false, dtFuelCons, 15, 16, 17, 18);
+            AddFuelConsIggIncBlock(ws, ref row, dtFuelCons);
+            AddFuelConsEventsBlock(ws, ref row, dtFuelCons);
+            AddFuelConsTotalBlock(ws, ref row, dtFuelCons);
+
             ws.Columns().AdjustToContents();
+        }
+
+        /// <summary>Helper for the Slops / Bilge Disposed &amp; ROB table — writes a row with
+        /// 3-decimal formatted cells (Oil / Water / Total).</summary>
+        private void WriteSlopsRow(IXLWorksheet ws, ref int row, string label, decimal? oil, decimal? water, decimal? total)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            SetCellValueWithDecimalFormat(ws.Cell(row, 2), oil, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 3), water, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 4), total, "0.000");
+            row++;
+        }
+
+        /// <summary>Helper for the LO &amp; HO Consumptions table — writes a row with
+        /// 3-decimal formatted cells (Consumption / Received / ROB).</summary>
+        private void WriteLoHoRow(IXLWorksheet ws, ref int row, string label, decimal? cons, decimal? rec, decimal? rob)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 1).Style.Font.Bold = true;
+            SetCellValueWithDecimalFormat(ws.Cell(row, 2), cons, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 3), rec, "0.000");
+            SetCellValueWithDecimalFormat(ws.Cell(row, 4), rob, "0.000");
+            row++;
         }
 
         private void AddDepartureCargoSheet(XLWorkbook wb, DepartureReport r, DataTable dtDRCargo)
@@ -2555,14 +2909,20 @@ namespace SIS_Operational_Reports
             rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             row += 2;
 
+            // Cargo — 6-col table matching the web view exactly.
+            //   Cargo | B/L QTY(MT) | Load Portal Actual(MT) | Cargo Temp.(Deg centigrade)
+            //         | Completion Date & Time | Rate(m3/hr)
             ws.Cell(row, 1).Value = "Cargo";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            ApplyLightGrayTitle(ws, row, 1, 6);
             row++;
             ws.Cell(row, 1).Value = "Cargo";
-            ws.Cell(row, 2).Value = "B/L QTY";
-            ws.Cell(row, 3).Value = "Load Portal Actual";
-            ws.Cell(row, 4).Value = "Cargo Temp.";
-            ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+            ws.Cell(row, 2).Value = "B/L QTY(MT)";
+            ws.Cell(row, 3).Value = "Load Portal Actual(MT)";
+            ws.Cell(row, 4).Value = "Cargo Temp.(Deg centigrade)";
+            ws.Cell(row, 5).Value = "Completion Date & Time";
+            ws.Cell(row, 6).Value = "Rate(m3/hr)";
+            ws.Range(row, 1, row, 6).Style.Font.Bold = true;
+            ws.Range(row, 1, row, 6).Style.Alignment.WrapText = true;
             row++;
             if (dtDRCargo != null && dtDRCargo.Rows.Count > 0)
             {
@@ -2571,9 +2931,23 @@ namespace SIS_Operational_Reports
                     string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
                     string pName = (dr["PortName"]?.ToString() ?? "").Trim();
                     ws.Cell(row, 1).Value = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
-                    ws.Cell(row, 2).Value = FormatCargoVal(dr.Table.Columns.Contains("BL_Qty") ? dr["BL_Qty"] : null);
-                    ws.Cell(row, 3).Value = FormatCargoVal(dr.Table.Columns.Contains("LoadPortalActual") ? dr["LoadPortalActual"] : null);
-                    ws.Cell(row, 4).Value = FormatCargoVal(dr.Table.Columns.Contains("Cargo_Temp") ? dr["Cargo_Temp"] : null);
+                    // B/L QTY(MT) and Load Portal Actual(MT) — force 3 decimals.
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("BL_Qty") ? dr["BL_Qty"] : null, "0.000");
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("LoadPortalActual") ? dr["LoadPortalActual"] : null, "0.000");
+                    // Cargo Temp. — strip trailing zeros (37.30 → 37.3).
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), dr.Table.Columns.Contains("Cargo_Temp") ? dr["Cargo_Temp"] : null);
+                    // Completion Date & Time — force text type so locale can't reformat the ISO string.
+                    string compDt = "";
+                    if (dr.Table.Columns.Contains("Completion_DateT") && dr["Completion_DateT"] != null && dr["Completion_DateT"] != DBNull.Value)
+                    {
+                        if (DateTime.TryParse(dr["Completion_DateT"].ToString(), out DateTime cd)) compDt = cd.ToString(ExcelDateTimeFormat);
+                    }
+                    var compCell = ws.Cell(row, 5);
+                    compCell.Style.NumberFormat.Format = "@";
+                    compCell.SetDataType(XLCellValues.Text);
+                    compCell.Value = compDt;
+                    // Rate(m3/hr) — strip trailing zeros (2900.000 → 2900).
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null);
                     row++;
                 }
             }
@@ -2608,7 +2982,8 @@ namespace SIS_Operational_Reports
             ws.Cell(row, 1).Value = "Ballast";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            AddKeyValueRow(ws, ref row, "ROB (MT)", r?.Ballast_ROB);
+            // Label "ROB" (no MT suffix) with forced 3 decimals (500 → 500.000) per web view.
+            AddKeyValueRowWithFormat(ws, ref row, "ROB", r?.Ballast_ROB, "0.000");
             row++;
 
             ws.Cell(row, 1).Value = "Fresh Water";
@@ -2616,9 +2991,9 @@ namespace SIS_Operational_Reports
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
-                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
-                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
+                AddKeyValueRowWithFormat(ws, ref row, "FW Generated (MT)", r.FW_Generated, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Consumption (MT)", r.FW_Consumption, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "ROB (MT)", r.FW_ROB, "0.000");
             }
             ws.Columns().AdjustToContents();
         }
@@ -2667,7 +3042,10 @@ namespace SIS_Operational_Reports
             // the vessel submitted. We do NOT scan ~/Files/ or query the DB: the imported sheet
             // is the source of truth, and the DB ModifiedDate may have been bumped by later in-app
             // edits on older rows, which would otherwise mis-win here.
-            var toSend = new List<string>();
+            // Carry each winner file's ModifiedDate (from the imported Excel row that won the
+            // per-(reportType, vesselId) comparison) so the recipient-level gate below can send
+            // only files newer than the recipient's LastSent.
+            var toSend = new List<KeyValuePair<string, DateTime>>();
             foreach (var kv in _latestFilePathPerGroup)
             {
                 string winnerPath = kv.Value;
@@ -2678,11 +3056,23 @@ namespace SIS_Operational_Reports
                     continue;
 
                 vesselID = vesselId;
-                if (IsReportEmailAlreadySent(reportType, vesselId, datePart)) continue;
-
-                toSend.Add(winnerPath);
+                DateTime winnerModifiedDate;
+                if (!_latestModDatePerGroup.TryGetValue(kv.Key, out winnerModifiedDate))
+                    winnerModifiedDate = DateTime.MinValue;
+                toSend.Add(new KeyValuePair<string, DateTime>(winnerPath, winnerModifiedDate));
             }
             if (toSend.Count == 0) return;
+
+            // Parallel list for first-time recipients (LastSent == NULL). Contains every per-row
+            // Excel saved during this import, not just the winners. A recipient with no LastSent
+            // bookmark gets the full set so they are caught up; subsequent runs flip them into
+            // the winner-only branch automatically once LastSent is stamped below.
+            var fullSend = new List<KeyValuePair<string, DateTime>>();
+            foreach (var entry in _allSavedFiles)
+            {
+                if (string.IsNullOrEmpty(entry.Key) || !File.Exists(entry.Key)) continue;
+                fullSend.Add(entry);
+            }
 
             string from = ConfigurationManager.AppSettings["mailmsg"] ?? "noreply@mooringplan.com";
             string smtpHost = ConfigurationManager.AppSettings["smtpclnt"] ?? "smtp.zeptomail.in";
@@ -2694,10 +3084,20 @@ namespace SIS_Operational_Reports
 
             foreach (var item in emailListnew)
             {
-                if (item.LastSent.Date < DateTime.Now.Date)
+                // First-time recipient (LastSent NULL → DateTime.MinValue here) gets the full set
+                // of files saved this import; returning recipients get only the per-group winners
+                // and only those whose row ModifiedDate is newer than their LastSent bookmark.
+                bool isFirstSend = item.LastSent == DateTime.MinValue;
+                var listForThisRecipient = isFirstSend ? fullSend : toSend;
+                DateTime maxModifiedDateSent = DateTime.MinValue;
+
+                foreach (var entry in listForThisRecipient)
                 {
-                    foreach (string path in toSend)
-                    {
+                    string path = entry.Key;
+                    DateTime reportModifiedDate = entry.Value;
+                        // For returning recipients, gate by their stamped LastSent. First-time
+                        // recipients fall through and receive every file in the list.
+                        if (!isFirstSend && reportModifiedDate <= item.LastSent) continue;
                         string fn = Path.GetFileName(path ?? "");
                         if (!TryParseSyncReportExportFileName(fn, out string reportType, out int vesselId, out string datePart, out int? reportIdFromFile))
                             continue;
@@ -2905,6 +3305,7 @@ namespace SIS_Operational_Reports
                                 }
                                 //Update function
                                 LogReportEmailSent(reportType, vesselId, datePart, fn);
+                                if (reportModifiedDate > maxModifiedDateSent) maxModifiedDateSent = reportModifiedDate;
                             }
                         }
                         catch (Exception ex)
@@ -2917,9 +3318,10 @@ namespace SIS_Operational_Reports
                         //continue
                     }
 
-                    CommonClass.UpdateSyncEmailVesselsReportLastSent(item.Id, DateTime.Now.Date);
-
-                }
+                // Stamp LastSent with the current send timestamp. Future runs gate by
+                // reportModifiedDate > LastSent, so only rows modified AFTER this send qualify.
+                if (maxModifiedDateSent > DateTime.MinValue)
+                    CommonClass.UpdateSyncEmailVesselsReportLastSent(item.Id, DateTime.Now);
             }
 
             // After sending all report emails, delete only Excel files from Files directory (keep logger files for tracking)
@@ -2996,29 +3398,8 @@ namespace SIS_Operational_Reports
         private const string ReportEmailLogFile = "ReportEmailLog.txt";
 
         /// <summary>
-        /// Checks if a report (ReportType_VesselId_DatePart) has already been emailed (per ReportEmailLog.txt).
-        /// </summary>
-        private bool IsReportEmailAlreadySent(string reportType, int vesselId, string datePart)
-        {
-            try
-            {
-                string logPath = Path.Combine(Server.MapPath("~/Files/"), ReportEmailLogFile);
-                if (!File.Exists(logPath)) return false;
-                string vIdStr = vesselId.ToString();
-                foreach (var line in File.ReadAllLines(logPath))
-                {
-                    var parts = line.Split('|');
-                    if (parts.Length >= 6 && string.Equals(parts[1], reportType, StringComparison.OrdinalIgnoreCase)
-                        && parts[2] == vIdStr && parts[3] == datePart && parts[5].Trim() == "EmailSent")
-                        return true;
-                }
-            }
-            catch { }
-            return false;
-        }
-
-        /// <summary>
-        /// Logs that a report email was sent to ReportEmailLog.txt. Format: DateTime|ReportType|VesselId|DatePart|FileName|EmailSent
+        /// Logs that a report email was sent to ReportEmailLog.txt. Format: DateTime|ReportType|VesselId|DatePart|FileName|EmailSent.
+        /// Kept for audit/observability only — no longer used to suppress re-sends across imports.
         /// </summary>
         private void LogReportEmailSent(string reportType, int vesselId, string datePart, string fileName)
         {
@@ -3105,14 +3486,17 @@ namespace SIS_Operational_Reports
                     catch { }
                 }
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
-                AddKeyValueRow(ws, ref row, "Latitude", r.Latitude ?? "");
-                AddKeyValueRow(ws, ref row, "Longitude", r.Longitude ?? "");
+                AddKeyValueRow(ws, ref row, "Latitude", FormatLatLonForExcel(r.Latitude));
+                AddKeyValueRow(ws, ref row, "Longitude", FormatLatLonForExcel(r.Longitude));
                 AddKeyValueRow(ws, ref row, "Place", r.Place ?? "");
                 AddKeyValueRow(ws, ref row, "Leg", legText);
-                AddKeyValueRow(ws, ref row, "NOR", r.NOR != null ? Convert.ToDateTime(r.NOR).ToString(ExcelDateTimeFormat) : "");
+                // Force date cells to text so Excel doesn't reinterpret the ISO string
+                // "2025-10-04 06:00" through the workstation locale and re-render it as
+                // "04-10-2025 06:00" or similar on a non-ISO machine.
+                AddKeyValueTextRow(ws, ref row, "NOR", r.NOR != null ? Convert.ToDateTime(r.NOR).ToString(ExcelDateTimeFormat) : "");
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
-                AddKeyValueRow(ws, ref row, "EOSP", r.EOSP != null ? Convert.ToDateTime(r.EOSP).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "ETB", r.ETB != null ? Convert.ToDateTime(r.ETB).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueTextRow(ws, ref row, "EOSP", r.EOSP != null ? Convert.ToDateTime(r.EOSP).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueTextRow(ws, ref row, "ETB", r.ETB != null ? Convert.ToDateTime(r.ETB).ToString(ExcelDateTimeFormat) : "");
                 AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
                 AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
                 AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
@@ -3125,10 +3509,10 @@ namespace SIS_Operational_Reports
             if (r != null)
             {
                 AddKeyValueRow(ws, ref row, "Anchorage Name", r.Anchor_Name);
-                AddKeyValueRow(ws, ref row, "Drop Anchor Date & Time", r.Anchor_DateT != null ? Convert.ToDateTime(r.Anchor_DateT).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "Anchoring Position - Latitude", r.AnchorPos_Latitude ?? "");
-                AddKeyValueRow(ws, ref row, "Anchoring Position - Longitude", r.AnchorPos_Longitude ?? "");
-                AddKeyValueRow(ws, ref row, "FWE Date & Time", r.AnchorFWE_DateT != null ? Convert.ToDateTime(r.AnchorFWE_DateT).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueTextRow(ws, ref row, "Drop Anchor Date & Time", r.Anchor_DateT != null ? Convert.ToDateTime(r.Anchor_DateT).ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Anchoring Position - Latitude", FormatLatLonForExcel(r.AnchorPos_Latitude));
+                AddKeyValueRow(ws, ref row, "Anchoring Position - Longitude", FormatLatLonForExcel(r.AnchorPos_Longitude));
+                AddKeyValueTextRow(ws, ref row, "FWE Date & Time", r.AnchorFWE_DateT != null ? Convert.ToDateTime(r.AnchorFWE_DateT).ToString(ExcelDateTimeFormat) : "");
             }
             row++;
 
@@ -3142,11 +3526,21 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Engine Dist(NM)", r.EngineDist);
                 AddKeyValueRow(ws, ref row, "Total Distance (Dep to Curr)(NM)", r.TotalDistance);
                 AddKeyValueRow(ws, ref row, "Dist to Go (DTG)(NM)", r.DistToGo_DTG);
-                AddKeyValueRow(ws, ref row, "Stmg Time Noon to Noon(Hrs)", r.StmgTime);
-                AddKeyValueRow(ws, ref row, "Manoeuvring Hrs", r.Manoeuvring_Hrs);
-                AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
-                AddKeyValueRow(ws, ref row, "Actual Speed Noon to Noon(Kts)", r.Act_Speed);
+                AddKeyValueRow(ws, ref row, "Stmg Time Noon to Arrival(Hrs)", r.StmgTime);
+                AddKeyValueRow(ws, ref row, "Total Time (Dep to Curr)(Hrs)", r.TotalTime);
+                AddKeyValueRow(ws, ref row, "Actual Speed Noon to Arrival(Kts)", r.Act_Speed);
                 AddKeyValueRow(ws, ref row, "Gen Avg Speed (Dep to Curr)(Kts)", r.Gen_Avg_Speed);
+            }
+            row++;
+
+            // Manoeuvring — separate section between Speed-Distance-Time and Non-Routine Events.
+            ws.Cell(row, 1).Value = "Manoeuvring";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Manoeuvring Hours", r.Manoeuvring_Hrs);
+                AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
             }
             row++;
 
@@ -3196,7 +3590,7 @@ namespace SIS_Operational_Reports
             ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
             int row = 1;
             ws.Cell(row, 1).Value = "Arrival Report - Engine";
-            var rngHdr = ws.Range(row, 1, row, 3);
+            var rngHdr = ws.Range(row, 1, row, 9);
             rngHdr.Merge();
             rngHdr.Style.Font.Bold = true;
             rngHdr.Style.Font.FontSize = 16;
@@ -3215,52 +3609,76 @@ namespace SIS_Operational_Reports
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Lube Oil & Hydraulic Oil";
+            // 1. LO & HO Consumptions — 3-col layout (label | Consumption | ROB) matching Daily Noon.
+            ws.Cell(row, 1).Value = "LO & HO Consumptions";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "MECC Consumption (Ltrs)", r.LO_HO_Cons_MECC);
-                AddKeyValueRow(ws, ref row, "MECC ROB (Ltrs)", r.LO_HO_Cons_MECC_ROB);
-                AddKeyValueRow(ws, ref row, "MECYL Consumption (Ltrs)", r.LO_HO_Cons_MECYL);
-                AddKeyValueRow(ws, ref row, "MECYL ROB (Ltrs)", r.LO_HO_Cons_MECYL_ROB);
-                AddKeyValueRow(ws, ref row, "AECC Consumption (Ltrs)", r.LO_HO_Cons_AECC);
-                AddKeyValueRow(ws, ref row, "AECC ROB (Ltrs)", r.LO_HO_Cons_AECC_ROB);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil Consumption (Ltrs)", r.LO_HO_Cons_HYDR_Oil);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil ROB (Ltrs)", r.LO_HO_Cons_HYDR_Oil_ROB);
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Consumption";
+                ws.Cell(row, 3).Value = "ROB";
+                ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "MECC (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECC);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECC_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "MECYL (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECYL);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECYL_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "AECC (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_AECC);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_AECC_ROB);
+                row++;
+                ws.Cell(row, 1).Value = "HYDRAULIC Oil (Ltrs)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_HYDR_Oil);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_HYDR_Oil_ROB);
+                row++;
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Fuel ROB in MT (EOSP/FWE)";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            // 2. Fuel ROB in MT — 3-col layout (Fuel | EOSP | FWE).
+            ws.Cell(row, 1).Value = "Fuel ROB in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "EOSP ROB", r.EOSP_ROB);
-                AddKeyValueRow(ws, ref row, "FWE ROB", r.FWE_ROB);
-            }
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "EOSP";
+            ws.Cell(row, 3).Value = "FWE";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
             if (dtFuelROB != null)
             {
                 foreach (DataRow dr in dtFuelROB.Rows)
                 {
-                    string eosp = dr.Table.Columns.Contains("EOSP") ? dr["EOSP"]?.ToString() : "";
-                    string fwe = dr.Table.Columns.Contains("FWE") ? dr["FWE"]?.ToString() : "";
-                    string robVal = string.IsNullOrEmpty(eosp) && string.IsNullOrEmpty(fwe) ? "" : (eosp ?? "-") + " / " + (fwe ?? "-");
-                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", robVal);
+                    ws.Cell(row, 1).Value = dr["FuelType"]?.ToString() ?? "";
+                    ws.Cell(row, 1).Style.Font.Bold = true;
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("EOSP") ? dr["EOSP"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("FWE") ? dr["FWE"] : null);
+                    row++;
                 }
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Bunker Received in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            if (dtBunker != null)
+            // Bunker Received in MT — only emit the section header and rows when the report has
+            // bunker data entered. If no rows have a non-empty Receipt value, skip entirely so
+            // there's no orphan section title in the Excel sheet.
+            if (ArrivalBunkerHasData(dtBunker))
             {
+                ws.Cell(row, 1).Value = "Bunker Received in MT";
+                ApplyLightGrayTitle(ws, row, 1, 3);
+                row++;
                 foreach (DataRow dr in dtBunker.Rows)
                     AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "");
+                row++;
             }
-            row++;
 
+            // 3. Other ROB — keep existing 4-col layout (label | Full | In Use | Empty).
             ws.Cell(row, 1).Value = "Other ROB";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
@@ -3287,16 +3705,19 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            // 4. Fuel Consumption in MT — full 7-block layout matching Daily Noon.
+            // Boiler shows Sub Total for Arrival (Daily Noon's Boiler stays without subtotal).
             ws.Cell(row, 1).Value = "Fuel Consumption in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            ApplyLightGrayTitle(ws, row, 1, 9);
             row++;
-            if (dtFuelCons != null && dtFuelCons.Rows.Count > 0)
-            {
-                var vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-                var mdo = GetFuelConsByType(dtFuelCons, "MDO");
-                AddKeyValueRow(ws, ref row, "VLSFO (Total)", FormatDec(vlsfo));
-                AddKeyValueRow(ws, ref row, "MDO (Total)", FormatDec(mdo));
-            }
+            AddFuelConsEngineBlock(ws, ref row, "Main Engine", true, dtFuelCons, 2, 3, 4, 5);
+            AddFuelConsEngineBlock(ws, ref row, "Aux Engine", true, dtFuelCons, 7, 8, 9, 10);
+            AddFuelConsEngineBlock(ws, ref row, "Boiler", true, dtFuelCons, 11, 12, 13, 14);
+            AddFuelConsEngineBlock(ws, ref row, "Framo System", false, dtFuelCons, 15, 16, 17, 18);
+            AddFuelConsIggIncBlock(ws, ref row, dtFuelCons);
+            AddFuelConsEventsBlock(ws, ref row, dtFuelCons);
+            AddFuelConsTotalBlock(ws, ref row, dtFuelCons);
+
             ws.Columns().AdjustToContents();
         }
 
@@ -3313,36 +3734,30 @@ namespace SIS_Operational_Reports
             rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             row += 2;
 
-            ws.Cell(row, 1).Value = "Cargo";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            // Cargo tab section order matches the web view:
+            //   1. Fresh Water Noon To Report   2. Slops ROB   3. Cargo   4. Ballast
+
+            // 1. Fresh Water Noon To Report
+            ws.Cell(row, 1).Value = "Fresh Water Noon To Report";
+            ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            ws.Cell(row, 1).Value = "Cargo";
-            ws.Cell(row, 2).Value = "Qty Grade 1";
-            ws.Cell(row, 3).Value = "Qty Grade 2";
-            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
-            row++;
-            if (dtARCargo != null && dtARCargo.Rows.Count > 0)
+            if (r != null)
             {
-                foreach (DataRow dr in dtARCargo.Rows)
-                {
-                    string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
-                    string pName = (dr["PortName"]?.ToString() ?? "").Trim();
-                    ws.Cell(row, 1).Value = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
-                    ws.Cell(row, 2).Value = FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
-                    ws.Cell(row, 3).Value = FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade2") ? dr["Qty_Grade2"] : null);
-                    row++;
-                }
+                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
+                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
+                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
             }
             row++;
 
+            // 2. Slops ROB — Oil/Water headers now include (m3) unit.
             ws.Cell(row, 1).Value = "Slops ROB";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
             if (r != null)
             {
                 ws.Cell(row, 1).Value = "";
-                ws.Cell(row, 2).Value = "Oil";
-                ws.Cell(row, 3).Value = "Water";
+                ws.Cell(row, 2).Value = "Oil(m3)";
+                ws.Cell(row, 3).Value = "Water(m3)";
                 ws.Cell(row, 4).Value = "Total";
                 ws.Range(row, 1, row, 4).Style.Font.Bold = true;
                 row++;
@@ -3355,21 +3770,35 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            // 3. Cargo — single Qty(MT) column, no decimal padding (40476.00 → 40476).
+            ws.Cell(row, 1).Value = "Cargo";
+            ApplyLightGrayTitle(ws, row, 1, 2);
+            row++;
+            ws.Cell(row, 1).Value = "Cargo";
+            ws.Cell(row, 2).Value = "Qty(MT)";
+            ws.Range(row, 1, row, 2).Style.Font.Bold = true;
+            row++;
+            if (dtARCargo != null && dtARCargo.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dtARCargo.Rows)
+                {
+                    string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
+                    string pName = (dr["PortName"]?.ToString() ?? "").Trim();
+                    ws.Cell(row, 1).Value = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
+                    // Use the default 0.########## format so 40476.00 renders as 40476.
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
+                    row++;
+                }
+            }
+            row++;
+
+            // 4. Ballast — label simplified to "ROB" (no "(MT)" suffix).
             ws.Cell(row, 1).Value = "Ballast";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            AddKeyValueRow(ws, ref row, "ROB (MT)", r?.Ballast_ROB);
+            AddKeyValueRow(ws, ref row, "ROB", r?.Ballast_ROB);
             row++;
 
-            ws.Cell(row, 1).Value = "Fresh Water";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
-                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
-                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
-            }
             ws.Columns().AdjustToContents();
         }
 
@@ -3441,6 +3870,7 @@ namespace SIS_Operational_Reports
                 DataTable dtBunker = new DataTable();
                 DataTable dtNonRoutine = new DataTable();
                 DataTable dtMain = new DataTable();
+                DataTable dtCargo = new DataTable();
 
                 try
                 {
@@ -3486,6 +3916,16 @@ namespace SIS_Operational_Reports
                 }
                 catch { }
 
+                // Berthing cargo: own try-catch so the cargo fetch survives even if any earlier
+                // query (USP, fuel, stoppage) throws. Same join pattern as BerthingController.GetBR_CargoEdit.
+                try
+                {
+                    using (SqlDataAdapter adp = new SqlDataAdapter(
+                        "select a.*, b.cargoname, b.PortName from BR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and b.VesselId=" + vesselId + " where a.VesselId=" + vesselId + " and berthingreport_id=" + id, ConnectionBulder.con))
+                        adp.Fill(dtCargo);
+                }
+                catch { }
+
                 DateTime rptDt = reportDateVal.Value;
                 string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
                 string reportType = "BerthingReport";
@@ -3503,7 +3943,7 @@ namespace SIS_Operational_Reports
                 {
                     AddBerthingNavigationSheet(wb, berthRBind, dtNonRoutine, dtMain);
                     AddBerthingEngineSheet(wb, berthRBind, dtFuelCons, dtFuelROB, dtBunker);
-                    AddBerthingCargoSheet(wb, berthRBind);
+                    AddBerthingCargoSheet(wb, berthRBind, dtCargo);
                     wb.SaveAs(fullPath);
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
@@ -3588,35 +4028,36 @@ namespace SIS_Operational_Reports
                 }
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
-                AddKeyValueRow(ws, ref row, "Facility", facilityName);
-                AddKeyValueRow(ws, ref row, "Berth", r.BerthName ?? "");
-                AddKeyValueRow(ws, ref row, "Port Status", portStatusText);
+                AddKeyValueRow(ws, ref row, "Facility Name", facilityName);
+                AddKeyValueRow(ws, ref row, "Berth Name", r.BerthName ?? "");
+                AddKeyValueRow(ws, ref row, "In Port Status", portStatusText);
                 AddKeyValueRow(ws, ref row, "Leg", legText);
-                AddKeyValueRow(ws, ref row, "Report Date", r.ReportDate != null ? Convert.ToDateTime(r.ReportDate).ToString(ExcelDateFormat) : "");
-                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
-                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
-                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
+                // Report Date uses inline "dd-MM-yyyy" format (Berthing-only spec) instead of
+                // the global ExcelDateFormat which is "yyyy-MM-dd" and stays correct for other reports.
+                AddKeyValueRow(ws, ref row, "Report Date", r.ReportDate != null ? Convert.ToDateTime(r.ReportDate).ToString("dd-MM-yyyy") : "");
+                AddKeyValueRow(ws, ref row, "Draft Fwd(Mtrs)", r.DraftFwd);
+                AddKeyValueRow(ws, ref row, "Draft Mid(Mtrs)", r.DraftMid);
+                AddKeyValueRow(ws, ref row, "Draft Aft(Mtrs)", r.DraftAft);
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Manoeuvring & SBE/RFA";
+            // Manoeuvring — webpage shows ONLY Hours (2 decimals) and Distance (3 decimals).
+            // SBE/FWE Date & Time and SBE/FWE ROB removed per webpage parity.
+            ws.Cell(row, 1).Value = "Manoeuvring";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Manoeuvring Hrs", r.Manoeuvring_Hrs);
-                AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
-                AddKeyValueRow(ws, ref row, "SBE Date & Time", r.SBE_DateT != null ? Convert.ToDateTime(r.SBE_DateT).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "RFA Date & Time", r.RFA_DateT != null ? Convert.ToDateTime(r.RFA_DateT).ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "SBE ROB", r.SBE_ROB);
-                AddKeyValueRow(ws, ref row, "RFA ROB", r.RFA_ROB);
+                AddKeyValueRowWithFormat(ws, ref row, "Manoeuvring Hours", r.Manoeuvring_Hrs, "0.00");
+                AddKeyValueRowWithFormat(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance, "0.000");
             }
             row++;
 
+            // Non-Routine Events — Event Name header removed per webpage; the labels appear in the first column of each data row.
             ws.Cell(row, 1).Value = "Non-Routine Events";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            ws.Cell(row, 1).Value = "Event Name";
+            ws.Cell(row, 1).Value = "";
             ws.Cell(row, 2).Value = "Owners/Charterers Account";
             ws.Cell(row, 3).Value = "Hrs.";
             ws.Range(row, 1, row, 3).Style.Font.Bold = true;
@@ -3626,7 +4067,10 @@ namespace SIS_Operational_Reports
             {
                 ws.Cell(row, 1).Value = nreLabels[i];
                 ws.Cell(row, 2).Value = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["ChartererAccount"]?.ToString() ?? "") : "";
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? dtNonRoutine.Rows[i]["Hours"] : null);
+                // Hrs defaults to 0 (not blank) when no data — matches webpage which shows 0.
+                object hrsVal = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? dtNonRoutine.Rows[i]["Hours"] : null;
+                if (hrsVal == null || hrsVal == DBNull.Value) hrsVal = 0;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), hrsVal);
                 row++;
             }
             row++;
@@ -3668,40 +4112,72 @@ namespace SIS_Operational_Reports
             rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             row += 2;
 
+            // Engine — RPM/BHP forced to 3 decimals per webpage.
             ws.Cell(row, 1).Value = "Engine";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             if (r != null)
             {
                 AddKeyValueRow(ws, ref row, "SLIP%", r.Slip);
-                AddKeyValueRow(ws, ref row, "RPM", r.RPM);
-                AddKeyValueRow(ws, ref row, "BHP(hp)", r.BHP);
+                AddKeyValueRowWithFormat(ws, ref row, "RPM", r.RPM, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "BHP(hp)", r.BHP, "0.000");
                 AddKeyValueRow(ws, ref row, "MCR%", r.MCR);
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Lube Oil & Hydraulic Oil";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            // Date & Time — SBE / FWE under "Date & Time" header (matches webpage).
+            ws.Cell(row, 1).Value = "Date & Time";
+            ApplyLightGrayTitle(ws, row, 1, 2);
+            row++;
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Date & Time";
+            ws.Range(row, 1, row, 2).Style.Font.Bold = true;
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "ME Crosshead Cons", r.LO_HO_Cons_MECC);
-                AddKeyValueRow(ws, ref row, "ME Cylinder Cons", r.LO_HO_Cons_MECYL);
-                AddKeyValueRow(ws, ref row, "AE Crosshead Cons", r.LO_HO_Cons_AECC);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil Cons", r.LO_HO_Cons_HYDR_Oil);
-                AddKeyValueRow(ws, ref row, "ME Crosshead ROB", r.LO_HO_Cons_MECC_ROB);
-                AddKeyValueRow(ws, ref row, "ME Cylinder ROB", r.LO_HO_Cons_MECYL_ROB);
-                AddKeyValueRow(ws, ref row, "AE Crosshead ROB", r.LO_HO_Cons_AECC_ROB);
-                AddKeyValueRow(ws, ref row, "Hydraulic Oil ROB", r.LO_HO_Cons_HYDR_Oil_ROB);
+                AddKeyValueRow(ws, ref row, "SBE", r.SBE_DateT.HasValue ? r.SBE_DateT.Value.ToString("yyyy-MM-dd HH:mm") : "");
+                AddKeyValueRow(ws, ref row, "FWE", r.RFA_DateT.HasValue ? r.RFA_DateT.Value.ToString("yyyy-MM-dd HH:mm") : "");
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Fuel ROB in MT (SBE/RFA)";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            // LO & HO Consumptions — header + row labels match Daily Noon / webpage reference; 3-decimal values.
+            ws.Cell(row, 1).Value = "LO & HO Consumptions";
+            ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            ws.Cell(row, 1).Value = "Fuel Type";
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Consumption";
+            ws.Cell(row, 3).Value = "ROB";
+            ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "MECC (Ltrs)"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECC, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECC_ROB, "0.000");
+                row++;
+                ws.Cell(row, 1).Value = "MECYL (Ltrs)"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_MECYL, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_MECYL_ROB, "0.000");
+                row++;
+                ws.Cell(row, 1).Value = "AECC (Ltrs)"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_AECC, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_AECC_ROB, "0.000");
+                row++;
+                ws.Cell(row, 1).Value = "HYDRAULIC Oil (Ltrs)"; ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.LO_HO_Cons_HYDR_Oil, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.LO_HO_Cons_HYDR_Oil_ROB, "0.000");
+                row++;
+            }
+            row++;
+
+            // Fuel ROB in MT — header rename (no "(SBE/RFA)" suffix); SBE/FWE as separate columns;
+            // SetCellValueWithDecimalFormat default "0.##########" strips trailing zeros (745.200 → 745.2).
+            ws.Cell(row, 1).Value = "Fuel ROB in MT";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            ws.Cell(row, 1).Value = "";
             ws.Cell(row, 2).Value = "SBE";
-            ws.Cell(row, 3).Value = "RFA";
+            ws.Cell(row, 3).Value = "FWE";
             ws.Range(row, 1, row, 3).Style.Font.Bold = true;
             row++;
             if (dtFuelROB != null && dtFuelROB.Rows.Count > 0)
@@ -3715,31 +4191,9 @@ namespace SIS_Operational_Reports
                     row++;
                 }
             }
-            else
-            {
-                ws.Cell(row, 1).Value = "VLSFO";
-                ws.Cell(row, 1).Style.Font.Bold = true;
-                ws.Cell(row, 2).Value = "";
-                ws.Cell(row, 3).Value = "";
-                row++;
-                ws.Cell(row, 1).Value = "MDO";
-                ws.Cell(row, 1).Style.Font.Bold = true;
-                ws.Cell(row, 2).Value = "";
-                ws.Cell(row, 3).Value = "";
-                row++;
-            }
             row++;
 
-            ws.Cell(row, 1).Value = "Bunker Received in MT";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            if (dtBunker != null)
-            {
-                foreach (DataRow dr in dtBunker.Rows)
-                    AddKeyValueRow(ws, ref row, dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "");
-            }
-            row++;
-
+            // Other ROB (3-decimal values per webpage).
             ws.Cell(row, 1).Value = "Other ROB";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
@@ -3753,112 +4207,59 @@ namespace SIS_Operational_Reports
                 row++;
                 ws.Cell(row, 1).Value = "Oxygen (Bottles)";
                 ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_OXY_Full, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_OXY_InUse, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_OXY_Empty, "0.000");
                 row++;
                 ws.Cell(row, 1).Value = "Acetylene (Bottles)";
                 ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.OT_ROB_ACYT_Full, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.OT_ROB_ACYT_InUse, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.OT_ROB_ACYT_Empty, "0.000");
                 row++;
             }
             row++;
 
+            // Fuel Consumption in MT — Daily Noon Report style sub-tables (Main Engine / Aux Engine /
+            // Boiler / Framo System / IGG & Incinerator / Events / Total). Reuses the shared
+            // AddFuelCons*Block helpers; Events uses a Berthing-specific label set ("Stoppage at Sea"
+            // long form per webpage) so the shared block isn't touched.
             ws.Cell(row, 1).Value = "Fuel Consumption in MT";
-            ApplyLightGrayTitle(ws, row, 1, 7);
+            ApplyLightGrayTitle(ws, row, 1, 9);
             row++;
-            ws.Cell(row, 1).Value = "";
-            ws.Cell(row, 2).Value = "AT SEA";
-            ws.Cell(row, 3).Value = "MANOEUV";
-            ws.Cell(row, 4).Value = "ANCHOR/WAIT";
-            ws.Cell(row, 5).Value = "BERTH";
-            ws.Cell(row, 6).Value = "SUB TOTAL";
-            ws.Cell(row, 7).Value = "TOTAL";
-            ws.Range(row, 1, row, 7).Style.Font.Bold = true;
-            row++;
-            // VLSFO rows
+            AddFuelConsEngineBlock(ws, ref row, "Main Engine",  true,  dtFuelCons, 2, 3, 4, 5);
+            AddFuelConsEngineBlock(ws, ref row, "Aux Engine",   true,  dtFuelCons, 7, 8, 9, 10);
+            AddFuelConsEngineBlock(ws, ref row, "Boiler",       false, dtFuelCons, 11, 12, 13, 14);
+            AddFuelConsEngineBlock(ws, ref row, "Framo System", false, dtFuelCons, 15, 16, 17, 18);
+            AddFuelConsIggIncBlock(ws, ref row, dtFuelCons);
+            // Berthing-specific Events block: same shape as shared AddFuelConsEventsBlock but with
+            // "Stoppage at Sea" instead of "Stoppage" per webpage spec.
             {
-                decimal vlsfoMeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 2);
-                decimal vlsfoMeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 3);
-                decimal vlsfoMeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 4);
-                decimal vlsfoMeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 5);
-                decimal vlsfoMeSub = vlsfoMeAtSea + vlsfoMeMan + vlsfoMeWait + vlsfoMeBerth;
-                ws.Cell(row, 1).Value = "VLSFO ME"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoMeAtSea);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoMeMan);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoMeWait);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoMeBerth);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 6), vlsfoMeSub);
+                int[] eventConsTypeIds = { 20, 21, 22, 23, 24, 25, 26, 27 };
+                string[] eventLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Prep", "Cargo Heating", "BW Exchange", "Others" };
+                ws.Cell(row, 1).Value = "Events";
+                ApplyLightGrayTitle(ws, row, 1, 9);
                 row++;
-
-                decimal vlsfoAeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 7);
-                decimal vlsfoAeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 8);
-                decimal vlsfoAeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 9);
-                decimal vlsfoAeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 10);
-                decimal vlsfoAeSub = vlsfoAeAtSea + vlsfoAeMan + vlsfoAeWait + vlsfoAeBerth;
-                ws.Cell(row, 1).Value = "VLSFO AE"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoAeAtSea);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoAeMan);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoAeWait);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoAeBerth);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 6), vlsfoAeSub);
+                ws.Cell(row, 1).Value = "Fuel";
+                for (int i = 0; i < eventLabels.Length; i++) ws.Cell(row, i + 2).Value = eventLabels[i];
+                ws.Range(row, 1, row, 9).Style.Font.Bold = true;
                 row++;
-
-                decimal vlsfoBlrAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 11);
-                decimal vlsfoBlrMan = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 12);
-                decimal vlsfoBlrWait = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 13);
-                decimal vlsfoBlrBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "VLSFO", 14);
-                ws.Cell(row, 1).Value = "VLSFO Boiler"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), vlsfoBlrAtSea);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), vlsfoBlrMan);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), vlsfoBlrWait);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 5), vlsfoBlrBerth);
-                row++;
-
-                decimal vlsfoTotal = GetFuelConsByType(dtFuelCons, "VLSFO");
-                ws.Cell(row, 1).Value = "VLSFO Total"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 7), vlsfoTotal);
+                foreach (string ft in new[] { "VLSFO", "MDO" })
+                {
+                    ws.Cell(row, 1).Value = ft;
+                    ws.Cell(row, 1).Style.Font.Bold = true;
+                    for (int i = 0; i < eventConsTypeIds.Length; i++)
+                        SetCellValueWithDecimalFormat(ws.Cell(row, i + 2), GetFuelConsByTypeAndConsType(dtFuelCons, ft, eventConsTypeIds[i]), "0.000");
+                    row++;
+                }
                 row++;
             }
-            // MDO rows
-            {
-                decimal mdoMeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 2);
-                decimal mdoMeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 3);
-                decimal mdoMeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 4);
-                decimal mdoMeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 5);
-                decimal mdoMeSub = mdoMeAtSea + mdoMeMan + mdoMeWait + mdoMeBerth;
-                ws.Cell(row, 1).Value = "MDO ME"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), mdoMeAtSea);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), mdoMeMan);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), mdoMeWait);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 5), mdoMeBerth);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 6), mdoMeSub);
-                row++;
+            AddFuelConsTotalBlock(ws, ref row, dtFuelCons);
 
-                decimal mdoAeAtSea = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 7);
-                decimal mdoAeMan = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 8);
-                decimal mdoAeWait = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 9);
-                decimal mdoAeBerth = GetFuelConsByTypeAndConsType(dtFuelCons, "MDO", 10);
-                decimal mdoAeSub = mdoAeAtSea + mdoAeMan + mdoAeWait + mdoAeBerth;
-                ws.Cell(row, 1).Value = "MDO AE"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), mdoAeAtSea);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), mdoAeMan);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), mdoAeWait);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 5), mdoAeBerth);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 6), mdoAeSub);
-                row++;
-
-                decimal mdoTotal = GetFuelConsByType(dtFuelCons, "MDO");
-                ws.Cell(row, 1).Value = "MDO Total"; ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 7), mdoTotal);
-                row++;
-            }
             ws.Columns().AdjustToContents();
         }
 
-        private void AddBerthingCargoSheet(XLWorkbook wb, BerthingReport r)
+        private void AddBerthingCargoSheet(XLWorkbook wb, BerthingReport r, DataTable dtCargo)
         {
             var ws = wb.Worksheets.Add("Cargo");
             ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
@@ -3871,16 +4272,31 @@ namespace SIS_Operational_Reports
             rngHdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             row += 2;
 
+            // Cargo — one row per BR_Cargo record with "CargoName ( PortName )" as label and Qty(MT) as the column.
             ws.Cell(row, 1).Value = "Cargo";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            ApplyLightGrayTitle(ws, row, 1, 2);
             row++;
-            if (r != null)
+            ws.Cell(row, 1).Value = "";
+            ws.Cell(row, 2).Value = "Qty(MT)";
+            ws.Range(row, 1, row, 2).Style.Font.Bold = true;
+            row++;
+            if (dtCargo != null && dtCargo.Rows.Count > 0)
             {
-                AddKeyValueRow(ws, ref row, "Qty Grade 1", r.Qty_Grade1);
-                AddKeyValueRow(ws, ref row, "Qty Grade 2", r.Qty_Grade2);
+                foreach (DataRow dr in dtCargo.Rows)
+                {
+                    string cName = dr.Table.Columns.Contains("cargoname") && dr["cargoname"] != DBNull.Value ? dr["cargoname"].ToString().Trim() :
+                                    (dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "");
+                    string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
+                    string label = string.IsNullOrEmpty(cName) ? "" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                    ws.Cell(row, 1).Value = label;
+                    ws.Cell(row, 1).Style.Font.Bold = true;
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
+                    row++;
+                }
             }
             row++;
 
+            // Slops ROB — row label "ROB" (no "(m3)"); 3-decimal values.
             ws.Cell(row, 1).Value = "Slops ROB";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
@@ -3892,30 +4308,32 @@ namespace SIS_Operational_Reports
                 ws.Cell(row, 4).Value = "Total";
                 ws.Range(row, 1, row, 4).Style.Font.Bold = true;
                 row++;
-                ws.Cell(row, 1).Value = "ROB (m3)";
+                ws.Cell(row, 1).Value = "ROB";
                 ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.SlopsROB_Oil);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.SlopsROB_Water);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.SlopsROB_Total);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.SlopsROB_Oil, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.SlopsROB_Water, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.SlopsROB_Total, "0.000");
                 row++;
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Ballast";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            AddKeyValueRow(ws, ref row, "ROB (MT)", r?.Ballast_ROB);
-            row++;
-
+            // Fresh Water — moved BEFORE Ballast per webpage order; 3-decimal values.
             ws.Cell(row, 1).Value = "Fresh Water";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "FW Generated (MT)", r.FW_Generated);
-                AddKeyValueRow(ws, ref row, "Consumption (MT)", r.FW_Consumption);
-                AddKeyValueRow(ws, ref row, "ROB (MT)", r.FW_ROB);
+                AddKeyValueRowWithFormat(ws, ref row, "FW Generated (MT)", r.FW_Generated, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Consumption (MT)", r.FW_Consumption, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "ROB (MT)", r.FW_ROB, "0.000");
             }
+            row++;
+
+            // Ballast — row label "ROB" (no "(MT)"); 3-decimal value.
+            ws.Cell(row, 1).Value = "Ballast";
+            ApplyLightGrayTitle(ws, row, 1, 3);
+            row++;
+            AddKeyValueRowWithFormat(ws, ref row, "ROB", r?.Ballast_ROB, "0.000");
             ws.Columns().AdjustToContents();
         }
 
@@ -4001,8 +4419,14 @@ namespace SIS_Operational_Reports
                         "select Stoppage as Reason, DateTimeFrom, DateTimeTo from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0", ConnectionBulder.con))
                         adp.Fill(dtStoppage);
                     // Pumps: table is `tblPump` (singular) per the Loading controller; `tblPumps` returns no rows.
+                    // Dedupe by pump Name (the value the user sees) — picks the latest row (MAX Id) per
+                    // unique name so previous saves that duplicated tblPump or LR_DCR_PumpsUse rows
+                    // don't render the same pump multiple times in the Excel sheet.
                     using (SqlDataAdapter adp = new SqlDataAdapter(
-                        "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPump b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                        "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
+                        "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa left join tblPump bb on aa.PumpId=bb.Id where aa.LRId=" + id + " and aa.VesselId=" + vesselId + " group by bb.Name) g on a.Id=g.Id " +
+                        "left join tblPump b on a.PumpId=b.Id " +
+                        "where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
                         adp.Fill(dtPumpsUse);
                     using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                     {
@@ -4115,56 +4539,73 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
                 AddKeyValueRow(ws, ref row, "Vessel", r.VesselName ?? "");
                 AddKeyValueRow(ws, ref row, "Leg", legText);
-                AddKeyValueRow(ws, ref row, "Report Date & Time", r.ReportDateTime != null ? Convert.ToDateTime(r.ReportDateTime).ToString("yyyy-MM-dd HH:mm") : "");
-                AddKeyValueRow(ws, ref row, "ETD Date & Time", r.ETDDateTime != null ? Convert.ToDateTime(r.ETDDateTime).ToString("yyyy-MM-dd HH:mm") : "");
-                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
-                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
-                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
+                // Force date cells to text so Excel doesn't reinterpret "2025-10-03 06:42"
+                // through the workstation locale and re-render as "03-10-2025 06:42".
+                AddKeyValueTextRow(ws, ref row, "Report Date & Time", r.ReportDateTime != null ? Convert.ToDateTime(r.ReportDateTime).ToString("yyyy-MM-dd HH:mm") : "");
+                AddKeyValueTextRow(ws, ref row, "ETD Date & Time", r.ETDDateTime != null ? Convert.ToDateTime(r.ETDDateTime).ToString("yyyy-MM-dd HH:mm") : "");
+                // Drafts keep 3 decimal places per maritime convention (11.750, not 11.75).
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft, "0.000");
             }
             row++;
 
-            // LOP Fields
-            ws.Cell(row, 1).Value = "Letter of Protest (LOP)";
-            ApplyLightGrayTitle(ws, row, 1, 4);
-            row++;
-            if (r != null)
-            {
-                AddKeyValueRow(ws, ref row, "Times", r.Times ?? "");
-                AddKeyValueRow(ws, ref row, "Rate", r.Rate ?? "");
-                AddKeyValueRow(ws, ref row, "Hose Connection", r.Hose_Connection ?? "");
-                AddKeyValueRow(ws, ref row, "High H2S", r.High_H2S ?? "");
-            }
-            row++;
-
-            // Cargo List
+            // Cargo List — 14 columns matching the web edit form headers exactly.
+            // Rendered BEFORE Letter of Protests per stakeholder request.
             ws.Cell(row, 1).Value = "Cargo Details";
-            ApplyLightGrayTitle(ws, row, 1, 8);
+            ApplyLightGrayTitle(ws, row, 1, 14);
             row++;
             if (dtCargo != null && dtCargo.Rows.Count > 0)
             {
-                ws.Cell(row, 1).Value = "Cargo Name";
-                ws.Cell(row, 2).Value = "Loading Date/Time";
-                ws.Cell(row, 3).Value = "Terminal Loading Rate";
-                ws.Cell(row, 4).Value = "Loading Rate Accepted";
-                ws.Cell(row, 5).Value = "Avg Achieved Rate";
-                ws.Cell(row, 6).Value = "Qty Onboard";
-                ws.Cell(row, 7).Value = "Balance Qty Loaded";
-                ws.Cell(row, 8).Value = "Actual Comp Date/Time";
-                ws.Range(row, 1, row, 8).Style.Font.Bold = true;
+                ws.Cell(row, 1).Value  = "Cargo Grades";
+                ws.Cell(row, 2).Value  = "Commence Loading Date & Time";
+                ws.Cell(row, 3).Value  = "Terminal Loading Rate (m3/hr)";
+                ws.Cell(row, 4).Value  = "Loading Rate Accepted by Vessel (m3/hr)";
+                ws.Cell(row, 5).Value  = "Average Achieved Loading Rate (m3/hr)";
+                ws.Cell(row, 6).Value  = "No of Manifold / Hoses by Terminal";
+                ws.Cell(row, 7).Value  = "Size of Manifold / Hoses by Terminal (Inches)";
+                ws.Cell(row, 8).Value  = "No of Manifold / Hoses by Vessel";
+                ws.Cell(row, 9).Value  = "Size of Manifold / Hoses by Vessel (Inches)";
+                ws.Cell(row, 10).Value = "Shore Line Distance (mtrs)";
+                ws.Cell(row, 11).Value = "Quantity onboard (MT)";
+                ws.Cell(row, 12).Value = "Balance Quantity to be Loaded (MT)";
+                ws.Cell(row, 13).Value = "ETC Comp Date & Time";
+                ws.Cell(row, 14).Value = "Actual Comp Date & Time";
+                ws.Range(row, 1, row, 14).Style.Font.Bold = true;
+                ws.Range(row, 1, row, 14).Style.Alignment.WrapText = true;
                 row++;
 
                 foreach (DataRow dr in dtCargo.Rows)
                 {
                     ws.Cell(row, 1).Value = dr.Table.Columns.Contains("CargoName") ? (dr["CargoName"]?.ToString() ?? "") : "";
-                    ws.Cell(row, 2).Value = dr.Table.Columns.Contains("LoadingDatetime") && dr["LoadingDatetime"] != DBNull.Value ? Convert.ToDateTime(dr["LoadingDatetime"]).ToString("yyyy-MM-dd HH:mm") : "";
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("TerminalLoadingRate") ? dr["TerminalLoadingRate"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), dr.Table.Columns.Contains("LoadingRateAccepted") ? dr["LoadingRateAccepted"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 5), dr.Table.Columns.Contains("AverageAchievedLoadingRate") ? dr["AverageAchievedLoadingRate"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), dr.Table.Columns.Contains("QuantityOnboard") ? dr["QuantityOnboard"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 7), dr.Table.Columns.Contains("BalanceQuantityLoaded") ? dr["BalanceQuantityLoaded"] : null);
-                    ws.Cell(row, 8).Value = dr.Table.Columns.Contains("ActualCompDateTime") && dr["ActualCompDateTime"] != DBNull.Value ? Convert.ToDateTime(dr["ActualCompDateTime"]).ToString("yyyy-MM-dd HH:mm") : "";
+                    AddDateTextCell(ws.Cell(row, 2), dr, "LoadingDatetime");
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3),  dr.Table.Columns.Contains("TerminalLoadingRate") ? dr["TerminalLoadingRate"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4),  dr.Table.Columns.Contains("LoadingRateAccepted") ? dr["LoadingRateAccepted"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 5),  dr.Table.Columns.Contains("AverageAchievedLoadingRate") ? dr["AverageAchievedLoadingRate"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 6),  dr.Table.Columns.Contains("No_Manifold_Hoses_by_Terminal") ? dr["No_Manifold_Hoses_by_Terminal"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 7),  dr.Table.Columns.Contains("Size_of_Manifold_Hoses_by_Terminal") ? dr["Size_of_Manifold_Hoses_by_Terminal"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 8),  dr.Table.Columns.Contains("No_Manifold_Hoses_by_Vessel") ? dr["No_Manifold_Hoses_by_Vessel"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 9),  dr.Table.Columns.Contains("Size_of_Manifold_Hoses_by_Vessel") ? dr["Size_of_Manifold_Hoses_by_Vessel"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 10), dr.Table.Columns.Contains("ShoreLineDistance") ? dr["ShoreLineDistance"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 11), dr.Table.Columns.Contains("QuantityOnboard") ? dr["QuantityOnboard"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 12), dr.Table.Columns.Contains("BalanceQuantityLoaded") ? dr["BalanceQuantityLoaded"] : null);
+                    AddDateTextCell(ws.Cell(row, 13), dr, "EstCompDateTime");
+                    AddDateTextCell(ws.Cell(row, 14), dr, "ActualCompDateTime");
                     row++;
                 }
+            }
+            row++;
+
+            // LOP Fields — rendered AFTER Cargo Details per stakeholder request.
+            ws.Cell(row, 1).Value = "Letter of Protests";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                AddKeyValueRow(ws, ref row, "Time", r.Times ?? "");
+                AddKeyValueRow(ws, ref row, "Rate", r.Rate ?? "");
+                AddKeyValueRow(ws, ref row, "Hose Connection", r.Hose_Connection ?? "");
+                AddKeyValueRow(ws, ref row, "High H2S", r.High_H2S ?? "");
             }
             row++;
 
@@ -4201,9 +4642,13 @@ namespace SIS_Operational_Reports
                 ws.Range(row, 1, row, 2).Style.Font.Bold = true;
                 row++;
 
+                // Dedupe by pump name so duplicates in lr_dcr_pumpsuse or tblPump don't render multiple rows.
+                var seenPumpsInUse = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (DataRow dr in dtPumpsUse.Rows)
                 {
-                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("PumpName") ? (dr["PumpName"]?.ToString() ?? "") : (dr.Table.Columns.Contains("Name") ? (dr["Name"]?.ToString() ?? "") : "");
+                    string pumpName = dr.Table.Columns.Contains("PumpName") ? (dr["PumpName"]?.ToString() ?? "") : (dr.Table.Columns.Contains("Name") ? (dr["Name"]?.ToString() ?? "") : "");
+                    if (!seenPumpsInUse.Add(pumpName.Trim())) continue;
+                    ws.Cell(row, 1).Value = pumpName;
                     SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null);
                     row++;
                 }
@@ -4286,15 +4731,43 @@ namespace SIS_Operational_Reports
                 DataTable dtStoppage = new DataTable();
                 DataTable dtPumpsUse = new DataTable();
                 DataTable dtMain = new DataTable();
+                // Pivoted pump tables — matches DischargingReportEmailTemplate + webpage layout
+                // (Ballast Pumps in Use uses PumpUseId=2; Cargo Pumps in Use uses PumpUseId=1).
+                DataTable dtBallastPumps = new DataTable();
+                DataTable dtCargoPumpsInUse = new DataTable();
 
                 try
                 {
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from DS_Cargo where DSId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    // DS_Cargo FK to DischargingReport is `LRId` (per spInsertDischargeingCargoList SP
+                    // and DischargingController.GetDischargeCargo query). The previous filter `DSId=`
+                    // didn't match any rows so dtCargo was empty and the Cargo Details sheet had no rows.
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select * from DS_Cargo where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
                         adp.Fill(dtCargo);
                     using (SqlDataAdapter adp = new SqlDataAdapter("select * from LR_Stoppage where DCId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=1", ConnectionBulder.con))
                         adp.Fill(dtStoppage);
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPumps b on a.PumpId=b.Id where a.DCRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                    // tblPump is singular — earlier code used "tblPumps" (typo) which threw and
+                    // short-circuited subsequent fetches in this try block. LEFT JOIN so pumps
+                    // without a matching tblPump row still appear.
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPump b on a.PumpId=b.Id where a.DCRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
                         adp.Fill(dtPumpsUse);
+                    // Ballast pumps in use (PumpUseId=2) — INNER JOIN tblPump on PumpId AND PumpUseId
+                    // so the pump's true type in tblPump must match. Mirrors
+                    // DischargingController.GetPumpsINUse exactly; prevents pumps mis-saved with
+                    // wrong PumpUseId from leaking into this section.
+                    using (SqlDataAdapter adp = new SqlDataAdapter(
+                        "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
+                        "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=2 group by bb.Name) g on a.Id=g.Id " +
+                        "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
+                        "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=2", ConnectionBulder.con))
+                        adp.Fill(dtBallastPumps);
+                    // Cargo pumps in use (PumpUseId=1) — same strict-join pattern so B/P# 1
+                    // mis-saved with PumpUseId=1 won't appear in the Cargo Pumps pivot.
+                    using (SqlDataAdapter adp = new SqlDataAdapter(
+                        "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
+                        "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=1 group by bb.Name) g on a.Id=g.Id " +
+                        "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
+                        "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=1", ConnectionBulder.con))
+                        adp.Fill(dtCargoPumpsInUse);
                     using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
@@ -4324,7 +4797,7 @@ namespace SIS_Operational_Reports
                 string fullPath = Path.Combine(filesPath, fileName);
                 using (XLWorkbook wb = new XLWorkbook())
                 {
-                    AddDischargingDetailsSheet(wb, disRBind, dtCargo, dtStoppage, dtPumpsUse, dtMain);
+                    AddDischargingDetailsSheet(wb, disRBind, dtCargo, dtStoppage, dtPumpsUse, dtBallastPumps, dtCargoPumpsInUse, dtMain);
                     wb.SaveAs(fullPath);
                 }
                 LogReportExport(reportType, vesselId, datePart, fileName, "Saved");
@@ -4333,7 +4806,7 @@ namespace SIS_Operational_Reports
             }
         }
 
-        private void AddDischargingDetailsSheet(XLWorkbook wb, DischargingReport r, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtMain)
+        private void AddDischargingDetailsSheet(XLWorkbook wb, DischargingReport r, DataTable dtCargo, DataTable dtStoppage, DataTable dtPumpsUse, DataTable dtBallastPumps, DataTable dtCargoPumpsInUse, DataTable dtMain)
         {
             var ws = wb.Worksheets.Add("Discharging Details");
             ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
@@ -4372,78 +4845,126 @@ namespace SIS_Operational_Reports
                 }
                 if (string.IsNullOrWhiteSpace(voyNo)) voyNo = r.VoyageId.ToString();
 
+                // Resolve Leg from VoyageLeg when the sync SP doesn't carry it — same
+                // inline pattern as Loading/Departure Excel above (and DischargingReportEmailTemplate).
+                if (string.IsNullOrEmpty(legText))
+                {
+                    try
+                    {
+                        if (r.LegPortId > 0)
+                        {
+                            using (SqlDataAdapter adp = new SqlDataAdapter(
+                                "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + r.LegPortId + " and VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId, ConnectionBulder.con))
+                            {
+                                DataTable dtLeg = new DataTable();
+                                adp.Fill(dtLeg);
+                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                            }
+                        }
+                        if (string.IsNullOrEmpty(legText) && r.VoyageId > 0)
+                        {
+                            using (SqlDataAdapter adp = new SqlDataAdapter(
+                                "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + r.VoyageId + " and VesselId=" + r.VesselId + " and IsActive=1", ConnectionBulder.con))
+                            {
+                                DataTable dtLeg = new DataTable();
+                                adp.Fill(dtLeg);
+                                if (dtLeg.Rows.Count > 0) legText = dtLeg.Rows[0]["Leg"]?.ToString() ?? "";
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
                 AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
-                AddKeyValueRow(ws, ref row, "Vessel", r.VesselName ?? "");
                 AddKeyValueRow(ws, ref row, "Leg", legText);
                 AddKeyValueRow(ws, ref row, "Report Date & Time", r.ReportDateTime != null ? Convert.ToDateTime(r.ReportDateTime).ToString("yyyy-MM-dd HH:mm") : "");
                 AddKeyValueRow(ws, ref row, "ETD Date & Time", r.ETDDateTime != null ? Convert.ToDateTime(r.ETDDateTime).ToString("yyyy-MM-dd HH:mm") : "");
-                AddKeyValueRow(ws, ref row, "Draft Fwd (Mtrs)", r.DraftFwd);
-                AddKeyValueRow(ws, ref row, "Draft Mid (Mtrs)", r.DraftMid);
-                AddKeyValueRow(ws, ref row, "Draft Aft (Mtrs)", r.DraftAft);
-                AddKeyValueRow(ws, ref row, "Power Packs Onboard", r.Power_Packs_onboard);
-                AddKeyValueRow(ws, ref row, "Power Packs Used", r.Power_Packs_Used);
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Fwd", r.DraftFwd, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Mid", r.DraftMid, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Draft Aft", r.DraftAft, "0.000");
             }
             row++;
 
-            // LOP Fields
-            ws.Cell(row, 1).Value = "Letter of Protest (LOP)";
+            // Cargo List — placed BEFORE Letter of Protests to match webpage order.
+            // 15-column layout per webpage: Cargo Grades, Commence Discharge Date & Time,
+            // Terminal Acceptable Discharging Rate, Discharging Pressure Requested,
+            // Average Discharge Rate By Vessel, Average Discharge pressure By Vessel,
+            // No of Pumps in use, No of Manifold/Hoses by Terminal,
+            // Size of Manifold/Hoses by Terminal (Inches), No of Manifold/Hoses by Vessel,
+            // Size of Manifold/Hoses by Vessel (Inches), Total Cargo Discharged,
+            // Balance Cargo to be Discharged, ETC Comp Date & Time, Actual Comp Date & Time.
+            ws.Cell(row, 1).Value = "Cargo Details";
+            ApplyLightGrayTitle(ws, row, 1, 15);
+            row++;
+            if (dtCargo != null && dtCargo.Rows.Count > 0)
+            {
+                ws.Cell(row, 1).Value = "Cargo Grades";
+                ws.Cell(row, 2).Value = "Commence Discharge Date & Time";
+                ws.Cell(row, 3).Value = "Terminal Acceptable Discharging Rate";
+                ws.Cell(row, 4).Value = "Discharging Pressure Requested";
+                ws.Cell(row, 5).Value = "Average Discharge Rate By Vessel";
+                ws.Cell(row, 6).Value = "Average Discharge pressure By Vessel";
+                ws.Cell(row, 7).Value = "No of Pumps in use";
+                ws.Cell(row, 8).Value = "No of Manifold / Hoses by Terminal";
+                ws.Cell(row, 9).Value = "Size of Manifold / Hoses by Terminal (Inches)";
+                ws.Cell(row, 10).Value = "No of Manifold / Hoses by Vessel";
+                ws.Cell(row, 11).Value = "Size of Manifold / Hoses by Vessel (Inches)";
+                ws.Cell(row, 12).Value = "Total Cargo Discharged";
+                ws.Cell(row, 13).Value = "Balance Cargo to be Discharged";
+                ws.Cell(row, 14).Value = "ETC Comp Date & Time";
+                ws.Cell(row, 15).Value = "Actual Comp Date & Time";
+                ws.Range(row, 1, row, 15).Style.Font.Bold = true;
+                ws.Range(row, 1, row, 15).Style.Alignment.WrapText = true;
+                row++;
+
+                foreach (DataRow dr in dtCargo.Rows)
+                {
+                    // Cargo Grades — webpage shows "CargoName ( PortName )"; concat per spInsertDischargeingCargoList schema (both columns live on DS_Cargo).
+                    string cName = dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "";
+                    string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
+                    ws.Cell(row, 1).Value = string.IsNullOrEmpty(cName) ? "" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                    ws.Cell(row, 2).Value = dr.Table.Columns.Contains("DischargeDatetime") && dr["DischargeDatetime"] != DBNull.Value ? Convert.ToDateTime(dr["DischargeDatetime"]).ToString("yyyy-MM-dd HH:mm:ss") : "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("Terminal_Acceptable_Discharging_Rate") ? dr["Terminal_Acceptable_Discharging_Rate"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), dr.Table.Columns.Contains("Discharging_pressure_Requested") ? dr["Discharging_pressure_Requested"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 5), dr.Table.Columns.Contains("Average_Discharge_Rate_ByVessel") ? dr["Average_Discharge_Rate_ByVessel"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), dr.Table.Columns.Contains("Average_Discharge_pressure_ByVessel") ? dr["Average_Discharge_pressure_ByVessel"] : null);
+                    ws.Cell(row, 7).Value = dr.Table.Columns.Contains("No_of_Pumps_Use") && dr["No_of_Pumps_Use"] != DBNull.Value ? dr["No_of_Pumps_Use"].ToString() : "";
+                    ws.Cell(row, 8).Value = dr.Table.Columns.Contains("No_Manifold_Hoses_by_Terminal") && dr["No_Manifold_Hoses_by_Terminal"] != DBNull.Value ? dr["No_Manifold_Hoses_by_Terminal"].ToString() : "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 9), dr.Table.Columns.Contains("Size_of_Manifold_Hoses_by_Terminal") ? dr["Size_of_Manifold_Hoses_by_Terminal"] : null);
+                    ws.Cell(row, 10).Value = dr.Table.Columns.Contains("No_Manifold_Hoses_by_Vessel") && dr["No_Manifold_Hoses_by_Vessel"] != DBNull.Value ? dr["No_Manifold_Hoses_by_Vessel"].ToString() : "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 11), dr.Table.Columns.Contains("Size_of_Manifold_Hoses_by_Vessel") ? dr["Size_of_Manifold_Hoses_by_Vessel"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 12), dr.Table.Columns.Contains("Total_CargoDischarged") ? dr["Total_CargoDischarged"] : null);
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 13), dr.Table.Columns.Contains("Balance_Cargo_ToBe_Deischarged") ? dr["Balance_Cargo_ToBe_Deischarged"] : null);
+                    ws.Cell(row, 14).Value = dr.Table.Columns.Contains("EstCompDateTime") && dr["EstCompDateTime"] != DBNull.Value ? Convert.ToDateTime(dr["EstCompDateTime"]).ToString("yyyy-MM-dd HH:mm:ss") : "";
+                    ws.Cell(row, 15).Value = dr.Table.Columns.Contains("ActualCompDateTime") && dr["ActualCompDateTime"] != DBNull.Value ? Convert.ToDateTime(dr["ActualCompDateTime"]).ToString("yyyy-MM-dd HH:mm:ss") : "";
+                    row++;
+                }
+            }
+            row++;
+
+            // LOP Fields — placed AFTER Cargo Details to match webpage order.
+            ws.Cell(row, 1).Value = "Letter of Protests";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Times", r.Times ?? "");
+                AddKeyValueRow(ws, ref row, "Time", r.Times ?? "");
                 AddKeyValueRow(ws, ref row, "Rate", r.Rate ?? "");
                 AddKeyValueRow(ws, ref row, "Hose Connection", r.Hose_Connection ?? "");
                 AddKeyValueRow(ws, ref row, "High H2S", r.High_H2S ?? "");
             }
             row++;
 
-            // Cargo List
-            ws.Cell(row, 1).Value = "Cargo Details";
-            ApplyLightGrayTitle(ws, row, 1, 10);
-            row++;
-            if (dtCargo != null && dtCargo.Rows.Count > 0)
-            {
-                ws.Cell(row, 1).Value = "Cargo Name";
-                ws.Cell(row, 2).Value = "Discharge Date/Time";
-                ws.Cell(row, 3).Value = "Terminal Acceptable Rate";
-                ws.Cell(row, 4).Value = "Discharge Pressure Req.";
-                ws.Cell(row, 5).Value = "Avg Discharge Rate";
-                ws.Cell(row, 6).Value = "Avg Discharge Pressure";
-                ws.Cell(row, 7).Value = "No. of Pumps";
-                ws.Cell(row, 8).Value = "Total Cargo Discharged";
-                ws.Cell(row, 9).Value = "Balance Cargo";
-                ws.Cell(row, 10).Value = "Actual Comp Date/Time";
-                ws.Range(row, 1, row, 10).Style.Font.Bold = true;
-                row++;
-
-                foreach (DataRow dr in dtCargo.Rows)
-                {
-                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("CargoName") ? (dr["CargoName"]?.ToString() ?? "") : "";
-                    ws.Cell(row, 2).Value = dr.Table.Columns.Contains("DischargeDatetime") && dr["DischargeDatetime"] != DBNull.Value ? Convert.ToDateTime(dr["DischargeDatetime"]).ToString("yyyy-MM-dd HH:mm") : "";
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), dr.Table.Columns.Contains("Terminal_Acceptable_Discharging_Rate") ? dr["Terminal_Acceptable_Discharging_Rate"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), dr.Table.Columns.Contains("Discharging_pressure_Requested") ? dr["Discharging_pressure_Requested"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 5), dr.Table.Columns.Contains("Average_Discharge_Rate_ByVessel") ? dr["Average_Discharge_Rate_ByVessel"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 6), dr.Table.Columns.Contains("Average_Discharge_pressure_ByVessel") ? dr["Average_Discharge_pressure_ByVessel"] : null);
-                    ws.Cell(row, 7).Value = dr.Table.Columns.Contains("No_of_Pumps_Use") && dr["No_of_Pumps_Use"] != DBNull.Value ? dr["No_of_Pumps_Use"].ToString() : "";
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 8), dr.Table.Columns.Contains("Total_CargoDischarged") ? dr["Total_CargoDischarged"] : null);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 9), dr.Table.Columns.Contains("Balance_Cargo_ToBe_Deischarged") ? dr["Balance_Cargo_ToBe_Deischarged"] : null);
-                    ws.Cell(row, 10).Value = dr.Table.Columns.Contains("ActualCompDateTime") && dr["ActualCompDateTime"] != DBNull.Value ? Convert.ToDateTime(dr["ActualCompDateTime"]).ToString("yyyy-MM-dd HH:mm") : "";
-                    row++;
-                }
-            }
-            row++;
-
             // Stoppage List
-            ws.Cell(row, 1).Value = "Stoppage Details";
+            ws.Cell(row, 1).Value = "Stoppage Reason";
             ApplyLightGrayTitle(ws, row, 1, 4);
             row++;
             if (dtStoppage != null && dtStoppage.Rows.Count > 0)
             {
-                ws.Cell(row, 1).Value = "Reason";
-                ws.Cell(row, 2).Value = "From";
-                ws.Cell(row, 3).Value = "To";
+                ws.Cell(row, 1).Value = "Stoppage Reason";
+                ws.Cell(row, 2).Value = "Date Time From";
+                ws.Cell(row, 3).Value = "Date Time To";
                 ws.Range(row, 1, row, 3).Style.Font.Bold = true;
                 row++;
 
@@ -4457,29 +4978,92 @@ namespace SIS_Operational_Reports
             }
             row++;
 
-            // Pumps Use
-            ws.Cell(row, 1).Value = "Cargo Pump Use";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            // Ballast Pumps in Use — column-header layout (Name | Rate) with one row per pump.
+            ws.Cell(row, 1).Value = "Ballast Pumps in Use";
+            ApplyLightGrayTitle(ws, row, 1, 2);
             row++;
-            if (dtPumpsUse != null && dtPumpsUse.Rows.Count > 0)
+            ws.Cell(row, 1).Value = "Name";
+            ws.Cell(row, 2).Value = "Rate";
+            ws.Range(row, 1, row, 2).Style.Font.Bold = true;
+            row++;
+            if (dtBallastPumps != null && dtBallastPumps.Rows.Count > 0)
             {
-                ws.Cell(row, 1).Value = "Pump Name";
-                ws.Cell(row, 2).Value = "Rate";
-                ws.Range(row, 1, row, 2).Style.Font.Bold = true;
-                row++;
-
-                foreach (DataRow dr in dtPumpsUse.Rows)
+                // Dedupe by PumpName — same pattern as Loading's Ballast Pump Use loop.
+                var seenBallastPumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow dr in dtBallastPumps.Rows)
                 {
-                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("PumpName") ? (dr["PumpName"]?.ToString() ?? "") : (dr.Table.Columns.Contains("Name") ? (dr["Name"]?.ToString() ?? "") : "");
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null);
+                    string pumpName = (dr.Table.Columns.Contains("PumpName") ? dr["PumpName"]?.ToString() : "")?.Trim() ?? "";
+                    if (!seenBallastPumps.Add(pumpName)) continue;
+                    ws.Cell(row, 1).Value = pumpName;
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null, "0.000");
                     row++;
                 }
             }
             row++;
 
-            // Remarks
-            ws.Cell(row, 1).Value = "Remarks";
-            ApplyLightGrayTitle(ws, row, 1, 4);
+            // Cargo Pumps in Use — pivoted layout: pump names span column headers, then a "Name"
+            // row repeats the names and a "Rate" row shows each pump's rate.
+            // Dedupe cargo pump rows once before pivoting (same pattern as Ballast Pump loop above)
+            // so the pivot doesn't explode into 15 columns when LR_DCR_PumpsUse has repeated rows.
+            var cargoPumps = new List<DataRow>();
+            if (dtCargoPumpsInUse != null)
+            {
+                var seenCargoPumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow dr in dtCargoPumpsInUse.Rows)
+                {
+                    string pumpName = (dr.Table.Columns.Contains("PumpName") ? dr["PumpName"]?.ToString() : "")?.Trim() ?? "";
+                    if (!seenCargoPumps.Add(pumpName)) continue;
+                    cargoPumps.Add(dr);
+                }
+            }
+            ws.Cell(row, 1).Value = "Cargo Pumps in Use";
+            int cargoPumpCount = cargoPumps.Count;
+            int cargoPumpSpan = Math.Max(2, cargoPumpCount + 1);
+            ApplyLightGrayTitle(ws, row, 1, cargoPumpSpan);
+            row++;
+            if (cargoPumpCount > 0)
+            {
+                // Column-header row — blank label + pump names
+                ws.Cell(row, 1).Value = "";
+                for (int i = 0; i < cargoPumpCount; i++)
+                {
+                    var dr = cargoPumps[i];
+                    ws.Cell(row, i + 2).Value = dr["PumpName"]?.ToString() ?? "";
+                }
+                ws.Range(row, 1, row, cargoPumpSpan).Style.Font.Bold = true;
+                row++;
+                // Name row — pump names again as data
+                ws.Cell(row, 1).Value = "Name";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int i = 0; i < cargoPumpCount; i++)
+                {
+                    var dr = cargoPumps[i];
+                    ws.Cell(row, i + 2).Value = dr["PumpName"]?.ToString() ?? "";
+                }
+                row++;
+                // Rate row — each pump's rate, 3-decimal format
+                ws.Cell(row, 1).Value = "Rate";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                for (int i = 0; i < cargoPumpCount; i++)
+                {
+                    var dr = cargoPumps[i];
+                    SetCellValueWithDecimalFormat(ws.Cell(row, i + 2), dr.Table.Columns.Contains("Rate") ? dr["Rate"] : null, "0.000");
+                }
+                row++;
+            }
+            row++;
+
+            // Power Packs — two key-value rows sourced from DischargingReport model.
+            ws.Cell(row, 1).Value = "Power Packs";
+            ApplyLightGrayTitle(ws, row, 1, 2);
+            row++;
+            AddKeyValueRow(ws, ref row, "No of Power Packs onboard", r?.Power_Packs_onboard);
+            AddKeyValueRow(ws, ref row, "No of Power Packs used", r?.Power_Packs_Used);
+            row++;
+
+            // Discharge Report Remarks — single "Remarks" key-value row.
+            ws.Cell(row, 1).Value = "Discharge Report Remarks";
+            ApplyLightGrayTitle(ws, row, 1, 2);
             row++;
             AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
 
@@ -5379,6 +5963,59 @@ namespace SIS_Operational_Reports
         }
 
         /// <summary>
+        /// Calls spCommonEditList for Bunker fuel rows on a fresh dedicated SqlConnection
+        /// so it isn't affected by state left on the shared static ConnectionBulder.con.
+        /// Falls back to the shared CommonMethods helper if the isolated call fails.
+        /// </summary>
+        private List<BukerFuelList> LoadBunkerFuelListIsolated(int reportId, int vesselId)
+        {
+            var list = new List<BukerFuelList>();
+            try
+            {
+                string connStr = System.Configuration.ConfigurationManager.ConnectionStrings["SISContext"].ConnectionString;
+                using (var con = new SqlConnection(connStr))
+                using (var cmd = new SqlCommand("spCommonEditList", con) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.AddWithValue("@Id", reportId);
+                    cmd.Parameters.AddWithValue("@VesselId", vesselId.ToString());
+                    cmd.Parameters.AddWithValue("@Action", "BunkerFReport");
+                    con.Open();
+                    using (var dt = new DataTable())
+                    using (var adp = new SqlDataAdapter(cmd))
+                    {
+                        adp.Fill(dt);
+                        foreach (DataRow fr in dt.Rows)
+                        {
+                            var f = new BukerFuelList();
+                            foreach (System.Reflection.PropertyInfo p in typeof(BukerFuelList).GetProperties())
+                            {
+                                if (!fr.Table.Columns.Contains(p.Name)) continue;
+                                object v = fr[p.Name];
+                                if (v == null || v == DBNull.Value) continue;
+                                try
+                                {
+                                    Type t = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+                                    p.SetValue(f, Convert.ChangeType(v, t), null);
+                                }
+                                catch { }
+                            }
+                            list.Add(f);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                list.Clear();
+            }
+            if (list.Count == 0)
+            {
+                list = CommonMethods.editBunkerFuelList(reportId, vesselId.ToString(), "BunkerFReport") ?? new List<BukerFuelList>();
+            }
+            return list;
+        }
+
+        /// <summary>
         /// Generates Bunker Report Excel for each vessel/date in tbls and saves to Files folder.
         /// Uses editBunkerRList logic (id, vesselid) to fetch all details.
         /// Structured with Bunker Details, Fuel Details sheets.
@@ -5448,15 +6085,16 @@ namespace SIS_Operational_Reports
                 }
                 catch { }
 
-                // Fetch fuel details
-                var fuelList = CommonMethods.editBunkerFuelList(rowId, vesselId.ToString(), "BunkerFReport");
-                if (fuelList != null)
+                // Fetch fuel details with a FRESH dedicated SqlConnection rather than the
+                // shared static ConnectionBulder.con. The shared connection is a process-wide
+                // singleton; under concurrent use it can silently return truncated result
+                // sets (observed: 5 rows instead of 7). A dedicated connection isolates this
+                // call from any state left by other threads.
+                var fuelList = LoadBunkerFuelListIsolated(rowId, vesselId);
+                foreach (var item in fuelList)
                 {
-                    foreach (var item in fuelList)
-                    {
-                        if (item.Fuel_type_Id == 5) item.Fuel_type = "VLSFO";
-                        if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
-                    }
+                    if (item.Fuel_type_Id == 5) item.Fuel_type = "VLSFO";
+                    if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
                 }
 
                 // Fetch main details from stored procedure
@@ -5544,9 +6182,11 @@ namespace SIS_Operational_Reports
                 bool isOthers = !string.IsNullOrEmpty(portDisplay) && portDisplay.Equals("Others", StringComparison.OrdinalIgnoreCase);
                 if ((isOthers || string.IsNullOrEmpty(portDisplay)) && !string.IsNullOrEmpty(othersPort)) portDisplay = othersPort;
                 AddKeyValueRow(ws, ref row, "Voy No.", voyNo);
-                AddKeyValueRow(ws, ref row, "Port", portDisplay ?? "");
+                AddKeyValueRow(ws, ref row, "Port Name", portDisplay ?? "");
                 AddKeyValueRow(ws, ref row, "Supplier", r.Supplier ?? "");
                 AddKeyValueRow(ws, ref row, "Barge Name", r.BargeName ?? "");
+                AddKeyValueRow(ws, ref row, "Master Name", r.FirstName ?? "");
+                AddKeyValueRow(ws, ref row, "Chief Engineer", r.LastName ?? "");
             }
             row++;
 
@@ -5559,31 +6199,21 @@ namespace SIS_Operational_Reports
                 AddKeyValueRow(ws, ref row, "Bunker Hose Connected", r.BunkerHoseConnected != DateTime.MinValue ? r.BunkerHoseConnected.ToString(ExcelDateTimeFormat) : "");
                 AddKeyValueRow(ws, ref row, "Commenced Bunkering", r.CommencedBunkering != DateTime.MinValue ? r.CommencedBunkering.ToString(ExcelDateTimeFormat) : "");
                 AddKeyValueRow(ws, ref row, "Bunkering Completed", r.BunkeringCompleted != DateTime.MinValue ? r.BunkeringCompleted.ToString(ExcelDateTimeFormat) : "");
-                AddKeyValueRow(ws, ref row, "Bunker Hose Disconnected", r.BunkerHosedisconnected != DateTime.MinValue ? r.BunkerHosedisconnected.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Bunker Hose disconnected", r.BunkerHosedisconnected != DateTime.MinValue ? r.BunkerHosedisconnected.ToString(ExcelDateTimeFormat) : "");
                 AddKeyValueRow(ws, ref row, "Barge Cast Off", r.BargeCastOff != DateTime.MinValue ? r.BargeCastOff.ToString(ExcelDateTimeFormat) : "");
             }
             row++;
 
-            ws.Cell(row, 1).Value = "Bunker Report Remarks";
+            ws.Cell(row, 1).Value = "Remarks";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
             AddKeyValueRow(ws, ref row, "Remarks", r?.Remarks ?? "");
             row++;
 
-            ws.Cell(row, 1).Value = "Reported By";
+            ws.Cell(row, 1).Value = "BDN Report";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            if (r != null)
-            {
-                string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
-                AddKeyValueRow(ws, ref row, "Name", reportedBy);
-            }
-            row++;
-
-            ws.Cell(row, 1).Value = "Lab Analysis Report";
-            ApplyLightGrayTitle(ws, row, 1, 3);
-            row++;
-            AddKeyValueRow(ws, ref row, "File Name", r?.LabAnalysisReport_Name ?? "");
+            AddKeyValueRow(ws, ref row, "BDN Report", r?.LabAnalysisReport_Name ?? "");
             ws.Columns().AdjustToContents();
         }
 
@@ -5606,10 +6236,10 @@ namespace SIS_Operational_Reports
 
             // Header row
             ws.Cell(row, 1).Value = "Fuel Type";
-            ws.Cell(row, 2).Value = "BDN (MT)";
-            ws.Cell(row, 3).Value = "Fuel Density";
-            ws.Cell(row, 4).Value = "Sulphur Content";
-            ws.Cell(row, 5).Value = "BDN Number";
+            ws.Cell(row, 2).Value = "Quantity Received(MT)";
+            ws.Cell(row, 3).Value = "BDN Number";
+            ws.Cell(row, 4).Value = "Fuel Density(Kg/m3)";
+            ws.Cell(row, 5).Value = "Sulphur content(%)";
             ws.Range(row, 1, row, 5).Style.Font.Bold = true;
             row++;
 
@@ -5618,10 +6248,10 @@ namespace SIS_Operational_Reports
                 foreach (var fuel in fuelList)
                 {
                     ws.Cell(row, 1).Value = fuel.Fuel_type ?? "";
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), fuel.BDN);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 3), fuel.Fuel_Density);
-                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), fuel.Sulphur_content);
-                    ws.Cell(row, 5).Value = fuel.BDN_Number ?? "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 2), fuel.BDN, "0.000");
+                    ws.Cell(row, 3).Value = fuel.BDN_Number ?? "";
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 4), fuel.Fuel_Density, "0.000");
+                    SetCellValueWithDecimalFormat(ws.Cell(row, 5), fuel.Sulphur_content, "0.000");
                     row++;
                 }
             }
@@ -5668,6 +6298,25 @@ namespace SIS_Operational_Reports
                 var fwRList = CommonMethods.editFreshWaterRList(rowId, vesselId, "FreshWaterReport");
                 var fwRBind = fwRList?.Where(x => x.Id == rowId).FirstOrDefault();
                 if (fwRBind == null) continue;
+
+                // Backfill from FreshWaterReport directly — editFreshWaterRList (spCommonEditList)
+                // may not surface PortName_others, and we need it for the "Others" port resolve.
+                try
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select PortName, PortName_others from FreshWaterReport where Id=" + rowId, ConnectionBulder.con))
+                    {
+                        var dtBackfill = new DataTable();
+                        adp.Fill(dtBackfill);
+                        if (dtBackfill.Rows.Count > 0)
+                        {
+                            var br = dtBackfill.Rows[0];
+                            if (br["PortName"] != DBNull.Value) fwRBind.PortName = br["PortName"].ToString();
+                            if (br["PortName_others"] != DBNull.Value) fwRBind.PortName_others = br["PortName_others"].ToString();
+                        }
+                    }
+                }
+                catch { }
 
                 DateTime rptDt = fwRBind.Received_Date;
                 if (rptDt == DateTime.MinValue)
@@ -5719,10 +6368,15 @@ namespace SIS_Operational_Reports
 
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Port", r.PortName ?? "");
+                string port = r.PortName?.Trim();
+                string others = r.PortName_others?.Trim();
+                bool isOthers = !string.IsNullOrEmpty(port) && port.Equals("Others", StringComparison.OrdinalIgnoreCase);
+                string portDisplay = ((isOthers || string.IsNullOrEmpty(port)) && !string.IsNullOrEmpty(others)) ? others : (port ?? "");
+
+                AddKeyValueRow(ws, ref row, "Port Name", portDisplay);
                 AddKeyValueRow(ws, ref row, "Facility Name", r.Facility_Name ?? "");
-                AddKeyValueRow(ws, ref row, "Vendor Details", r.VendorDetails ?? "");
                 AddKeyValueRow(ws, ref row, "Received Date", r.Received_Date != DateTime.MinValue ? r.Received_Date.ToString(ExcelDateTimeFormat) : "");
+                AddKeyValueRow(ws, ref row, "Vendor Details", r.VendorDetails ?? "");
             }
             row++;
 
@@ -5731,17 +6385,17 @@ namespace SIS_Operational_Reports
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Initial Meter Reading (MT)", r.Intial_Meter_Reading_MT_supplied);
-                AddKeyValueRow(ws, ref row, "Final Meter Reading (MT)", r.Final_Meter_Reading_MT);
-                AddKeyValueRow(ws, ref row, "Difference in Meter Reading (MT)", r.Difference_in_Meter_Reading_MT);
-                AddKeyValueRow(ws, ref row, "Qty Supplied (MT)", r.QTY_supplied_MT);
+                AddKeyValueRowWithFormat(ws, ref row, "Initial Meter Reading Supply(MT)", r.Intial_Meter_Reading_MT_supplied, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Final Meter Reading(MT)", r.Final_Meter_Reading_MT, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "Difference Meter Reading(MT)", r.Difference_in_Meter_Reading_MT, "0.000");
+                AddKeyValueRowWithFormat(ws, ref row, "QTY Received(MT)", r.QTY_supplied_MT, "0.000");
             }
             row++;
 
             ws.Cell(row, 1).Value = "Attached Document";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
-            AddKeyValueRow(ws, ref row, "File Name", r?.File_Name ?? "");
+            AddKeyValueRow(ws, ref row, "Attachment", r?.File_Name ?? "");
             ws.Columns().AdjustToContents();
         }
 

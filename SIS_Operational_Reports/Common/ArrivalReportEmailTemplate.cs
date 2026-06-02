@@ -16,15 +16,60 @@ namespace SIS_Operational_Reports.Common
     /// </summary>
     public static class ArrivalReportEmailTemplate
     {
-        private const string DateFormat = "dd-MMM-yyyy";
-        private const string DateTimeFormat = "dd-MMM-yyyy HH:mm";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/ArrivalReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
         /// <summary>Format decimal: whole numbers (e.g. IDs, bottle counts) stay as-is; fractional values use 0.000.</summary>
         private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+
+        /// <summary>Strip trailing zeros from a numeric value/string. Use this in tables where the
+        /// web view shows the number as-entered (e.g. Fuel ROB EOSP/FWE: 745.200 → 745.2).
+        /// Returns "-" for null/empty, raw trimmed string when the value isn't parseable as decimal.</summary>
+        private static string Num(object o)
+        {
+            if (o == null || o == DBNull.Value) return "-";
+            string s = o.ToString().Trim();
+            if (string.IsNullOrEmpty(s)) return "-";
+            if (decimal.TryParse(s, out decimal d)) return d.ToString("0.##########");
+            return s;
+        }
+
+        /// <summary>True when the Bunker Received DataTable has at least one row with a non-empty
+        /// Receipt value. Used to hide the "Bunker Received in MT" section entirely when no
+        /// bunker data was entered for this arrival in the web view.</summary>
+        private static bool BunkerHasData(DataTable dtBunker)
+        {
+            if (dtBunker == null || dtBunker.Rows.Count == 0) return false;
+            if (!dtBunker.Columns.Contains("Receipt")) return false;
+            foreach (DataRow dr in dtBunker.Rows)
+            {
+                object v = dr["Receipt"];
+                if (v == null || v == DBNull.Value) continue;
+                string s = v.ToString().Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                // Treat unparseable text as data (rare). A parsed numeric 0 also counts as
+                // entered data — the user typed something, even if it's zero.
+                return true;
+            }
+            return false;
+        }
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
+
+        /// <summary>Format nautical Latitude/Longitude: "21,58.29 S" → "21° 58.29' S".
+        /// Returns "-" if empty, the original trimmed string if it can't be parsed.</summary>
+        private static string FormatLatLon(object o)
+        {
+            if (o == null || o == DBNull.Value) return "-";
+            string s = o.ToString().Trim();
+            if (string.IsNullOrEmpty(s)) return "-";
+            var m = System.Text.RegularExpressions.Regex.Match(s, @"^\s*(\d+)\s*,\s*([\d.]+)\s*([NSEWnsew])?\s*$");
+            if (!m.Success) return s;
+            string dir = m.Groups[3].Success ? (" " + m.Groups[3].Value.ToUpperInvariant()) : "";
+            return m.Groups[1].Value + "° " + m.Groups[2].Value + "'" + dir;
+        }
 
         /// <summary>Resolve display VoyageNumber (e.g. "61") from internal VoyageId FK.</summary>
         private static string LookupVoyageNumber(int voyageId, int vesselId)
@@ -206,7 +251,7 @@ namespace SIS_Operational_Reports.Common
             if (string.IsNullOrWhiteSpace(legText)) legText = LookupLeg(r.LegPortId, r.VoyageId, r.VesselId);
 
             var sb = new StringBuilder();
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Latitude", r.Latitude)).Append(KvRow("Longitude", r.Longitude));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Latitude", FormatLatLon(r.Latitude))).Append(KvRow("Longitude", FormatLatLon(r.Longitude)));
             sb.Append(KvRow("Place", r.Place)).Append(KvRow("Leg", legText)).Append(KvRow("NOR", r.NOR != null ? Vdt(r.NOR) : "-")).Append(KvRow("Port", r.PortName));
             sb.Append(KvRow("EOSP", r.EOSP != null ? Vdt(r.EOSP) : "-")).Append(KvRow("ETB", r.ETB != null ? Vdt(r.ETB) : "-"));
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
@@ -214,16 +259,22 @@ namespace SIS_Operational_Reports.Common
             sb.Clear();
 
             sb.Append(KvRow("Anchorage Name", r.Anchor_Name)).Append(KvRow("Drop Anchor Date & Time", r.Anchor_DateT != null ? Vdt(r.Anchor_DateT) : "-"));
-            sb.Append(KvRow("Anchoring Position - Latitude", r.AnchorPos_Latitude)).Append(KvRow("Anchoring Position - Longitude", r.AnchorPos_Longitude));
+            sb.Append(KvRow("Anchoring Position - Latitude", FormatLatLon(r.AnchorPos_Latitude))).Append(KvRow("Anchoring Position - Longitude", FormatLatLon(r.AnchorPos_Longitude)));
             sb.Append(KvRow("FWE Date & Time", r.AnchorFWE_DateT != null ? Vdt(r.AnchorFWE_DateT) : "-"));
             string anchorageRows = sb.ToString();
             sb.Clear();
 
             sb.Append(KvRow("Dist Noon to Arrival (DMG)(NM)", r.NoonToNoonDMG_Dist)).Append(KvRow("Log Dist(NM)", r.LogDist)).Append(KvRow("Engine Dist(NM)", r.EngineDist));
             sb.Append(KvRow("Total Distance (Dep to Curr)(NM)", r.TotalDistance)).Append(KvRow("Dist to Go (DTG)(NM)", r.DistToGo_DTG));
-            sb.Append(KvRow("Stmg Time Noon to Noon(Hrs)", r.StmgTime)).Append(KvRow("Manoeuvring Hrs", r.Manoeuvring_Hrs)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance));
-            sb.Append(KvRow("Actual Speed Noon to Noon(Kts)", r.Act_Speed)).Append(KvRow("Gen Avg Speed (Dep to Curr)(Kts)", r.Gen_Avg_Speed));
+            sb.Append(KvRow("Stmg Time Noon to Arrival(Hrs)", r.StmgTime));
+            sb.Append(KvRow("Total Time (Dep to Curr)(Hrs)", r.TotalTime));
+            sb.Append(KvRow("Actual Speed Noon to Arrival(Kts)", r.Act_Speed)).Append(KvRow("Gen Avg Speed (Dep to Curr)(Kts)", r.Gen_Avg_Speed));
             string speedRows = sb.ToString();
+            sb.Clear();
+
+            // Manoeuvring — its own dedicated section between Speed-Distance-Time and Non-Routine Events.
+            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance));
+            string manoeuvringRows = sb.ToString();
             sb.Clear();
 
             string[] nreLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Preparation", "Cargo Heating", "BW Exchange" };
@@ -248,34 +299,43 @@ namespace SIS_Operational_Reports.Common
             string engineRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("EOSP ROB", r.EOSP_ROB)).Append(KvRow("FWE ROB", r.FWE_ROB));
+            // Fuel ROB in MT — rows for the 3-col table (Fuel | EOSP | FWE) consumed by the template.
+            // Num() strips trailing zeros so 745.200 → 745.2, matching the web view.
             if (dtFuelROB != null)
             {
                 foreach (DataRow dr in dtFuelROB.Rows)
                 {
-                    string eosp = dr.Table.Columns.Contains("EOSP") ? dr["EOSP"]?.ToString() : "";
-                    string fwe = dr.Table.Columns.Contains("FWE") ? dr["FWE"]?.ToString() : "";
-                    string robVal = string.IsNullOrEmpty(eosp) && string.IsNullOrEmpty(fwe) ? "-" : (eosp ?? "-") + " / " + (fwe ?? "-");
-                    sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", robVal));
+                    string ft = (dr["FuelType"]?.ToString() ?? "").Trim();
+                    string eosp = dr.Table.Columns.Contains("EOSP") ? Num(dr["EOSP"]) : "-";
+                    string fwe = dr.Table.Columns.Contains("FWE") ? Num(dr["FWE"]) : "-";
+                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">").Append(ft).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(eosp).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(fwe).Append(@"</td></tr>");
                 }
             }
             string fuelRobRows = sb.ToString();
             sb.Clear();
 
-            if (dtBunker != null)
+            // Bunker Received section — only build the HTML when data exists. When the web view
+            // has no bunker entries, bunkerSection is empty and the {{BUNKER_SECTION}} placeholder
+            // resolves to nothing so the section header and empty table never render.
+            string bunkerSection = "";
+            if (BunkerHasData(dtBunker))
             {
+                var bsb = new StringBuilder();
+                bsb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-size:14px;font-weight:bold;text-align:center;border:1px solid #ccc;white-space:nowrap"">Bunker Received in MT</td></tr>");
+                bsb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
                 foreach (DataRow dr in dtBunker.Rows)
-                    sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "-"));
+                    bsb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "-"));
+                bsb.Append(@"</table></td></tr>");
+                bunkerSection = bsb.ToString();
             }
-            string bunkerRows = sb.ToString();
             sb.Clear();
 
-            decimal vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-            decimal mdo = GetFuelConsByType(dtFuelCons, "MDO");
-            sb.Append(KvRow("VLSFO (Total)", vlsfo > 0 ? vlsfo.ToString("0.000") : "-")).Append(KvRow("MDO (Total)", mdo > 0 ? mdo.ToString("0.000") : "-"));
-            string fuelConsRows = sb.ToString();
-            sb.Clear();
+            // Fuel Consumption in MT — full 7-block layout matching Daily Noon.
+            decimal vlsfoTotal = GetFuelConsByType(dtFuelCons, "VLSFO");
+            decimal mdoTotal = GetFuelConsByType(dtFuelCons, "MDO");
+            string fuelConsFullTable = BuildFuelConsFullTable(vlsfoTotal, mdoTotal, dtFuelCons);
 
+            // Cargo rows — single Qty(MT) column, no decimal padding (40476.00 → 40476).
             if (dtARCargo != null && dtARCargo.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtARCargo.Rows)
@@ -283,15 +343,14 @@ namespace SIS_Operational_Reports.Common
                     string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
                     string pName = (dr["PortName"]?.ToString() ?? "").Trim();
                     string cargoLabel = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
-                    string q1 = FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
-                    string q2 = FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade2") ? dr["Qty_Grade2"] : null);
-                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(q1).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(q2).Append(@"</td></tr>");
+                    string q1 = FormatCargoQty(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
+                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(q1).Append(@"</td></tr>");
                 }
             }
             string cargoRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("ROB (MT)", r.Ballast_ROB));
+            sb.Append(KvRow("ROB", r.Ballast_ROB));
             string ballastRow = sb.ToString();
             sb.Clear();
 
@@ -304,19 +363,28 @@ namespace SIS_Operational_Reports.Common
                 .Replace("{{HEADER_ROWS}}", headerRows)
                 .Replace("{{ANCHORAGE_ROWS}}", anchorageRows)
                 .Replace("{{SPEED_DISTANCE_ROWS}}", speedRows)
+                .Replace("{{MANOEUVRING_ROWS}}", manoeuvringRows)
                 .Replace("{{NON_ROUTINE_ROWS}}", nonRoutineRows)
                 .Replace("{{WEATHER_ROWS}}", weatherRows)
                 .Replace("{{REMARKS_ROW}}", remarksRow)
                 .Replace("{{ENGINE_ROWS}}", engineRows)
+                .Replace("{{LO_MECC_CONS}}", V(r.LO_HO_Cons_MECC))
+                .Replace("{{LO_MECC_ROB}}", V(r.LO_HO_Cons_MECC_ROB))
+                .Replace("{{LO_MECYL_CONS}}", V(r.LO_HO_Cons_MECYL))
+                .Replace("{{LO_MECYL_ROB}}", V(r.LO_HO_Cons_MECYL_ROB))
+                .Replace("{{LO_AECC_CONS}}", V(r.LO_HO_Cons_AECC))
+                .Replace("{{LO_AECC_ROB}}", V(r.LO_HO_Cons_AECC_ROB))
+                .Replace("{{LO_HYDR_CONS}}", V(r.LO_HO_Cons_HYDR_Oil))
+                .Replace("{{LO_HYDR_ROB}}", V(r.LO_HO_Cons_HYDR_Oil_ROB))
                 .Replace("{{FUEL_ROB_ROWS}}", fuelRobRows)
-                .Replace("{{BUNKER_ROWS}}", bunkerRows)
+                .Replace("{{BUNKER_SECTION}}", bunkerSection)
                 .Replace("{{OT_ROB_OXY_Full}}", V(r.OT_ROB_OXY_Full))
                 .Replace("{{OT_ROB_OXY_InUse}}", V(r.OT_ROB_OXY_InUse))
                 .Replace("{{OT_ROB_OXY_Empty}}", V(r.OT_ROB_OXY_Empty))
                 .Replace("{{OT_ROB_ACYT_Full}}", V(r.OT_ROB_ACYT_Full))
                 .Replace("{{OT_ROB_ACYT_InUse}}", V(r.OT_ROB_ACYT_InUse))
                 .Replace("{{OT_ROB_ACYT_Empty}}", V(r.OT_ROB_ACYT_Empty))
-                .Replace("{{FUEL_CONS_ROWS}}", fuelConsRows)
+                .Replace("{{FUEL_CONS_FULL_TABLE}}", fuelConsFullTable)
                 .Replace("{{CARGO_ROWS}}", cargoRows)
                 .Replace("{{SLOPS_ROB_OXY_Oil}}", V(r.SLOPS_ROB_OXY_Oil))
                 .Replace("{{SLOPS_ROB_OXY_Water}}", V(r.SLOPS_ROB_OXY_Water))
@@ -346,7 +414,7 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<table style=""width:100%;min-width:1200px;max-width:1200px;border-collapse:collapse;border:1px solid #ccc;"">");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:12px;background:#555;color:#fff;font-size:16px;font-weight:bold;text-align:center;"">Arrival Report (").Append(V(vesselName)).Append(@")</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(CompactRow("Voy No.", voyNo, "Latitude", r.Latitude, "Longitude", r.Longitude));
+            sb.Append(CompactRow("Voy No.", voyNo, "Latitude", FormatLatLon(r.Latitude), "Longitude", FormatLatLon(r.Longitude)));
             sb.Append(CompactRow("Place", r.Place, "Leg", legText));
             sb.Append(CompactRow("NOR", r.NOR != null ? Vdt(r.NOR) : "-", "Port", r.PortName));
             sb.Append(CompactRow("EOSP", r.EOSP != null ? Vdt(r.EOSP) : "-", "ETB", r.ETB != null ? Vdt(r.ETB) : "-"));
@@ -355,12 +423,18 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Anchorage</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("Anchorage Name", r.Anchor_Name)).Append(KvRow("Drop Anchor Date & Time", r.Anchor_DateT != null ? Vdt(r.Anchor_DateT) : "-"));
-            sb.Append(KvRow("Anchoring Position - Latitude", r.AnchorPos_Latitude)).Append(KvRow("Anchoring Position - Longitude", r.AnchorPos_Longitude)).Append(KvRow("FWE Date & Time", r.AnchorFWE_DateT != null ? Vdt(r.AnchorFWE_DateT) : "-"));
+            sb.Append(KvRow("Anchoring Position - Latitude", FormatLatLon(r.AnchorPos_Latitude))).Append(KvRow("Anchoring Position - Longitude", FormatLatLon(r.AnchorPos_Longitude))).Append(KvRow("FWE Date & Time", r.AnchorFWE_DateT != null ? Vdt(r.AnchorFWE_DateT) : "-"));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Speed - Distance - Time</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("Dist Noon to Arrival (DMG)(NM)", r.NoonToNoonDMG_Dist)).Append(KvRow("Log Dist(NM)", r.LogDist)).Append(KvRow("Engine Dist(NM)", r.EngineDist));
-            sb.Append(KvRow("Total Distance (Dep to Curr)(NM)", r.TotalDistance)).Append(KvRow("Dist to Go (DTG)(NM)", r.DistToGo_DTG)).Append(KvRow("Stmg Time Noon to Noon(Hrs)", r.StmgTime)).Append(KvRow("Manoeuvring Hrs", r.Manoeuvring_Hrs)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance)).Append(KvRow("Actual Speed Noon to Noon(Kts)", r.Act_Speed)).Append(KvRow("Gen Avg Speed (Dep to Curr)(Kts)", r.Gen_Avg_Speed));
+            sb.Append(KvRow("Total Distance (Dep to Curr)(NM)", r.TotalDistance)).Append(KvRow("Dist to Go (DTG)(NM)", r.DistToGo_DTG)).Append(KvRow("Stmg Time Noon to Arrival(Hrs)", r.StmgTime)).Append(KvRow("Total Time (Dep to Curr)(Hrs)", r.TotalTime)).Append(KvRow("Actual Speed Noon to Arrival(Kts)", r.Act_Speed)).Append(KvRow("Gen Avg Speed (Dep to Curr)(Kts)", r.Gen_Avg_Speed));
+            sb.Append(@"</table></td></tr>");
+
+            // Manoeuvring — separate section after Speed-Distance-Time.
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Manoeuvring</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
+            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Non-Routine Events</td></tr>");
             string[] nreLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Preparation", "Cargo Heating", "BW Exchange" };
@@ -384,30 +458,78 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("SLIP%", r.Slip)).Append(KvRow("RPM", r.RPM)).Append(KvRow("BHP(hp)", r.BHP)).Append(KvRow("MCR%", r.MCR));
             sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel ROB (EOSP/FWE)</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("EOSP ROB", r.EOSP_ROB)).Append(KvRow("FWE ROB", r.FWE_ROB));
-            if (dtFuelROB != null) { foreach (DataRow dr in dtFuelROB.Rows) { string eosp = dr.Table.Columns.Contains("EOSP") ? dr["EOSP"]?.ToString() : ""; string fwe = dr.Table.Columns.Contains("FWE") ? dr["FWE"]?.ToString() : ""; sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", string.IsNullOrEmpty(eosp) && string.IsNullOrEmpty(fwe) ? "-" : (eosp ?? "-") + " / " + (fwe ?? "-"))); } }
+
+            // 1. LO & HO Consumptions — 3-col layout (Item | Consumption | ROB), matching Daily Noon.
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">LO &amp; HO Consumptions</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:30%;min-width:150px""><col style=""width:30%;min-width:150px"">");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Consumption</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">ROB</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">MECC (Ltrs)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_MECC)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_MECC_ROB)).Append(@"</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">MECYL (Ltrs)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_MECYL)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_MECYL_ROB)).Append(@"</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">AECC (Ltrs)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_AECC)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_AECC_ROB)).Append(@"</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">HYDRAULIC Oil (Ltrs)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_HYDR_Oil)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.LO_HO_Cons_HYDR_Oil_ROB)).Append(@"</td></tr>");
             sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Received in MT</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            if (dtBunker != null) { foreach (DataRow dr in dtBunker.Rows) sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "-")); }
+
+            // 2. Fuel ROB in MT — 3-col layout (Fuel | EOSP | FWE) sourced from dtFuelROB (joined tbl_FuelROB).
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel ROB in MT</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:30%;min-width:150px""><col style=""width:30%;min-width:150px"">");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">EOSP</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">FWE</td></tr>");
+            if (dtFuelROB != null)
+            {
+                foreach (DataRow dr in dtFuelROB.Rows)
+                {
+                    string ft = (dr["FuelType"]?.ToString() ?? "").Trim();
+                    string eosp = dr.Table.Columns.Contains("EOSP") ? Num(dr["EOSP"]) : "-";
+                    string fwe = dr.Table.Columns.Contains("FWE") ? Num(dr["FWE"]) : "-";
+                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">").Append(ft).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(eosp).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(fwe).Append(@"</td></tr>");
+                }
+            }
             sb.Append(@"</table></td></tr>");
+
+            // Bunker Received in MT — only render the section when at least one row has a
+            // non-empty Receipt value. If no bunker data is entered in the web view, hide the
+            // header and table completely (no empty section).
+            if (BunkerHasData(dtBunker))
+            {
+                sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Received in MT</td></tr>");
+                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
+                foreach (DataRow dr in dtBunker.Rows) sb.Append(KvRow(dr["FuelType"]?.ToString() ?? "", dr["Receipt"]?.ToString() ?? "-"));
+                sb.Append(@"</table></td></tr>");
+            }
+
+            // 3. Other ROB — 4-col (label | Full | In Use | Empty), unchanged from prior layout.
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Other ROB</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Full</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">In Use</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Empty</td></tr>");
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Oxygen (Bottles)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_OXY_Full)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_OXY_InUse)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_OXY_Empty)).Append(@"</td></tr>");
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Acetylene (Bottles)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_Full)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_InUse)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_Empty)).Append(@"</td></tr>");
             sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel Consumption</td></tr>");
-            decimal vlsfo = GetFuelConsByType(dtFuelCons, "VLSFO");
-            decimal mdo = GetFuelConsByType(dtFuelCons, "MDO");
+
+            // 4. Fuel Consumption in MT — full 7-block layout matching Daily Noon.
+            {
+                decimal vlsfoTot = GetFuelConsByType(dtFuelCons, "VLSFO");
+                decimal mdoTot = GetFuelConsByType(dtFuelCons, "MDO");
+                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;"">").Append(BuildFuelConsFullTable(vlsfoTot, mdoTot, dtFuelCons)).Append(@"</td></tr>");
+            }
+            // Cargo tab section order matches the web view:
+            //   1. Fresh Water Noon To Report   2. Slops ROB   3. Cargo   4. Ballast
+
+            // 1. Fresh Water Noon To Report (renamed from "Fresh Water").
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fresh Water Noon To Report</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("VLSFO (Total)", vlsfo > 0 ? vlsfo.ToString("0.000") : "-")).Append(KvRow("MDO (Total)", mdo > 0 ? mdo.ToString("0.000") : "-"));
+            sb.Append(KvRow("FW Generated (MT)", r.FW_Generated)).Append(KvRow("Consumption (MT)", r.FW_Consumption)).Append(KvRow("ROB (MT)", r.FW_ROB));
             sb.Append(@"</table></td></tr>");
+
+            // 2. Slops ROB — column labels now include the (m3) unit.
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Slops ROB</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Oil(m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Water(m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Total</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">ROB (m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Oil)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Water)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Total)).Append(@"</td></tr>");
+            sb.Append(@"</table></td></tr>");
+
+            // 3. Cargo — single Qty(MT) column, no decimals.
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Cargo</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:27%;min-width:150px""><col style=""width:28%;min-width:150px"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Cargo</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">Qty Grade 1</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">Qty Grade 2</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:60%;min-width:280px""><col style=""width:40%;min-width:150px"">");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Cargo</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:right;"">Qty(MT)</td></tr>");
             if (dtARCargo != null && dtARCargo.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtARCargo.Rows)
@@ -415,22 +537,15 @@ namespace SIS_Operational_Reports.Common
                     string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
                     string pName = (dr["PortName"]?.ToString() ?? "").Trim();
                     string cargoLabel = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
-                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(FormatCargoVal(dr.Table.Columns.Contains("Qty_Grade2") ? dr["Qty_Grade2"] : null)).Append(@"</td></tr>");
+                    sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(FormatCargoQty(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null)).Append(@"</td></tr>");
                 }
             }
             sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Slops ROB</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Oil</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Water</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Total</td></tr>");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">ROB (m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Oil)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Water)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SLOPS_ROB_OXY_Total)).Append(@"</td></tr>");
-            sb.Append(@"</table></td></tr>");
+
+            // 4. Ballast — label simplified to "ROB".
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Ballast</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("ROB (MT)", r.Ballast_ROB));
-            sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fresh Water</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("FW Generated (MT)", r.FW_Generated)).Append(KvRow("Consumption (MT)", r.FW_Consumption)).Append(KvRow("ROB (MT)", r.FW_ROB));
+            sb.Append(KvRow("ROB", r.Ballast_ROB));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"</table>");
             sb.Append(@"<p style=""margin:12px 0 0 0;"">Please note that this is a no-reply email, and responses to this mailbox are not monitored.</p>");
@@ -462,6 +577,15 @@ namespace SIS_Operational_Reports.Common
             return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.00") : V(v);
         }
 
+        /// <summary>Cargo Qty(MT) formatter — strips trailing zeros so the email matches the web view
+        /// (40476.00 → 40476, 40476.5 → 40476.5). Returns "-" for null/empty.</summary>
+        private static string FormatCargoQty(object v)
+        {
+            if (v == null || v == DBNull.Value) return "-";
+            decimal d;
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.##########") : V(v);
+        }
+
         private static decimal GetFuelConsByType(DataTable dt, string fuelType)
         {
             if (dt == null) return 0;
@@ -475,6 +599,162 @@ namespace SIS_Operational_Reports.Common
                 }
             }
             return sum;
+        }
+
+        // Shared inline-style fragments for the Fuel Consumption section (email-safe; CSS is
+        // inlined per cell). Copied from DailyNoonReportEmailTemplate to keep the two reports
+        // visually identical for this section.
+        private const string FC_FONT  = "font-family:Arial,sans-serif;font-size:12px;color:#222;";
+        private const string FC_TBL   = "width:100%;border-collapse:collapse;margin-bottom:14px;font-family:Arial,sans-serif;font-size:12px;color:#222;";
+        private const string FC_TD    = "border:1px solid #bbb;padding:5px 9px;text-align:center;";
+        private const string FC_TH    = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#f0f0f0;font-weight:600;font-size:11px;";
+        private const string FC_LBL   = "border:1px solid #bbb;padding:5px 9px;text-align:left;font-weight:600;background:#f7f7f7;";
+        private const string FC_GRP   = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#e8e8e8;font-weight:700;font-size:11px;letter-spacing:0.03em;";
+        private const string FC_TOTAL = "border:1px solid #bbb;padding:5px 9px;text-align:center;font-weight:700;";
+
+        private static string FcFmt(decimal v) => v.ToString("0.##########");
+
+        /// <summary>Engine-style table: group header + Fuel/At Sea/Manoeuv./Anchor-Wait/Berth columns,
+        /// optionally a Sub Total column. Used for Main Engine, Aux Engine, Boiler, FRAMO System.</summary>
+        private static string FuelConsEngineTable(string groupName, bool showSubTotal,
+            decimal vSea, decimal vMan, decimal vWait, decimal vBerth,
+            decimal dSea, decimal dMan, decimal dWait, decimal dBerth)
+        {
+            int cols = showSubTotal ? 6 : 5;
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"").Append(cols).Append("\" style=\"").Append(FC_GRP).Append("\">").Append(groupName).Append("</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">AT SEA</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">MANOEUV</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">ANCHOR/WAIT</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">BERTH</th>");
+            if (showSubTotal) s.Append("<th style=\"").Append(FC_TH).Append("\">SUB TOTAL</th>");
+            s.Append("</tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vSea)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vMan)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vWait)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vBerth)).Append("</td>");
+            if (showSubTotal) s.Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(vSea + vMan + vWait + vBerth)).Append("</td>");
+            s.Append("</tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dSea)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dMan)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dWait)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dBerth)).Append("</td>");
+            if (showSubTotal) s.Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(dSea + dMan + dWait + dBerth)).Append("</td>");
+            s.Append("</tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>IGG & Incinerator table: group header + Fuel/IGG/Incinerator columns.</summary>
+        private static string FuelConsIggIncTable(decimal vIgg, decimal vInc, decimal dIgg, decimal dInc)
+        {
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"3\" style=\"").Append(FC_GRP).Append("\">IGG &amp; Incinerator</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">IGG</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Incinerator</th>")
+              .Append("</tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td><td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vIgg)).Append("</td><td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vInc)).Append("</td></tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td><td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dIgg)).Append("</td><td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dInc)).Append("</td></tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Events table: group header + Fuel + 8 event columns (Stoppage..Others).</summary>
+        private static string FuelConsEventsTable(DataTable dtFuelCons)
+        {
+            int[] eventConsTypeIds = { 20, 21, 22, 23, 24, 25, 26, 27 };
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"9\" style=\"").Append(FC_GRP).Append("\">Events</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Stoppage</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Deviation</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Slow Steaming</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Bad Weather</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">COT Prep</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Cargo Heating</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">BW Exchange</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Others</th>")
+              .Append("</tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td>");
+            foreach (int ct in eventConsTypeIds)
+                s.Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(GetFuelConsByConsType(dtFuelCons, "VLSFO", ct))).Append("</td>");
+            s.Append("</tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td>");
+            foreach (int ct in eventConsTypeIds)
+                s.Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(GetFuelConsByConsType(dtFuelCons, "MDO", ct))).Append("</td>");
+            s.Append("</tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Total summary table: VLSFO Total / MDO Total rows with " MT" suffix.</summary>
+        private static string FuelConsTotalTable(decimal vlsfoTotal, decimal mdoTotal)
+        {
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"2\" style=\"").Append(FC_GRP).Append("\">Total</td></tr>");
+            // Total values are pinned to 3 decimal places (no "MT" suffix) to match the web view.
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO TOTAL</td><td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(vlsfoTotal.ToString("0.000")).Append("</td></tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO TOTAL</td><td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(mdoTotal.ToString("0.000")).Append("</td></tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Single (fuelType, consTypeId) lookup against dtFuelCons.</summary>
+        private static decimal GetFuelConsByConsType(DataTable dt, string fuelType, int consTypeId)
+        {
+            if (dt == null) return 0;
+            foreach (DataRow dr in dt.Rows)
+            {
+                if (!(dr["FuelType"]?.ToString() ?? "").Equals(fuelType, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!int.TryParse(dr["ConsTypeId"]?.ToString() ?? "", out int rowConsType)) continue;
+                if (rowConsType != consTypeId) continue;
+                var v = dr["Value"];
+                if (v != null && v != DBNull.Value && decimal.TryParse(v.ToString(), out decimal d)) return d;
+                return 0;
+            }
+            return 0;
+        }
+
+        /// <summary>Full Fuel Consumption in MT block: dark-grey banner + 7 sub-tables
+        /// (Main Engine, Aux Engine, Boiler, FRAMO, IGG &amp; Incinerator, Events, Total).
+        /// Uses the same ConsTypeId mapping as Daily Noon (ME 2-5, AE 7-10, BLR 11-14,
+        /// FRAMO 15-18, IGG 19, Events 20-27, Incinerator 28).</summary>
+        private static string BuildFuelConsFullTable(decimal vlsfoTotal, decimal mdoTotal, DataTable dtFuelCons)
+        {
+            decimal FV(string ft, int consTypeId) => GetFuelConsByConsType(dtFuelCons, ft, consTypeId);
+            var sb = new StringBuilder();
+            sb.Append("<div style=\"").Append(FC_FONT).Append("\">");
+            sb.Append("<div style=\"padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;font-size:14px;margin-bottom:16px;\">Fuel Consumption in MT</div>");
+            sb.Append(FuelConsEngineTable("Main Engine", true,
+                FV("VLSFO", 2), FV("VLSFO", 3), FV("VLSFO", 4), FV("VLSFO", 5),
+                FV("MDO",   2), FV("MDO",   3), FV("MDO",   4), FV("MDO",   5)));
+            sb.Append(FuelConsEngineTable("Aux Engine", true,
+                FV("VLSFO", 7), FV("VLSFO", 8), FV("VLSFO", 9), FV("VLSFO", 10),
+                FV("MDO",   7), FV("MDO",   8), FV("MDO",   9), FV("MDO",   10)));
+            sb.Append(FuelConsEngineTable("Boiler", true,
+                FV("VLSFO", 11), FV("VLSFO", 12), FV("VLSFO", 13), FV("VLSFO", 14),
+                FV("MDO",   11), FV("MDO",   12), FV("MDO",   13), FV("MDO",   14)));
+            sb.Append(FuelConsEngineTable("Framo System", false,
+                FV("VLSFO", 15), FV("VLSFO", 16), FV("VLSFO", 17), FV("VLSFO", 18),
+                FV("MDO",   15), FV("MDO",   16), FV("MDO",   17), FV("MDO",   18)));
+            sb.Append(FuelConsIggIncTable(FV("VLSFO", 19), FV("VLSFO", 28), FV("MDO", 19), FV("MDO", 28)));
+            sb.Append(FuelConsEventsTable(dtFuelCons));
+            sb.Append(FuelConsTotalTable(vlsfoTotal, mdoTotal));
+            sb.Append("</div>");
+            return sb.ToString();
         }
     }
 }

@@ -73,6 +73,35 @@
     .tab-content .row .col-md .GeneratedTable {
         margin: 15px 4.8px;
     }
+
+    /* Hide the internal Id columns in the Cargo and Stoppage tables — the JS still
+       relies on those cells being present (it reads column indices), so we hide them
+       visually with display:none instead of removing the markup. Without this rule
+       the tables show an unwanted "id" / "Id" column with raw PK values like 1028. */
+    #tblCargo thead th:first-child,
+    #tblCargo tbody td:first-child,
+    #tblCargo tfoot td:first-child,
+    #tblStoppage thead th:first-child,
+    #tblStoppage tbody td:first-child,
+    #tblStoppage tfoot td:first-child {
+        display: none;
+    }
+
+    /* Force the cargo table to fit the container width and wrap long header text
+       onto multiple lines, matching the production layout. Without table-layout:fixed
+       each column expands to fit its header on one line and the table overflows the
+       viewport, producing a wide horizontal scrollbar. */
+    #tblCargo {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    #tblCargo th,
+    #tblCargo td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
 </style>
 
 <style>

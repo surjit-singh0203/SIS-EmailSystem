@@ -17,8 +17,8 @@ namespace SIS_Operational_Reports.Common
     /// </summary>
     public static class LoadingReportEmailTemplate
     {
-        private const string DateFormat = "dd-MMM-yyyy";
-        private const string DateTimeFormat = "dd-MMM-yyyy HH:mm";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/LoadingReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
@@ -67,8 +67,14 @@ namespace SIS_Operational_Reports.Common
                     "select Stoppage as Reason, DateTimeFrom, DateTimeTo from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0", ConnectionBulder.con))
                     adp.Fill(dtStoppage);
                 // Pumps: the table is `tblPump` (singular) per the Loading controller; `tblPumps` returns no rows.
+                // Dedupe by pump Name (the value the user sees) — picks the latest row (MAX Id) per
+                // unique name so previous saves that duplicated tblPump or LR_DCR_PumpsUse rows
+                // don't render the same pump multiple times in the email.
                 using (var adp = new SqlDataAdapter(
-                    "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a left join tblPump b on a.PumpId=b.Id where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
+                    "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
+                    "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa left join tblPump bb on aa.PumpId=bb.Id where aa.LRId=" + id + " and aa.VesselId=" + vesselId + " group by bb.Name) g on a.Id=g.Id " +
+                    "left join tblPump b on a.PumpId=b.Id " +
+                    "where a.LRId=" + id + " and a.VesselId=" + vesselId, ConnectionBulder.con))
                     adp.Fill(dtPumpsUse);
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
@@ -177,7 +183,7 @@ namespace SIS_Operational_Reports.Common
             string headerRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("Times", r.Times)).Append(KvRow("Rate", r.Rate));
+            sb.Append(KvRow("Time", r.Times)).Append(KvRow("Rate", r.Rate));
             sb.Append(KvRow("Hose Connection", r.Hose_Connection)).Append(KvRow("High H2S", r.High_H2S));
             string lopRows = sb.ToString();
             sb.Clear();
@@ -226,33 +232,62 @@ namespace SIS_Operational_Reports.Common
             sb.Append(KvRow("Draft Fwd (Mtrs)", r.DraftFwd)).Append(KvRow("Draft Mid (Mtrs)", r.DraftMid)).Append(KvRow("Draft Aft (Mtrs)", r.DraftAft));
             sb.Append(@"</table></td></tr>");
 
-            // LOP
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Letter of Protest (LOP)</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Times", r.Times)).Append(KvRow("Rate", r.Rate));
-            sb.Append(KvRow("Hose Connection", r.Hose_Connection)).Append(KvRow("High H2S", r.High_H2S));
-            sb.Append(@"</table></td></tr>");
-
-            // Cargo Details
+            // Cargo Details — column names match the web edit form exactly. Order: 14 columns.
+            // Rendered BEFORE Letter of Protests per stakeholder request.
+            const string cargoTh = "padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;vertical-align:middle;";
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Cargo Details</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Cargo Name</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Loading Date/Time</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Terminal Rate</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Rate Accepted</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Avg Rate</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Qty Onboard</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Balance Loaded</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Actual Comp</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;"">");
+            sb.Append(@"<tr>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Cargo Grades</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Commence Loading Date &amp; Time</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Terminal Loading Rate (m3/hr)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Loading Rate Accepted by Vessel (m3/hr)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Average Achieved Loading Rate (m3/hr)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">No of Manifold / Hoses by Terminal</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Size of Manifold / Hoses by Terminal (Inches)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">No of Manifold / Hoses by Vessel</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Size of Manifold / Hoses by Vessel (Inches)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Shore Line Distance (mtrs)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Quantity onboard (MT)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Balance Quantity to be Loaded (MT)</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">ETC Comp Date &amp; Time</td>")
+              .Append(@"<td style=""").Append(cargoTh).Append(@""">Actual Comp Date &amp; Time</td>")
+              .Append(@"</tr>");
             if (dtCargo != null)
             {
                 foreach (DataRow dr in dtCargo.Rows)
                 {
                     sb.Append(@"<tr>");
-                    sb.Append(Td(dr, "CargoName")).Append(TdDt(dr, "LoadingDatetime")).Append(TdDec(dr, "TerminalLoadingRate")).Append(TdDec(dr, "LoadingRateAccepted"));
-                    sb.Append(TdDec(dr, "AverageAchievedLoadingRate")).Append(TdDec(dr, "QuantityOnboard")).Append(TdDec(dr, "BalanceQuantityLoaded")).Append(TdDt(dr, "ActualCompDateTime"));
+                    sb.Append(Td(dr, "CargoName"))
+                      .Append(TdDt(dr, "LoadingDatetime"))
+                      .Append(TdDec(dr, "TerminalLoadingRate"))
+                      .Append(TdDec(dr, "LoadingRateAccepted"))
+                      .Append(TdDec(dr, "AverageAchievedLoadingRate"))
+                      .Append(TdDec(dr, "No_Manifold_Hoses_by_Terminal"))
+                      .Append(TdDec(dr, "Size_of_Manifold_Hoses_by_Terminal"))
+                      .Append(TdDec(dr, "No_Manifold_Hoses_by_Vessel"))
+                      .Append(TdDec(dr, "Size_of_Manifold_Hoses_by_Vessel"))
+                      .Append(TdDec(dr, "ShoreLineDistance"))
+                      .Append(TdDec(dr, "QuantityOnboard"))
+                      .Append(TdDec(dr, "BalanceQuantityLoaded"))
+                      .Append(TdDt(dr, "EstCompDateTime"))
+                      .Append(TdDt(dr, "ActualCompDateTime"));
                     sb.Append(@"</tr>");
                 }
             }
             sb.Append(@"</table></td></tr>");
 
-            // Stoppage Details
+            // LOP — rendered AFTER Cargo Details.
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Letter of Protests</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
+            sb.Append(KvRow("Time", r.Times)).Append(KvRow("Rate", r.Rate));
+            sb.Append(KvRow("Hose Connection", r.Hose_Connection)).Append(KvRow("High H2S", r.High_H2S));
+            sb.Append(@"</table></td></tr>");
+
+            // Stoppage Details — headers match the web edit form exactly.
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Stoppage Details</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Reason</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">From</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">To</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Stoppage Reason</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Date Time From</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Date Time To</td></tr>");
             if (dtStoppage != null)
             {
                 foreach (DataRow dr in dtStoppage.Rows)
@@ -270,8 +305,12 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Pump Name</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Rate</td></tr>");
             if (dtPumpsUse != null)
             {
+                // Dedupe by PumpName so duplicates in lr_dcr_pumpsuse or tblPump don't render the same pump multiple times.
+                var seenPumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (DataRow dr in dtPumpsUse.Rows)
                 {
+                    string pumpName = (dr.Table.Columns.Contains("PumpName") ? dr["PumpName"]?.ToString() : "")?.Trim() ?? "";
+                    if (!seenPumps.Add(pumpName)) continue;
                     sb.Append(@"<tr>");
                     sb.Append(Td(dr, "PumpName")).Append(TdDec(dr, "Rate"));
                     sb.Append(@"</tr>");
@@ -297,8 +336,20 @@ namespace SIS_Operational_Reports.Common
             foreach (DataRow dr in dtCargo.Rows)
             {
                 sb.Append(@"<tr>");
-                sb.Append(Td(dr, "CargoName")).Append(TdDt(dr, "LoadingDatetime")).Append(TdDec(dr, "TerminalLoadingRate")).Append(TdDec(dr, "LoadingRateAccepted"));
-                sb.Append(TdDec(dr, "AverageAchievedLoadingRate")).Append(TdDec(dr, "QuantityOnboard")).Append(TdDec(dr, "BalanceQuantityLoaded")).Append(TdDt(dr, "ActualCompDateTime"));
+                sb.Append(Td(dr, "CargoName"))
+                  .Append(TdDt(dr, "LoadingDatetime"))
+                  .Append(TdDec(dr, "TerminalLoadingRate"))
+                  .Append(TdDec(dr, "LoadingRateAccepted"))
+                  .Append(TdDec(dr, "AverageAchievedLoadingRate"))
+                  .Append(TdDec(dr, "No_Manifold_Hoses_by_Terminal"))
+                  .Append(TdDec(dr, "Size_of_Manifold_Hoses_by_Terminal"))
+                  .Append(TdDec(dr, "No_Manifold_Hoses_by_Vessel"))
+                  .Append(TdDec(dr, "Size_of_Manifold_Hoses_by_Vessel"))
+                  .Append(TdDec(dr, "ShoreLineDistance"))
+                  .Append(TdDec(dr, "QuantityOnboard"))
+                  .Append(TdDec(dr, "BalanceQuantityLoaded"))
+                  .Append(TdDt(dr, "EstCompDateTime"))
+                  .Append(TdDt(dr, "ActualCompDateTime"));
                 sb.Append(@"</tr>");
             }
             return sb.ToString();
@@ -321,8 +372,12 @@ namespace SIS_Operational_Reports.Common
         {
             if (dtPumpsUse == null || dtPumpsUse.Rows.Count == 0) return "";
             var sb = new StringBuilder();
+            // Dedupe by PumpName so duplicates in lr_dcr_pumpsuse or tblPump don't render multiple rows.
+            var seenPumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DataRow dr in dtPumpsUse.Rows)
             {
+                string pumpName = (dr.Table.Columns.Contains("PumpName") ? dr["PumpName"]?.ToString() : "")?.Trim() ?? "";
+                if (!seenPumps.Add(pumpName)) continue;
                 sb.Append(@"<tr>");
                 sb.Append(Td(dr, "PumpName")).Append(TdDec(dr, "Rate"));
                 sb.Append(@"</tr>");

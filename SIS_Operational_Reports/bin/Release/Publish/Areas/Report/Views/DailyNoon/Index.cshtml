@@ -146,23 +146,26 @@
     width: 100%!important;
 }
 .row.long-table {
-overflow-x: scroll;
+    overflow-x: auto;
+    width: 100%;
 }
-table#tblFuelC{
-    width: 2100px!important;
-
-    table-layout: fixed;
-
+table#tblFuelC {
+    min-width: 2400px;
+    width: max-content;
+    border-collapse: collapse;
+}
+table#tblFuelC td,
+table#tblFuelC th {
+    white-space: nowrap;
+    padding: 4px 8px;
 }
 tr.small-titles {
-    font-size: 12px!important;
+    font-size: 12px !important;
 }
 tr.small-titles td {
-    width: 209px!important;
     white-space: normal;
     word-wrap: break-word;
-    min-width: 234px!important;
-    display: table-cell;
+    min-width: 90px;
 }
 td.datetime-wrapper {
     width: 100%!important;
@@ -5806,6 +5809,38 @@ td.datetime-wrapper {
         ttl = ttl.toFixed(3);
         $("#MDOAE_Subtotal").val(ttl);
     }
+
+    // Defensive recompute: runs on load, on every ajaxComplete (the Fuel Consumption
+    // inputs are populated by an AJAX call that may finish AFTER doc.ready), polls
+    // every 500ms for the first 15s, and recomputes on any input change in the table.
+    function _fcNum(sel) { try { var v = $(sel).val(); return (v === "" || v == null) ? 0 : (parseFloat(v) || 0); } catch (e) { return 0; } }
+    function recomputeFuelConsTotals() {
+        try {
+            $("#ME_Subtotal").val((_fcNum("#Id1") + _fcNum("#Id2") + _fcNum("#Id3") + _fcNum("#Id4")).toFixed(3));
+            $("#AE_Subtotal").val((_fcNum("#Id5") + _fcNum("#Id6") + _fcNum("#Id7") + _fcNum("#Id8")).toFixed(3));
+            $("#MDOME_Subtotal").val((_fcNum("#Id25") + _fcNum("#Id26") + _fcNum("#Id27") + _fcNum("#Id28")).toFixed(3));
+            $("#MDOAE_Subtotal").val((_fcNum("#Id29") + _fcNum("#Id30") + _fcNum("#Id31") + _fcNum("#Id32")).toFixed(3));
+            if (typeof AddMainTotalInFC === "function") { AddMainTotalInFC(); }
+            if (typeof AddMainTotalInFC1 === "function") { AddMainTotalInFC1(); }
+        } catch (e) { if (window.console && console.error) console.error("recomputeFuelConsTotals failed", e); }
+    }
+
+    $(document).ready(function () {
+        recomputeFuelConsTotals();
+        // Poll every 500ms for the first 15 seconds — covers any AJAX that
+        // populates the inputs after page load (no matter what triggers it).
+        var _fcAttempts = 0;
+        var _fcInterval = setInterval(function () {
+            _fcAttempts++;
+            recomputeFuelConsTotals();
+            if (_fcAttempts >= 30) clearInterval(_fcInterval);
+        }, 500);
+        // Any input/change/blur on a fuel-consumption input recomputes.
+        $("#tblFuelC").on("input change blur", "input", function () { recomputeFuelConsTotals(); });
+        // Any AJAX completion (Getfuelcons etc.) recomputes after the data lands.
+        $(document).ajaxComplete(function () { recomputeFuelConsTotals(); });
+    });
+    $(window).on("load", function () { recomputeFuelConsTotals(); });
 
 </script>
 

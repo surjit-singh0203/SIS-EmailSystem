@@ -23,10 +23,23 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/DailyNoonReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        /// <summary>Format decimal: whole numbers (e.g. IDs, bottle counts) stay as-is; fractional values use 0.000.</summary>
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        /// <summary>Format decimal: show value exactly as entered with no trailing-zero padding.
+        /// 10 → "10", 20.7 → "20.7", 9.750 → "9.75", 0 → "0", null → "-".</summary>
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.##########") : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
+
+        /// <summary>Normalize a numeric value coming from a DataRow column (where the type may be
+        /// string, decimal, or null) so the output strips trailing zeros. Returns "-" for null/empty,
+        /// the raw trimmed string when the value can't be parsed as a number.</summary>
+        private static string Num(object o)
+        {
+            if (o == null || o == DBNull.Value) return "-";
+            string s = o.ToString().Trim();
+            if (string.IsNullOrEmpty(s)) return "-";
+            if (decimal.TryParse(s, out decimal d)) return d.ToString("0.##########");
+            return s;
+        }
 
         /// <summary>Format nautical Latitude/Longitude: "21,58.29 S" → "21° 58.29' S". Returns "-" if empty, original string if unparseable.</summary>
         private static string FormatLatLon(object o)
@@ -149,6 +162,63 @@ namespace SIS_Operational_Reports.Common
             return null;
         }
 
+        /// <summary>Resolves the human-readable Port Status label (e.g. "Others") from the
+        /// PortStatus FK id, using the same spCommonBinding@PortStatus list that the web form uses.
+        /// Returns null when the id is missing or the lookup fails.</summary>
+        private static string LookupPortStatusName(int? portStatusId)
+        {
+            if (!portStatusId.HasValue || portStatusId.Value <= 0) return null;
+            try
+            {
+                var list = DailyNoonReport.portSList();
+                var match = list?.FirstOrDefault(p => p.Id == portStatusId.Value);
+                if (match != null && !string.IsNullOrWhiteSpace(match.Status))
+                    return match.Status.Trim();
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>Resolves the Leg display text (e.g. "AT SEA to Khor al Fakkan") from the
+        /// VoyageLeg table by LegPortId+VoyageId+VesselId. Falls back to a top-1 lookup by VoyageId
+        /// when the LegPortId-scoped row is missing. Returns null when nothing matches.</summary>
+        private static string LookupLegText(int legPortId, int voyageId, int vesselId)
+        {
+            try
+            {
+                if (legPortId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where Id=" + legPortId + " and VoyageId=" + voyageId + " and VesselId=" + vesselId, ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0)
+                        {
+                            string s = dt.Rows[0]["Leg"]?.ToString();
+                            if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+                        }
+                    }
+                }
+                if (voyageId > 0)
+                {
+                    using (var adp = new SqlDataAdapter(
+                        "select top 1 LegPort_A + ' to ' + LegPort_B as Leg from VoyageLeg where VoyageId=" + voyageId + " and VesselId=" + vesselId + " and IsActive=1", ConnectionBulder.con))
+                    {
+                        var dt = new DataTable();
+                        adp.Fill(dt);
+                        if (dt.Rows.Count > 0)
+                        {
+                            string s = dt.Rows[0]["Leg"]?.ToString();
+                            if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+                        }
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private static string ApplyTemplate(string template, DailyNoonReport r, string vesselName, List<DNR_Cargo_Tank> cargoTanks, List<DNR_Ballast_Tank> ballastTanks, List<DNR_Void_Space> voidSpaces, DataTable dtNonRoutine, DataTable dtMain, DataTable dtFuelCons, DataTable dtFuelROB, DataTable dtBunker, DataTable dtNRCargo)
         {
             string voyNo = r.voyagenumber;
@@ -168,6 +238,12 @@ namespace SIS_Operational_Reports.Common
             // Fallback: look up the display VoyageNumber from the Voyage table
             if (string.IsNullOrWhiteSpace(voyNo))
                 voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+            // Fallback: when portStatusText is still the numeric FK (or empty), resolve the label
+            if (string.IsNullOrWhiteSpace(portStatusText) || int.TryParse(portStatusText, out _))
+                portStatusText = LookupPortStatusName(r.PortStatus) ?? portStatusText;
+            // Fallback: when legText is empty, resolve from VoyageLeg by LegPortId+VoyageId+VesselId
+            if (string.IsNullOrWhiteSpace(legText))
+                legText = LookupLegText(r.LegPortId, r.VoyageId, r.VesselId) ?? legText;
 
             var sb = new StringBuilder();
             sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Status", r.VesselStatus)).Append(KvRow("Latitude", FormatLatLon(r.Latitude))).Append(KvRow("Longitude", FormatLatLon(r.Longitude)));
@@ -187,7 +263,7 @@ namespace SIS_Operational_Reports.Common
             for (int i = 0; i < nreLabels.Length; i++)
             {
                 string acc = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["ChartererAccount"]?.ToString() ?? "-") : "-";
-                string hrs = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["Hours"]?.ToString() ?? "-") : "-";
+                string hrs = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? Num(dtNonRoutine.Rows[i]["Hours"]) : "-";
                 sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(nreLabels[i]).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(acc).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(hrs).Append(@"</td></tr>");
             }
             string nonRoutineRows = sb.ToString();
@@ -220,7 +296,8 @@ namespace SIS_Operational_Reports.Common
                 {
                     string ft = (dr["FuelType"]?.ToString() ?? "").Trim();
                     if (string.IsNullOrEmpty(ft) || !seenBunkerFuels.Add(ft)) continue;
-                    string rcpt = dr["Receipt"]?.ToString() ?? "0";
+                    string rcpt = Num(dr["Receipt"]);
+                    if (rcpt == "-") rcpt = "0";
                     sb.Append(KvRow(ft, rcpt));
                 }
             }
@@ -274,19 +351,19 @@ namespace SIS_Operational_Reports.Common
             {
                 var ctSb = new StringBuilder();
                 ctSb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-size:14px;font-weight:bold;text-align:center;border:1px solid #ccc;white-space:nowrap"">Cargo Tanks</td></tr>");
-                ctSb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;""><colgroup><col style=""min-width:160px""></colgroup>");
-                ctSb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;min-width:160px"">Tank</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">").Append(V(t.TankName)).Append(@"</td>");
-                ctSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Ullage (mtrs)</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Ullage)).Append(@"</td>");
-                ctSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">MT Qty</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Qty_MT)).Append(@"</td>");
-                ctSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Oxygen (% Volume)</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Oxygen)).Append(@"</td>");
-                ctSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">H2S (PPM)</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.H2S)).Append(@"</td>");
-                ctSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">HC (% Volume)</td>");
-                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
+                ctSb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;table-layout:fixed;font-size:11px;"">");
+                ctSb.Append(@"<tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Tank</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:center;"">").Append(V(t.TankName)).Append(@"</td>");
+                ctSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Ullage (mtrs)</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Ullage)).Append(@"</td>");
+                ctSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">MT Qty</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Qty_MT)).Append(@"</td>");
+                ctSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Oxygen (% Volume)</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Oxygen)).Append(@"</td>");
+                ctSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">H2S (PPM)</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.H2S)).Append(@"</td>");
+                ctSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">HC (% Volume)</td>");
+                foreach (var t in cTanks) ctSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
                 ctSb.Append(@"</tr></table></td></tr>");
                 cargoTanksSection = ctSb.ToString();
             }
@@ -297,15 +374,15 @@ namespace SIS_Operational_Reports.Common
             {
                 var btSb = new StringBuilder();
                 btSb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-size:14px;font-weight:bold;text-align:center;border:1px solid #ccc;white-space:nowrap"">Ballast Tanks</td></tr>");
-                btSb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;""><colgroup><col style=""min-width:160px""></colgroup>");
-                btSb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;min-width:160px"">Tank</td>");
-                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">").Append(V(t.TankName)).Append(@"</td>");
-                btSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Sounding (mtrs)</td>");
-                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Sounding)).Append(@"</td>");
-                btSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Cubic Vol</td>");
-                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Qty_Vol)).Append(@"</td>");
-                btSb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">HC (% Volume)</td>");
-                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
+                btSb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;table-layout:fixed;font-size:11px;"">");
+                btSb.Append(@"<tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Tank</td>");
+                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:center;"">").Append(V(t.TankName)).Append(@"</td>");
+                btSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Sounding (mtrs)</td>");
+                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Sounding)).Append(@"</td>");
+                btSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Cubic Vol</td>");
+                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Qty_Vol)).Append(@"</td>");
+                btSb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">HC (% Volume)</td>");
+                foreach (var t in bTanks) btSb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
                 btSb.Append(@"</tr></table></td></tr>");
                 ballastTanksSection = btSb.ToString();
             }
@@ -372,6 +449,12 @@ namespace SIS_Operational_Reports.Common
             // Fallback: look up the display VoyageNumber from the Voyage table
             if (string.IsNullOrWhiteSpace(voyNo))
                 voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
+            // Fallback: when portStatusText is still the numeric FK (or empty), resolve the label
+            if (string.IsNullOrWhiteSpace(portStatusText) || int.TryParse(portStatusText, out _))
+                portStatusText = LookupPortStatusName(r.PortStatus) ?? portStatusText;
+            // Fallback: when legText is empty, resolve from VoyageLeg by LegPortId+VoyageId+VesselId
+            if (string.IsNullOrWhiteSpace(legText))
+                legText = LookupLegText(r.LegPortId, r.VoyageId, r.VesselId) ?? legText;
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");
@@ -397,7 +480,7 @@ namespace SIS_Operational_Reports.Common
             for (int i = 0; i < nreLabels.Length; i++)
             {
                 string acc = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["ChartererAccount"]?.ToString() ?? "-") : "-";
-                string hrs = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? (dtNonRoutine.Rows[i]["Hours"]?.ToString() ?? "-") : "-";
+                string hrs = (dtNonRoutine != null && i < dtNonRoutine.Rows.Count) ? Num(dtNonRoutine.Rows[i]["Hours"]) : "-";
                 sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(nreLabels[i]).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(acc).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(hrs).Append(@"</td></tr>");
             }
             sb.Append(@"</table></td></tr>");
@@ -427,7 +510,8 @@ namespace SIS_Operational_Reports.Common
                 {
                     string ft = (dr["FuelType"]?.ToString() ?? "").Trim();
                     if (string.IsNullOrEmpty(ft) || !seenBunkerFuels2.Add(ft)) continue;
-                    string rcpt = dr["Receipt"]?.ToString() ?? "0";
+                    string rcpt = Num(dr["Receipt"]);
+                    if (rcpt == "-") rcpt = "0";
                     sb.Append(KvRow(ft, rcpt));
                 }
             }
@@ -456,10 +540,9 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("Boiler No.1 Running Hrs", r.BR_RungHrs_No1)).Append(KvRow("Boiler No.2 Running Hrs", r.BR_RungHrs_No2)).Append(KvRow("Boiler No.1 Extra Run Reason", r.BR_Extra_Run_Reason1)).Append(KvRow("Boiler No.2 Extra Run Reason", r.BR_Extra_Run_Reason2));
             sb.Append(@"</table></td></tr>");
-            // Fuel Consumption full table
+            // Fuel Consumption full table (title rendered inside generated table per spec)
             {
                 decimal vlsfoTot = GetFuelConsByType(dtFuelCons, "VLSFO"), mdoTot = GetFuelConsByType(dtFuelCons, "MDO");
-                sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel Consumption in MT</td></tr>");
                 sb.Append(@"<tr><td colspan=""8"" style=""padding:0;"">").Append(BuildFuelConsFullTable(r, vlsfoTot, mdoTot, dtFuelCons)).Append(@"</td></tr>");
             }
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Cargo</td></tr>");
@@ -506,34 +589,34 @@ namespace SIS_Operational_Reports.Common
             if (cTanks.Count > 0)
             {
                 sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Cargo Tanks</td></tr>");
-                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;"">");
-                sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Tank</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">").Append(V(t.TankName)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Ullage (mtrs)</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Ullage)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">MT Qty</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Qty_MT)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Oxygen (% Volume)</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Oxygen)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">H2S (PPM)</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.H2S)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">HC (% Volume)</td>");
-                foreach (var t in cTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
+                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;"">");
+                sb.Append(@"<tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Tank</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:center;"">").Append(V(t.TankName)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Ullage (mtrs)</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Ullage)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">MT Qty</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Qty_MT)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Oxygen (% Volume)</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Oxygen)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">H2S (PPM)</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.H2S)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">HC (% Volume)</td>");
+                foreach (var t in cTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
                 sb.Append(@"</tr></table></td></tr>");
             }
             var bTanks = ballastTanks ?? new List<DNR_Ballast_Tank>();
             if (bTanks.Count > 0)
             {
                 sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Ballast Tanks</td></tr>");
-                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;"">");
-                sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Tank</td>");
-                foreach (var t in bTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">").Append(V(t.TankName)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Sounding (mtrs)</td>");
-                foreach (var t in bTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Sounding)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Cubic Vol</td>");
-                foreach (var t in bTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.Qty_Vol)).Append(@"</td>");
-                sb.Append(@"</tr><tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">HC (% Volume)</td>");
-                foreach (var t in bTanks) sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
+                sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;"">");
+                sb.Append(@"<tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Tank</td>");
+                foreach (var t in bTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:center;"">").Append(V(t.TankName)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Sounding (mtrs)</td>");
+                foreach (var t in bTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Sounding)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">Cubic Vol</td>");
+                foreach (var t in bTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.Qty_Vol)).Append(@"</td>");
+                sb.Append(@"</tr><tr><td style=""padding:4px 6px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;"">HC (% Volume)</td>");
+                foreach (var t in bTanks) sb.Append(@"<td style=""padding:4px 6px;border:1px solid #ccc;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;text-align:right;"">").Append(V(t.HC)).Append(@"</td>");
                 sb.Append(@"</tr></table></td></tr>");
             }
             sb.Append(@"</table>");
@@ -550,106 +633,134 @@ namespace SIS_Operational_Reports.Common
             return @"<tr><td class=""col-label"" style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;vertical-align:middle;white-space:nowrap;"">" + (label ?? "") + @"</td><td class=""col-value"" style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">" + v + @"</td></tr>";
         }
 
-        private static string FuelConsSection(string sectionName, (string fuelType, decimal sea, decimal man, decimal wait, decimal berth, decimal subTotal)[] rows, bool showSubTotal = true)
-        {
-            string B = "border:1px solid #999;";
-            string P = "padding:5px 6px;";
-            string FS = "font-size:10px;";
-            string cell = B + P + FS + "text-align:center;";
-            string label = B + P + FS + "font-weight:bold;background:#f5f5f5;white-space:nowrap;";
-            string hdr = B + P + FS + "font-weight:bold;background:#f5f5f5;text-align:center;white-space:nowrap;";
-            int totalCols = showSubTotal ? 6 : 5;
-            var s = new StringBuilder();
-            s.Append("<tr><td colspan=\"").Append(totalCols).Append("\" style=\"").Append(B).Append(P).Append("text-align:center;font-size:11px;font-weight:normal;\">").Append(sectionName).Append("</td></tr>");
-            s.Append("<tr><td style=\"").Append(cell).Append("\"></td><td colspan=\"").Append(totalCols - 1).Append("\" style=\"").Append(cell).Append("\">ACT</td></tr>");
-            s.Append("<tr><td style=\"").Append(hdr).Append("\"></td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">AT SEA</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">MANOEUV</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">ANCHOR/<br>WAIT</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">BERTH</td>");
-            if (showSubTotal) s.Append("<td style=\"").Append(hdr).Append("\">SUB<br>TOTAL</td>");
-            s.Append("</tr>");
-            foreach (var row in rows)
-            {
-                s.Append("<tr><td style=\"").Append(label).Append("\">").Append(row.fuelType).Append("</td>");
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(row.sea.ToString("0.000")).Append("</td>");
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(row.man.ToString("0.000")).Append("</td>");
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(row.wait.ToString("0.000")).Append("</td>");
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(row.berth.ToString("0.000")).Append("</td>");
-                if (showSubTotal) s.Append("<td style=\"").Append(cell).Append("\">").Append(row.subTotal.ToString("0.000")).Append("</td>");
-                s.Append("</tr>");
-            }
-            return s.ToString();
-        }
+        // Shared inline-style fragments for the Fuel Consumption section (email-safe; CSS is inlined per cell).
+        // Spec: font Arial 12px #222; tables 100% width, border-collapse, margin-bottom 14px;
+        // th/td border 1px solid #bbb, padding 5px 9px, text-align center;
+        // th bg #f0f0f0, font-weight 600, font-size 11px;
+        // td.lbl: text-align left, font-weight 600, bg #f7f7f7;
+        // tr.grp: bg #e8e8e8, font-weight 700, font-size 11px, letter-spacing 0.03em;
+        // td.total: font-weight 700.
+        private const string FC_FONT  = "font-family:Arial,sans-serif;font-size:12px;color:#222;";
+        private const string FC_TBL   = "width:100%;border-collapse:collapse;margin-bottom:14px;font-family:Arial,sans-serif;font-size:12px;color:#222;";
+        private const string FC_TD    = "border:1px solid #bbb;padding:5px 9px;text-align:center;";
+        private const string FC_TH    = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#f0f0f0;font-weight:600;font-size:11px;";
+        private const string FC_LBL   = "border:1px solid #bbb;padding:5px 9px;text-align:left;font-weight:600;background:#f7f7f7;";
+        private const string FC_GRP   = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#e8e8e8;font-weight:700;font-size:11px;letter-spacing:0.03em;";
+        private const string FC_TOTAL = "border:1px solid #bbb;padding:5px 9px;text-align:center;font-weight:700;";
 
-        private static string FuelConsIGGRow(decimal? iggVlsfo, decimal? iggMdo, decimal? incVlsfo, decimal? incMdo)
+        private static string FcFmt(decimal v) => v.ToString("0.##########");
+
+        /// <summary>Renders an engine-style table: group header row + Fuel/At Sea/Manoeuv./Anchor-Wait/Berth columns,
+        /// optionally a Sub Total column. Used for Main Engine, Aux Engine, Boiler, FRAMO System.</summary>
+        private static string FuelConsEngineTable(string groupName, bool showSubTotal,
+            decimal vSea, decimal vMan, decimal vWait, decimal vBerth,
+            decimal dSea, decimal dMan, decimal dWait, decimal dBerth)
         {
-            string B = "border:1px solid #999;";
-            string P = "padding:5px 6px;";
-            string F = "font-size:10px;";
-            string lbl = B + P + F + "font-weight:bold;background:#f5f5f5;white-space:nowrap;";
-            string hdr = B + P + F + "font-weight:bold;background:#f5f5f5;text-align:center;white-space:nowrap;";
-            string val = B + P + F + "text-align:center;";
+            int cols = showSubTotal ? 6 : 5;
             var s = new StringBuilder();
-            s.Append("<table style=\"width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;font-family:Arial,sans-serif;\">");
-            s.Append("<col style=\"width:18%\"><col style=\"width:41%\"><col style=\"width:41%\">");
-            s.Append("<tr>");
-            s.Append("<td style=\"" + lbl + "\"></td>");
-            s.Append("<td style=\"" + hdr + "\">IGG</td>");
-            s.Append("<td style=\"" + hdr + "\">Incinerator</td>");
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"").Append(cols).Append("\" style=\"").Append(FC_GRP).Append("\">").Append(groupName).Append("</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">AT SEA</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Manoeuv.</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">ANCHOR/WAIT</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">BERTH</th>");
+            if (showSubTotal) s.Append("<th style=\"").Append(FC_TH).Append("\">SUB TOTAL</th>");
             s.Append("</tr>");
-            s.Append("<tr>");
-            s.Append("<td style=\"" + lbl + "\">VLSFO</td>");
-            s.Append("<td style=\"" + val + "\">").Append(iggVlsfo.HasValue ? iggVlsfo.Value.ToString("0.000") : "0.000").Append("</td>");
-            s.Append("<td style=\"" + val + "\">").Append(incVlsfo.HasValue ? incVlsfo.Value.ToString("0.000") : "0.000").Append("</td>");
+            // VLSFO
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vSea)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vMan)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vWait)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vBerth)).Append("</td>");
+            if (showSubTotal) s.Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(vSea + vMan + vWait + vBerth)).Append("</td>");
             s.Append("</tr>");
-            s.Append("<tr>");
-            s.Append("<td style=\"" + lbl + "\">MDO</td>");
-            s.Append("<td style=\"" + val + "\">").Append(iggMdo.HasValue ? iggMdo.Value.ToString("0.000") : "0.000").Append("</td>");
-            s.Append("<td style=\"" + val + "\">").Append(incMdo.HasValue ? incMdo.Value.ToString("0.000") : "0.000").Append("</td>");
+            // MDO
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dSea)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dMan)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dWait)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dBerth)).Append("</td>");
+            if (showSubTotal) s.Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(dSea + dMan + dWait + dBerth)).Append("</td>");
             s.Append("</tr>");
             s.Append("</table>");
             return s.ToString();
         }
 
-        private static string FuelConsEventsSection(DataTable dtFuelCons, decimal vlsfoTotal, decimal mdoTotal)
+        /// <summary>Renders the IGG &amp; Incinerator table: group header + Fuel/IGG/Incinerator columns.</summary>
+        private static string FuelConsIggIncTable(decimal vIgg, decimal vInc, decimal dIgg, decimal dInc)
         {
-            string B = "border:1px solid #999;";
-            string P = "padding:5px 6px;";
-            string FS = "font-size:10px;";
-            string cell = B + P + FS + "text-align:center;";
-            string label = B + P + FS + "font-weight:bold;background:#f5f5f5;white-space:nowrap;";
-            string hdr = B + P + FS + "font-weight:bold;background:#f5f5f5;text-align:center;white-space:normal;word-wrap:break-word;";
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"3\" style=\"").Append(FC_GRP).Append("\">IGG &amp; Incinerator</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">IGG</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Incinerator</th>")
+              .Append("</tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vIgg)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(vInc)).Append("</td>")
+              .Append("</tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dIgg)).Append("</td>")
+              .Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(dInc)).Append("</td>")
+              .Append("</tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Renders the Events table: group header + Fuel + 8 event columns.</summary>
+        private static string FuelConsEventsTable(DataTable dtFuelCons)
+        {
             // Events ConsTypeIds: 20=Stoppage, 21=Deviation, 22=SlowSteaming, 23=BadWeather,
             // 24=COTPrep, 25=CargoHeating, 26=BWExchange, 27=Others
             int[] eventConsTypeIds = { 20, 21, 22, 23, 24, 25, 26, 27 };
             var s = new StringBuilder();
-            s.Append("<table style=\"width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;font-family:Arial,sans-serif;\">");
-            s.Append("<col style=\"width:11%\"><col style=\"width:10%\"><col style=\"width:9%\"><col style=\"width:10%\"><col style=\"width:9%\"><col style=\"width:8%\"><col style=\"width:10%\"><col style=\"width:11%\"><col style=\"width:10%\"><col style=\"width:12%\">");
-            s.Append("<tr><td colspan=\"9\" style=\"" + B + P + "text-align:center;font-size:11px;font-weight:normal;\">Events</td><td rowspan=\"2\" style=\"" + B + P + "text-align:center;font-size:11px;font-weight:bold;background:#f5f5f5;vertical-align:middle;\">TOTAL</td></tr>");
-            s.Append("<tr>");
-            s.Append("<td style=\"").Append(hdr).Append("\"></td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Stoppage<br>at Sea</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Deviation</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Slow<br>Steaming</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Bad<br>Weather</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">COT<br>Prep</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Cargo<br>Heating</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">BW<br>Exchange</td>");
-            s.Append("<td style=\"").Append(hdr).Append("\">Others</td>");
-            s.Append("</tr>");
-            // VLSFO row
-            s.Append("<tr><td style=\"").Append(label).Append("\">VLSFO</td>");
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"9\" style=\"").Append(FC_GRP).Append("\">Events</td></tr>");
+            s.Append("<tr>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Fuel</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Stoppage</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Deviation</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Slow Stm.</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Bad Wthr.</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">COT Prep</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Cargo Htg.</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">BW Exch.</th>")
+              .Append("<th style=\"").Append(FC_TH).Append("\">Others</th>")
+              .Append("</tr>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO</td>");
             foreach (int ct in eventConsTypeIds)
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(GetFuelConsByConsType(dtFuelCons, "VLSFO", ct).ToString("0.000")).Append("</td>");
-            s.Append("<td style=\"").Append(cell).Append("font-weight:bold;\">").Append(vlsfoTotal.ToString("0.000")).Append("</td>");
+                s.Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(GetFuelConsByConsType(dtFuelCons, "VLSFO", ct))).Append("</td>");
             s.Append("</tr>");
-            // MDO row
-            s.Append("<tr><td style=\"").Append(label).Append("\">MDO</td>");
+            s.Append("<tr><td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO</td>");
             foreach (int ct in eventConsTypeIds)
-                s.Append("<td style=\"").Append(cell).Append("\">").Append(GetFuelConsByConsType(dtFuelCons, "MDO", ct).ToString("0.000")).Append("</td>");
-            s.Append("<td style=\"").Append(cell).Append("font-weight:bold;\">").Append(mdoTotal.ToString("0.000")).Append("</td>");
+                s.Append("<td style=\"").Append(FC_TD).Append("\">").Append(FcFmt(GetFuelConsByConsType(dtFuelCons, "MDO", ct))).Append("</td>");
             s.Append("</tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Renders the Total summary table: group header + two rows (VLSFO Total, MDO Total) each with " MT" suffix.</summary>
+        private static string FuelConsTotalTable(decimal vlsfoTotal, decimal mdoTotal)
+        {
+            var s = new StringBuilder();
+            s.Append("<table style=\"").Append(FC_TBL).Append("\">");
+            s.Append("<tr class=\"grp\"><td colspan=\"2\" style=\"").Append(FC_GRP).Append("\">Total</td></tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO TOTAL</td>")
+              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(vlsfoTotal)).Append(" MT</td>")
+              .Append("</tr>");
+            s.Append("<tr>")
+              .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO TOTAL</td>")
+              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(mdoTotal)).Append(" MT</td>")
+              .Append("</tr>");
             s.Append("</table>");
             return s.ToString();
         }
@@ -671,7 +782,8 @@ namespace SIS_Operational_Reports.Common
             return 0;
         }
 
-        /// <summary>Builds the entire fuel consumption HTML table with all 6 sections.
+        /// <summary>Builds the Fuel Consumption in MT HTML block: centered section title followed by 7 tables
+        /// (Main Engine, Aux Engine, Boiler, FRAMO System, IGG &amp; Incinerator, Events, Total) per spec.
         /// Reads breakdown values from dtFuelCons keyed by ConsTypeId (matches save mapping in DailyNoonController):
         /// 1=ME_CP, 2=ME_SEA, 3=ME_MAN, 4=ME_WAIT, 5=ME_BERTH,
         /// 6=AE_CP, 7=AE_SEA, 8=AE_MAN, 9=AE_WAIT, 10=AE_BERTH,
@@ -681,48 +793,45 @@ namespace SIS_Operational_Reports.Common
         /// </summary>
         private static string BuildFuelConsFullTable(DailyNoonReport r, decimal vlsfoTotal, decimal mdoTotal, DataTable dtFuelCons)
         {
-            // Helper to get value by ConsTypeId within a fuel type
             decimal FV(string ft, int consTypeId) => GetFuelConsByConsType(dtFuelCons, ft, consTypeId);
 
-            var fc = new StringBuilder();
-            fc.Append("<table style=\"width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;font-family:Arial,sans-serif;\"><col style=\"width:18%\"><col style=\"width:15%\"><col style=\"width:15%\"><col style=\"width:15%\"><col style=\"width:15%\"><col style=\"width:15%\">");
+            var sb = new StringBuilder();
+            sb.Append("<div style=\"").Append(FC_FONT).Append("\">");
 
-            // 1. Main Engine (with SUB TOTAL) — ConsTypeId 2-5
-            decimal meVS = FV("VLSFO", 2), meVM = FV("VLSFO", 3), meVW = FV("VLSFO", 4), meVB = FV("VLSFO", 5);
-            decimal meDS = FV("MDO", 2), meDM = FV("MDO", 3), meDW = FV("MDO", 4), meDB = FV("MDO", 5);
-            fc.Append(FuelConsSection("Main Engine", new[] {
-                ("VLSFO", meVS, meVM, meVW, meVB, meVS + meVM + meVW + meVB),
-                ("MDO",   meDS, meDM, meDW, meDB, meDS + meDM + meDW + meDB)
-            }, true));
+            // Section title: dark-grey banner matching the other section headers (e.g. "Boiler's").
+            sb.Append("<div style=\"padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;font-size:14px;margin-bottom:16px;\">Fuel Consumption in MT</div>");
 
-            // 2. Aux Engine (with SUB TOTAL) — ConsTypeId 7-10
-            decimal aeVS = FV("VLSFO", 7), aeVM = FV("VLSFO", 8), aeVW = FV("VLSFO", 9), aeVB = FV("VLSFO", 10);
-            decimal aeDS = FV("MDO", 7), aeDM = FV("MDO", 8), aeDW = FV("MDO", 9), aeDB = FV("MDO", 10);
-            fc.Append(FuelConsSection("Aux Eng", new[] {
-                ("VLSFO", aeVS, aeVM, aeVW, aeVB, aeVS + aeVM + aeVW + aeVB),
-                ("MDO",   aeDS, aeDM, aeDW, aeDB, aeDS + aeDM + aeDW + aeDB)
-            }, true));
+            // 1. Main Engine — ConsTypeId 2..5 (Sea/Man/Wait/Berth), with Sub Total
+            sb.Append(FuelConsEngineTable("Main Engine", true,
+                FV("VLSFO", 2), FV("VLSFO", 3), FV("VLSFO", 4), FV("VLSFO", 5),
+                FV("MDO",   2), FV("MDO",   3), FV("MDO",   4), FV("MDO",   5)));
 
-            // 3. Boiler (no SUB TOTAL) — ConsTypeId 11-14
-            fc.Append(FuelConsSection("Boiler", new[] {
-                ("VLSFO", FV("VLSFO", 11), FV("VLSFO", 12), FV("VLSFO", 13), FV("VLSFO", 14), 0m),
-                ("MDO",   FV("MDO", 11),   FV("MDO", 12),   FV("MDO", 13),   FV("MDO", 14),   0m)
-            }, false));
+            // 2. Aux Engine — ConsTypeId 7..10, with Sub Total
+            sb.Append(FuelConsEngineTable("Aux Engine", true,
+                FV("VLSFO", 7), FV("VLSFO", 8), FV("VLSFO", 9), FV("VLSFO", 10),
+                FV("MDO",   7), FV("MDO",   8), FV("MDO",   9), FV("MDO",   10)));
 
-            // 4. FRAMO System (no SUB TOTAL) — ConsTypeId 15-18
-            fc.Append(FuelConsSection("FRAMO System", new[] {
-                ("VLSFO", FV("VLSFO", 15), FV("VLSFO", 16), FV("VLSFO", 17), FV("VLSFO", 18), 0m),
-                ("MDO",   FV("MDO", 15),   FV("MDO", 16),   FV("MDO", 17),   FV("MDO", 18),   0m)
-            }, false));
-            fc.Append("</table>");
+            // 3. Boiler — ConsTypeId 11..14, no Sub Total
+            sb.Append(FuelConsEngineTable("Boiler", false,
+                FV("VLSFO", 11), FV("VLSFO", 12), FV("VLSFO", 13), FV("VLSFO", 14),
+                FV("MDO",   11), FV("MDO",   12), FV("MDO",   13), FV("MDO",   14)));
 
-            // IGG=ConsTypeId 19, Incinerator=ConsTypeId 28
-            fc.Append(FuelConsIGGRow(FV("VLSFO", 19), FV("MDO", 19), FV("VLSFO", 28), FV("MDO", 28)));
+            // 4. FRAMO System — ConsTypeId 15..18, no Sub Total
+            sb.Append(FuelConsEngineTable("Framo System", false,
+                FV("VLSFO", 15), FV("VLSFO", 16), FV("VLSFO", 17), FV("VLSFO", 18),
+                FV("MDO",   15), FV("MDO",   16), FV("MDO",   17), FV("MDO",   18)));
 
-            // 5. Events + inline TOTAL column
-            fc.Append(FuelConsEventsSection(dtFuelCons, vlsfoTotal, mdoTotal));
+            // 5. IGG & Incinerator — IGG=ConsTypeId 19, Incinerator=ConsTypeId 28
+            sb.Append(FuelConsIggIncTable(FV("VLSFO", 19), FV("VLSFO", 28), FV("MDO", 19), FV("MDO", 28)));
 
-            return fc.ToString();
+            // 6. Events — ConsTypeId 20..27
+            sb.Append(FuelConsEventsTable(dtFuelCons));
+
+            // 7. Total summary
+            sb.Append(FuelConsTotalTable(vlsfoTotal, mdoTotal));
+
+            sb.Append("</div>");
+            return sb.ToString();
         }
 
         private static string FormatCargo(DataRow dr, string col)
@@ -731,7 +840,7 @@ namespace SIS_Operational_Reports.Common
             var v = dr[col];
             if (v == null || v == DBNull.Value) return "-";
             decimal d;
-            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.00") : V(v);
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.##########") : V(v);
         }
 
         private static decimal GetFuelConsByType(DataTable dt, string fuelType)

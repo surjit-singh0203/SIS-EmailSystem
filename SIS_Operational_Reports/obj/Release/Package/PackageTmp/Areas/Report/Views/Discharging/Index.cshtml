@@ -81,6 +81,44 @@
     .tab-content .row .col-md .GeneratedTable {
         margin: 15px 4.8px;
     }
+
+    /* Hide the internal Id column in the Stoppage table — the JS still
+       relies on the cell being present (it reads column indices), so we hide it
+       visually with display:none instead of removing the markup.
+       Note: #tblCargo in Discharging does NOT have a dummy Id <th> header
+       (unlike Loading); its body Id cell is already hidden via the HTML
+       hidden="hidden" attribute, so no CSS hiding is needed for #tblCargo. */
+    #tblStoppage thead th:first-child,
+    #tblStoppage tbody td:first-child,
+    #tblStoppage tfoot td:first-child {
+        display: none;
+    }
+
+    /* Force the cargo table to fit the container width and wrap long header text
+       onto multiple lines, matching the Loading layout. Without table-layout:fixed
+       each column expands to fit its header on one line and the table overflows the
+       viewport, producing a wide horizontal scrollbar with squished single-line headers. */
+    #tblCargo {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    #tblCargo th,
+    #tblCargo td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Give the first (Cargo Grades) column an explicit width so the header and
+       cargo name (e.g. "ATF (Jebel Ali)") render on one line — Loading's th has
+       width="120px" set inline; Discharging's th has no width, so under
+       table-layout:fixed it would otherwise be squeezed to the equal-share width. */
+    #tblCargo th:first-child,
+    #tblCargo td:nth-child(2) {
+        width: 130px;
+    }
+
 	input.datetimePickerEdit.flatpickr-input {
     border: none;
     width: 100%;

@@ -1,10 +1,12 @@
 using DataBuildingLayer;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.Hosting;
@@ -17,12 +19,12 @@ namespace SIS_Operational_Reports.Common
     /// </summary>
     public static class BunkerReportEmailTemplate
     {
-        private const string DateFormat = "dd-MMM-yyyy";
-        private const string DateTimeFormat = "dd-MMM-yyyy HH:mm";
+        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/BunkerReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime dt) => dt != DateTime.MinValue ? dt.ToString(DateTimeFormat) : "-";
 
@@ -70,15 +72,17 @@ namespace SIS_Operational_Reports.Common
             }
             catch { }
 
-            // Fetch fuel details
-            var fuelList = CommonMethods.editBunkerFuelList(id, vesselId.ToString(), "BunkerFReport");
-            if (fuelList != null)
+            // Fetch fuel details using the same SP the Edit view calls, but with a FRESH
+            // dedicated SqlConnection rather than the shared static ConnectionBulder.con.
+            // The shared connection is a process-wide singleton; if a prior operation on
+            // another thread left it in a bad state, subsequent calls (like this one in
+            // the email path) silently return truncated result sets. A dedicated connection
+            // makes this call independent of what any other thread is doing.
+            var fuelList = LoadBunkerFuelListIsolated(id, vesselId);
+            foreach (var item in fuelList)
             {
-                foreach (var item in fuelList)
-                {
-                    if (item.Fuel_type_Id == 5) item.Fuel_type = "VLSFO";
-                    if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
-                }
+                if (item.Fuel_type_Id == 5) item.Fuel_type = "VLSFO";
+                if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
             }
 
             // Fetch main details
@@ -125,6 +129,68 @@ namespace SIS_Operational_Reports.Common
             return null;
         }
 
+        /// <summary>
+        /// Calls spCommonEditList exactly the way BunkerController.Edit does, but on a fresh
+        /// dedicated SqlConnection so it isn't affected by state on the shared static
+        /// ConnectionBulder.con. Falls back to the CommonMethods helper if the isolated
+        /// call fails for any reason.
+        /// </summary>
+        private static List<BukerFuelList> LoadBunkerFuelListIsolated(int reportId, int vesselId)
+        {
+            var list = new List<BukerFuelList>();
+            try
+            {
+                string connStr = ConfigurationManager.ConnectionStrings["SISContext"].ConnectionString;
+                using (var con = new SqlConnection(connStr))
+                using (var cmd = new SqlCommand("spCommonEditList", con) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.AddWithValue("@Id", reportId);
+                    cmd.Parameters.AddWithValue("@VesselId", vesselId.ToString());
+                    cmd.Parameters.AddWithValue("@Action", "BunkerFReport");
+                    con.Open();
+                    using (var dt = new DataTable())
+                    using (var adp = new SqlDataAdapter(cmd))
+                    {
+                        adp.Fill(dt);
+                        foreach (DataRow fr in dt.Rows)
+                        {
+                            list.Add(MapFuelRow(fr));
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                list.Clear();
+            }
+            // Fallback to the shared helper if the isolated call yielded nothing.
+            if (list.Count == 0)
+            {
+                list = CommonMethods.editBunkerFuelList(reportId, vesselId.ToString(), "BunkerFReport") ?? new List<BukerFuelList>();
+            }
+            return list;
+        }
+
+        private static BukerFuelList MapFuelRow(DataRow fr)
+        {
+            var f = new BukerFuelList();
+            // Map by column name when present, defensively (the SP's output column names
+            // are the source of truth — we look up each property's matching column).
+            foreach (PropertyInfo p in typeof(BukerFuelList).GetProperties())
+            {
+                if (!fr.Table.Columns.Contains(p.Name)) continue;
+                object v = fr[p.Name];
+                if (v == null || v == DBNull.Value) continue;
+                try
+                {
+                    Type t = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+                    p.SetValue(f, Convert.ChangeType(v, t), null);
+                }
+                catch { /* skip on type mismatch */ }
+            }
+            return f;
+        }
+
         /// <summary>When PortName is "Others" (or blank), use the custom PortName_others entered by the user.</summary>
         private static string ResolvePortDisplay(BunkerReport r)
         {
@@ -149,8 +215,10 @@ namespace SIS_Operational_Reports.Common
             // --- Header ---
             string portDisplay = ResolvePortDisplay(r);
             var sb = new StringBuilder();
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", portDisplay));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port Name", portDisplay));
             sb.Append(KvRow("Supplier", r.Supplier)).Append(KvRow("Barge Name", r.BargeName));
+            sb.Append(KvRow("Master Name", r.FirstName));
+            sb.Append(KvRow("Chief Engineer", r.LastName));
             string headerRows = sb.ToString();
             sb.Clear();
 
@@ -159,7 +227,7 @@ namespace SIS_Operational_Reports.Common
             sb.Append(KvRow("Bunker Hose Connected", Vdt(r.BunkerHoseConnected)));
             sb.Append(KvRow("Commenced Bunkering", Vdt(r.CommencedBunkering)));
             sb.Append(KvRow("Bunkering Completed", Vdt(r.BunkeringCompleted)));
-            sb.Append(KvRow("Bunker Hose Disconnected", Vdt(r.BunkerHosedisconnected)));
+            sb.Append(KvRow("Bunker Hose disconnected", Vdt(r.BunkerHosedisconnected)));
             sb.Append(KvRow("Barge Cast Off", Vdt(r.BargeCastOff)));
             string timingRows = sb.ToString();
             sb.Clear();
@@ -171,9 +239,9 @@ namespace SIS_Operational_Reports.Common
                 {
                     sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(V(fuel.Fuel_type));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(V(fuel.BDN));
+                    sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(V(fuel.BDN_Number));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(V(fuel.Fuel_Density));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(V(fuel.Sulphur_content));
-                    sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(V(fuel.BDN_Number));
                     sb.Append(@"</td></tr>");
                 }
             }
@@ -203,7 +271,6 @@ namespace SIS_Operational_Reports.Common
                 if (string.IsNullOrWhiteSpace(voyNo) && dtMain.Columns.Contains("VoyageNumber")) voyNo = dr["VoyageNumber"]?.ToString() ?? voyNo;
             }
             if (string.IsNullOrWhiteSpace(voyNo)) voyNo = LookupVoyageNumber(r.VoyageId, r.VesselId) ?? r.VoyageId.ToString();
-            string reportedBy = ((r.FirstName ?? "") + " " + (r.LastName ?? "")).Trim();
 
             var sb = new StringBuilder();
             sb.Append(@"<!DOCTYPE html><html><head><meta charset=""utf-8""></head><body style=""margin:0;padding:12px;font-family:Arial,sans-serif;font-size:12px;"">");
@@ -215,8 +282,10 @@ namespace SIS_Operational_Reports.Common
             sb.Append(@"<tr><td colspan=""8"" style=""padding:12px;background:#555;color:#fff;font-size:16px;font-weight:bold;text-align:center;"">Bunker Report - Details (").Append(V(vesselName)).Append(@")</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             string portDisplayInline = ResolvePortDisplay(r);
-            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port", portDisplayInline));
+            sb.Append(KvRow("Voy No.", voyNo)).Append(KvRow("Port Name", portDisplayInline));
             sb.Append(KvRow("Supplier", r.Supplier)).Append(KvRow("Barge Name", r.BargeName));
+            sb.Append(KvRow("Master Name", r.FirstName));
+            sb.Append(KvRow("Chief Engineer", r.LastName));
             sb.Append(@"</table></td></tr>");
 
             // Bunker Timing
@@ -226,42 +295,36 @@ namespace SIS_Operational_Reports.Common
             sb.Append(KvRow("Bunker Hose Connected", Vdt(r.BunkerHoseConnected)));
             sb.Append(KvRow("Commenced Bunkering", Vdt(r.CommencedBunkering)));
             sb.Append(KvRow("Bunkering Completed", Vdt(r.BunkeringCompleted)));
-            sb.Append(KvRow("Bunker Hose Disconnected", Vdt(r.BunkerHosedisconnected)));
+            sb.Append(KvRow("Bunker Hose disconnected", Vdt(r.BunkerHosedisconnected)));
             sb.Append(KvRow("Barge Cast Off", Vdt(r.BargeCastOff)));
             sb.Append(@"</table></td></tr>");
 
             // Fuel Details
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Fuel Details</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Fuel Type</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">BDN (MT)</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">Fuel Density</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">Sulphur Content</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">BDN Number</td></tr>");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">Fuel Type</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">Quantity Received(MT)</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap"">BDN Number</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">Fuel Density(Kg/m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;text-align:right"">Sulphur content(%)</td></tr>");
             if (fuelList != null && fuelList.Count > 0)
             {
                 foreach (var fuel in fuelList)
                 {
                     sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(V(fuel.Fuel_type));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(fuel.BDN));
+                    sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(V(fuel.BDN_Number));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(fuel.Fuel_Density));
                     sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(fuel.Sulphur_content));
-                    sb.Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(V(fuel.BDN_Number));
                     sb.Append(@"</td></tr>");
                 }
             }
             sb.Append(@"</table></td></tr>");
 
             // Remarks
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Report Remarks</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Remarks</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:4px;border:1px solid #ccc;"">").Append(V(r.Remarks)).Append(@"</td></tr>");
 
-            // Reported By
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Reported By</td></tr>");
+            // BDN Report
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">BDN Report</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Name", reportedBy));
-            sb.Append(@"</table></td></tr>");
-
-            // Lab Analysis Report
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Lab Analysis Report</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("File Name", r.LabAnalysisReport_Name));
+            sb.Append(KvRow("BDN Report", r.LabAnalysisReport_Name));
             sb.Append(@"</table></td></tr>");
 
             sb.Append(@"</table>");

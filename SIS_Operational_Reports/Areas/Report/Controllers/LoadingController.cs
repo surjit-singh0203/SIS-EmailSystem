@@ -581,9 +581,12 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
         {
             List<LR_DCR_PumpsUse> ftype = new List<LR_DCR_PumpsUse>();
 
-            using (SqlDataAdapter adp = new SqlDataAdapter("select  a.*, a.Id as PumpId,b.Name,b.Capacity,b.PumpUseId  from lr_dcr_pumpsuse a inner join tblPump b on a.PumpId=b.Id  where IsActive=1 and LRId="+ id + " and  a.VesselId="+vslid+" and DCRId=0 and a.PumpUseId=2", ConnectionBulder.con))
+            // Original query without SQL-side dedupe — we collapse duplicates in C# below so the
+            // logic works regardless of whether the duplicates are caused by repeated lr_dcr_pumpsuse
+            // rows (same PumpId) or by tblPump rows that share the same Name (different PumpId).
+            using (SqlDataAdapter adp = new SqlDataAdapter("select  a.*, a.Id as PumpId,b.Name,b.Capacity,b.PumpUseId  from lr_dcr_pumpsuse a inner join tblPump b on a.PumpId=b.Id where IsActive=1 and LRId="+ id + " and  a.VesselId="+vslid+" and DCRId=0 and a.PumpUseId=2", ConnectionBulder.con))
             {
-              
+
                 DataTable dt = new DataTable();
                 adp.Fill(dt);
                 for (int i = 0; i < dt.Rows.Count; i++)
@@ -599,10 +602,16 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
 
                     });
                 }
-                
+
             }
 
-            
+            // Dedupe by pump Name (the value the user sees). Keep the row with the highest Id
+            // per name so the most recently saved entry wins. This collapses duplicates caused
+            // either by repeated lr_dcr_pumpsuse rows or by tblPump rows sharing the same name.
+            ftype = ftype
+                .GroupBy(p => (p.Name ?? string.Empty).Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.OrderByDescending(p => p.Id).First())
+                .ToList();
 
             return ftype;
         }
