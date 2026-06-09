@@ -93,7 +93,11 @@ namespace SIS_Operational_Reports.Common
                         }
                     }
                 }
-                using (var adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=4 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                // Report_Table_Id=5 matches what BerthingController writes/reads (see
+                // BerthingController.cs around line 764). Older value 4 belongs to a different
+                // report type, so it always returned 0 rows — the email then rendered "-" and "0"
+                // for every Non-Routine Event.
+                using (var adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=5 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
                     adp.Fill(dtNonRoutine);
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
@@ -112,8 +116,41 @@ namespace SIS_Operational_Reports.Common
             // query (USP, fuel, stoppage) throws. Same join pattern as BerthingController.GetBR_CargoEdit.
             try
             {
-                using (var adp = new SqlDataAdapter(
-                    "select a.*, b.cargoname, b.PortName from BR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and b.VesselId=" + vesselId + " where a.VesselId=" + vesselId + " and berthingreport_id=" + id, ConnectionBulder.con))
+                // Cargo names: try the direct lr_cargo_id FK first; if that's a dead reference
+                // (LR_Cargo row was deleted/renumbered by a Loading Report re-save), fall back
+                // to leg-scoped lookup. Cargoes belong to a leg — same convention as the cargo
+                // dropdown query: LR_Cargo WHERE VoyageId + LegPortId + VesselId. Positional
+                // pairing uses reverse Id (newest LR_Cargo entry pairs with oldest BR_Cargo row)
+                // because the original save's MAX(Id) lookup gave newest-first.
+                string cargoQuery = @"
+WITH br_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM BR_Cargo
+    WHERE VesselId = " + vesselId + @" AND berthingreport_id = " + id + @"
+),
+report_ctx AS (
+    SELECT LegPortId, VoyageId
+    FROM BerthingReport
+    WHERE Id = " + id + @" AND VesselId = " + vesselId + @"
+),
+leg_lr AS (
+    -- Match by LegPortId + VesselId only. VoyageId intentionally NOT in the join because
+    -- data drift has been observed where cargoes from the same Loading Report (same LRId,
+    -- same leg) ended up tagged to different VoyageIds — losing them on a strict join.
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
+    WHERE b.VesselId = " + vesselId + @"
+)
+SELECT a.*,
+       COALESCE(direct.cargoname, leg.CargoName) AS cargoname,
+       COALESCE(direct.PortName,  leg.PortName)  AS PortName
+FROM br_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+ORDER BY a.Id";
+                using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                     adp.Fill(dtCargo);
             }
             catch { }
@@ -606,7 +643,20 @@ namespace SIS_Operational_Reports.Common
                     string cName = dr.Table.Columns.Contains("cargoname") && dr["cargoname"] != DBNull.Value ? dr["cargoname"].ToString().Trim() :
                                     (dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "");
                     string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
-                    string label = string.IsNullOrEmpty(cName) ? "-" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                    string label;
+                    if (!string.IsNullOrEmpty(cName))
+                        label = cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                    else
+                    {
+                        // Broken LR_Cargo FK — surface the orphan lr_cargo_id so the data issue is visible.
+                        // Try both casings explicitly because some SqlDataAdapter loads preserve column case.
+                        string lrId = "";
+                        if (dr.Table.Columns.Contains("LR_Cargo_Id") && dr["LR_Cargo_Id"] != DBNull.Value)
+                            lrId = dr["LR_Cargo_Id"].ToString();
+                        else if (dr.Table.Columns.Contains("lr_cargo_id") && dr["lr_cargo_id"] != DBNull.Value)
+                            lrId = dr["lr_cargo_id"].ToString();
+                        label = string.IsNullOrEmpty(lrId) || lrId == "0" ? "-" : "Cargo #" + lrId;
+                    }
                     string qty = VTrim(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
                     sb.Append(KvRow(label, qty));
                 }

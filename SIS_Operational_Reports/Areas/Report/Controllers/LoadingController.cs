@@ -332,6 +332,68 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
             return Json(new { Result = true,PortName=prtname, Data = jst }, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// Returns the Id of an existing LR_Cargo row matching the report's natural key
+        /// (LRId + VesselId + CargoName + LoadingDatetime), or 0 if none. Used to make the
+        /// cargo save idempotent against double-submit and network retries.
+        /// </summary>
+        private int FindExistingCargoId(int lrId, int vesselId, string cargoName, DateTime loadingDatetime)
+        {
+            if (lrId <= 0 || vesselId <= 0 || string.IsNullOrWhiteSpace(cargoName) || loadingDatetime == DateTime.MinValue)
+                return 0;
+            try
+            {
+                using (var cmd = new SqlCommand(
+                    "SELECT TOP 1 Id FROM LR_Cargo " +
+                    "WHERE LRId=@LRId AND VesselId=@VesselId " +
+                    "  AND CargoName=@CargoName AND LoadingDatetime=@LoadingDatetime " +
+                    "ORDER BY Id DESC", ConnectionBulder.con))
+                {
+                    cmd.Parameters.AddWithValue("@LRId", lrId);
+                    cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                    cmd.Parameters.AddWithValue("@CargoName", cargoName.Trim());
+                    cmd.Parameters.AddWithValue("@LoadingDatetime", loadingDatetime);
+                    if (ConnectionBulder.con.State != ConnectionState.Open) ConnectionBulder.con.Open();
+                    var result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) return Convert.ToInt32(result);
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        /// <summary>
+        /// Returns the Id of an existing LR_Stoppage row matching the report's natural key
+        /// (LRId + VesselId + Stoppage text + DateTimeFrom + LoadingDischarged flag), or 0 if
+        /// none. Used to make the stoppage save idempotent against double-submit.
+        /// </summary>
+        private int FindExistingStoppageId(int lrId, int vesselId, string stoppage, DateTime dateTimeFrom, bool loadingDischarged)
+        {
+            if (lrId <= 0 || vesselId <= 0 || string.IsNullOrWhiteSpace(stoppage) || dateTimeFrom == DateTime.MinValue)
+                return 0;
+            try
+            {
+                using (var cmd = new SqlCommand(
+                    "SELECT TOP 1 Id FROM LR_Stoppage " +
+                    "WHERE LRId=@LRId AND VesselId=@VesselId " +
+                    "  AND Stoppage=@Stoppage AND DateTimeFrom=@DateTimeFrom " +
+                    "  AND LoadingDischarged=@LoadingDischarged " +
+                    "ORDER BY Id DESC", ConnectionBulder.con))
+                {
+                    cmd.Parameters.AddWithValue("@LRId", lrId);
+                    cmd.Parameters.AddWithValue("@VesselId", vesselId);
+                    cmd.Parameters.AddWithValue("@Stoppage", stoppage.Trim());
+                    cmd.Parameters.AddWithValue("@DateTimeFrom", dateTimeFrom);
+                    cmd.Parameters.AddWithValue("@LoadingDischarged", loadingDischarged);
+                    if (ConnectionBulder.con.State != ConnectionState.Open) ConnectionBulder.con.Open();
+                    var result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) return Convert.ToInt32(result);
+                }
+            }
+            catch { }
+            return 0;
+        }
+
         public ActionResult InsertCargoList(string CargoListing)
         {
             int k = 0;
@@ -378,19 +440,21 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
                 //}
 
 
-                if (Session["LR_ID"].ToString() == "")
+                // Idempotent save: look up an existing LR_Cargo row matching this report's
+                // natural key (LRId + VesselId + CargoName + LoadingDatetime). If one exists,
+                // update it in place; otherwise insert a new row. Prevents double-submit /
+                // network-retry from accumulating duplicate cargo rows (the cause of stale
+                // values showing up later in emails and Excel attachments).
+                int existingCargoId = FindExistingCargoId(
+                    rootObject.LRId, rootObject.VesselId, rootObject.CargoName, rootObject.LoadingDatetime);
+                if (existingCargoId > 0)
+                {
+                    rootObject.Id = existingCargoId;
+                    CommonMethods.InsertUpdateLoadingCargo(rootObject, "Update");
+                }
+                else
                 {
                     CommonMethods.InsertUpdateLoadingCargo(rootObject, "Insert");
-                }
-                if (Session["LR_ID"].ToString() != "")
-                {
-                    //int noonReportId = Convert.ToInt32(Session["NR_ID"]);
-
-                    //rootObject.Id = Convert.ToInt32(Session["EditId"]);
-                    
-                    CommonMethods.InsertUpdateLoadingCargo(rootObject, "Update");
-
-
                 }
 
 
@@ -429,15 +493,23 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
                 //}
 
 
-                if (Session["LR_ID"].ToString() == "")
+                // Idempotent save: look up an existing LR_Stoppage row matching this report's
+                // natural key (LRId + VesselId + Stoppage text + DateTimeFrom + LoadingDischarged).
+                // If one exists, update it in place; otherwise insert. Prevents double-submit /
+                // network-retry from accumulating duplicate stoppage rows (which showed up as
+                // duplicate "Stoppage Details" lines in emails and Excel attachments).
+                int existingStoppageId = FindExistingStoppageId(
+                    rootObject.LRId, rootObject.VesselId,
+                    rootObject.Stoppage, rootObject.DateTimeFrom,
+                    rootObject.LoadingDischarged);
+                if (existingStoppageId > 0)
+                {
+                    rootObject.Id = existingStoppageId;
+                    CommonMethods.InsertUpdateLoadingStoppage(rootObject, "Update");
+                }
+                else
                 {
                     CommonMethods.InsertUpdateLoadingStoppage(rootObject, "Insert");
-                }
-                if (Session["LR_ID"].ToString() != "")
-                {
-                    //int noonReportId = Convert.ToInt32(Session["NR_ID"]);
-
-                    CommonMethods.InsertUpdateLoadingStoppage(rootObject, "Update");
                 }
 
             }

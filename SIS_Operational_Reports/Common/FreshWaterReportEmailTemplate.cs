@@ -20,11 +20,28 @@ namespace SIS_Operational_Reports.Common
         private const string DateFormat = "yyyy-MM-dd";
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/FreshWaterReport.html";
+        // Public portal URL used to build clickable attachment-download links in emails.
+        // Update if the live portal hostname changes.
+        private const string SiteBaseUrl = "https://sisv.mooringplan.com";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
         private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime dt) => dt != DateTime.MinValue ? dt.ToString(DateTimeFormat) : "-";
+
+        /// <summary>Renders the attachment file name as an HTML anchor that downloads the file
+        /// via the FreshWater controller's OpenPDF action when clicked. Falls back to plain text
+        /// (or "-" if empty) when no file is present.</summary>
+        private static string FileLink(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) return "-";
+            string ext = System.IO.Path.GetExtension(fileName) ?? "";
+            string url = SiteBaseUrl + "/Report/FreshWater/OpenPDF"
+                       + "?fileName=" + System.Web.HttpUtility.UrlEncode(fileName)
+                       + "&fileExtension=" + System.Web.HttpUtility.UrlEncode(ext);
+            string safeName = System.Web.HttpUtility.HtmlEncode(fileName);
+            return @"<a href=""" + url + @""" style=""color:#1a73e8;text-decoration:underline;"" target=""_blank"" rel=""noopener"">" + safeName + @"</a>";
+        }
 
         /// <param name="reportId">When set (from export filename R{id}), used to fetch the fresh water report by ID.</param>
         public static string BuildHtml(int vesselId, string datePart, int? reportId = null)
@@ -105,7 +122,7 @@ namespace SIS_Operational_Reports.Common
                 .Replace("{{REPORT_DATE}}", Vdt(r.Received_Date))
                 .Replace("{{HEADER_ROWS}}", headerRows)
                 .Replace("{{METER_ROWS}}", meterRows)
-                .Replace("{{FILE_NAME}}", V(r.File_Name));
+                .Replace("{{FILE_NAME}}", FileLink(r.File_Name));
         }
 
         private static string BuildHtmlInline(FreshWaterReport r, string vesselName)
@@ -135,10 +152,12 @@ namespace SIS_Operational_Reports.Common
             sb.Append(KvRow("QTY Received(MT)", r.QTY_supplied_MT));
             sb.Append(@"</table></td></tr>");
 
-            // Attached Document
+            // Attached Document — file name rendered as a clickable hyperlink to the portal's
+            // OpenPDF endpoint. The actual file is also attached to the outgoing email so users
+            // who cannot reach the portal can still download it from the message itself.
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Attached Document</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Attachment", r.File_Name));
+            sb.Append(@"<tr><td class=""col-label"" style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;vertical-align:middle;white-space:nowrap;"">Attachment</td><td class=""col-value"" style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(FileLink(r.File_Name)).Append(@"</td></tr>");
             sb.Append(@"</table></td></tr>");
 
             sb.Append(@"</table>");

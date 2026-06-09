@@ -126,7 +126,7 @@ namespace SIS_Operational_Reports
                         string startDatePartString = startDatePart.ToString("yyyy-MM-ddTHH:mm:ssZ");
                         string endDatePartString = endDatePart.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-                        string filterPart = $"$filter=receivedDateTime ge {startDatePartString} and receivedDateTime lt {endDatePartString}";
+                        string filterPart = $"$filter=receivedDateTime ge {startDatePartString} and receivedDateTime lt {endDatePartString}&$orderby=receivedDateTime desc";
 
                         var responsePart = httpClient.GetAsync($"users/{userEmail}/messages?{filterPart}").Result;
                         responsePart.EnsureSuccessStatusCode();
@@ -144,7 +144,7 @@ namespace SIS_Operational_Reports
                         string startDatePart1String = startDatePart1.ToString("yyyy-MM-ddTHH:mm:ssZ");
                         string endDatePart1String = endDatePart1.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-                        string filterPart1 = $"$filter=receivedDateTime ge {startDatePart1String} and receivedDateTime lt {endDatePart1String}";
+                        string filterPart1 = $"$filter=receivedDateTime ge {startDatePart1String} and receivedDateTime lt {endDatePart1String}&$orderby=receivedDateTime desc";
 
                         var responsePart1 = httpClient.GetAsync($"users/{userEmail}/messages?{filterPart1}").Result;
                         responsePart1.EnsureSuccessStatusCode();
@@ -166,7 +166,7 @@ namespace SIS_Operational_Reports
                         string startDatePart2String = startDatePart2.ToString("yyyy-MM-ddTHH:mm:ssZ");
                         string endDatePart2String = endDatePart2.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-                        string filterPart2 = $"$filter=receivedDateTime ge {startDatePart2String} and receivedDateTime lt {endDatePart2String}";
+                        string filterPart2 = $"$filter=receivedDateTime ge {startDatePart2String} and receivedDateTime lt {endDatePart2String}&$orderby=receivedDateTime desc";
 
                         var responsePart2 = httpClient.GetAsync($"users/{userEmail}/messages?{filterPart2}").Result;
                         responsePart2.EnsureSuccessStatusCode();
@@ -185,7 +185,7 @@ namespace SIS_Operational_Reports
                         string startDatePart3String = startDatePart3.ToString("yyyy-MM-ddTHH:mm:ssZ");
                         string endDatePart3String = endDatePart3.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-                        string filterPart3 = $"$filter=receivedDateTime ge {startDatePart3String} and receivedDateTime lt {endDatePart3String}";
+                        string filterPart3 = $"$filter=receivedDateTime ge {startDatePart3String} and receivedDateTime lt {endDatePart3String}&$orderby=receivedDateTime desc";
 
                         var responsePart3 = httpClient.GetAsync($"users/{userEmail}/messages?{filterPart3}").Result;
                         responsePart3.EnsureSuccessStatusCode();
@@ -195,6 +195,28 @@ namespace SIS_Operational_Reports
                         ProcessMessages(messagesPart3, folderPath, httpClient, userEmail);
 
 
+                    }
+                    else
+                    {
+                        // Dead-zone coverage: UTC 00:00-03:25 (IST 05:30-08:55). Previously this
+                        // window did nothing, causing the page to "load for 1 second then stop".
+                        // Process the last 48 hours of emails so manual hits during this window
+                        // still pick up overnight messages.
+                        DateTime windowStart = DateTime.UtcNow.AddHours(-48);
+                        DateTime windowEnd   = DateTime.UtcNow;
+
+                        string startStr = windowStart.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                        string endStr   = windowEnd.ToString("yyyy-MM-ddTHH:mm:ssZ");
+
+                        string filterDead = $"$filter=receivedDateTime ge {startStr} and receivedDateTime lt {endStr}&$orderby=receivedDateTime desc&$top=100";
+
+                        var responseDead = httpClient.GetAsync($"users/{userEmail}/messages?{filterDead}").Result;
+                        responseDead.EnsureSuccessStatusCode();
+                        var responseContentDead = responseDead.Content.ReadAsStringAsync().Result;
+                        var messagesDead = JObject.Parse(responseContentDead)["value"];
+
+                        MoveFilesToArchive(folderPath, foldermovePath);
+                        ProcessMessages(messagesDead, folderPath, httpClient, userEmail);
                     }
                 }
             }
@@ -261,18 +283,26 @@ namespace SIS_Operational_Reports
                             // Check if the attachment is related to "Sis_Nova"
                             if (!string.IsNullOrEmpty(fileName) && fileName.Contains("Sis_Nova"))
                             {
-                                string attachmentId = (string)attachment["id"];
-                                var attachmentResponse = httpClient.GetAsync($"users/{userEmail}/messages/{messageId}/attachments/{attachmentId}/$value").Result;
-                                attachmentResponse.EnsureSuccessStatusCode();
-
-                                byte[] attachmentData = attachmentResponse.Content.ReadAsByteArrayAsync().Result;
-
                                 if (!Directory.Exists(folderPath))
                                 {
                                     Directory.CreateDirectory(folderPath);
                                 }
 
                                 string filePath = Path.Combine(folderPath, fileName);
+
+                                // Messages are sorted newest-first; if this filename
+                                // already exists in Inbox, a newer copy was saved this
+                                // run — skip the older duplicate.
+                                if (File.Exists(filePath))
+                                {
+                                    continue;
+                                }
+
+                                string attachmentId = (string)attachment["id"];
+                                var attachmentResponse = httpClient.GetAsync($"users/{userEmail}/messages/{messageId}/attachments/{attachmentId}/$value").Result;
+                                attachmentResponse.EnsureSuccessStatusCode();
+
+                                byte[] attachmentData = attachmentResponse.Content.ReadAsByteArrayAsync().Result;
 
                                 System.IO.File.WriteAllBytes(filePath, attachmentData);
 
@@ -1694,6 +1724,29 @@ namespace SIS_Operational_Reports
             }
             row++;
 
+            // E/R Tanks — rendered immediately after LO & HO Consumptions per the
+            // engine-section grouping. Fields come from DailyNoonReport (ER_Bilge_ROB,
+            // ER_Sludge_ROB, ER_WasteOil_ROB).
+            ws.Cell(row, 1).Value = "E/R Tanks";
+            ApplyLightGrayTitle(ws, row, 1, 4);
+            row++;
+            if (r != null)
+            {
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Bilge";
+                ws.Cell(row, 3).Value = "Sludge";
+                ws.Cell(row, 4).Value = "Waste Oil";
+                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "ROB (m3)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.ER_Bilge_ROB);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.ER_Sludge_ROB);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.ER_WasteOil_ROB);
+                row++;
+            }
+            row++;
+
             ws.Cell(row, 1).Value = "Boiler's";
             ApplyLightGrayTitle(ws, row, 1, 3);
             row++;
@@ -1890,26 +1943,6 @@ namespace SIS_Operational_Reports
                 SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.SLOPS_ROB_OXY_Oil);
                 SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.SLOPS_ROB_OXY_Water);
                 SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.SLOPS_ROB_OXY_Total);
-                row++;
-            }
-            row++;
-
-            ws.Cell(row, 1).Value = "E/R Tanks";
-            ApplyLightGrayTitle(ws, row, 1, 4);
-            row++;
-            if (r != null)
-            {
-                ws.Cell(row, 1).Value = "";
-                ws.Cell(row, 2).Value = "Bilge";
-                ws.Cell(row, 3).Value = "Sludge";
-                ws.Cell(row, 4).Value = "Waste Oil";
-                ws.Range(row, 1, row, 4).Style.Font.Bold = true;
-                row++;
-                ws.Cell(row, 1).Value = "ROB (m3)";
-                ws.Cell(row, 1).Style.Font.Bold = true;
-                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.ER_Bilge_ROB);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.ER_Sludge_ROB);
-                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.ER_WasteOil_ROB);
                 row++;
             }
             row++;
@@ -3002,6 +3035,51 @@ namespace SIS_Operational_Reports
         /// Parses sync Excel names: ReportType_vesselId_dd_MM_yyyy_HHmmss.xlsx or ..._dd_MM_yyyy_R{rowId}_HHmmss.xlsx (R+id matches Excel row for HTML email).
         /// Uses strict date validation when possible; falls back to legacy segment rules so older filenames still queue for email.
         /// </summary>
+        /// <summary>
+        /// For report types that carry a user-uploaded supporting file (Bunker = BDN Report,
+        /// FreshWater = Attachment), returns the absolute path of that file on disk so it
+        /// can be added to the outgoing email. Returns null for any other report type, or
+        /// when no reportId is known, or when the DB has no file name on record.
+        /// </summary>
+        private string ResolveUserUploadedFilePath(string reportType, int? reportId)
+        {
+            if (!reportId.HasValue || reportId.Value <= 0) return null;
+            string folder, column, table;
+            if (reportType != null && reportType.Equals("BunkerReport", StringComparison.OrdinalIgnoreCase))
+            {
+                folder = "~/Bunker_LabAnalysisReport/";
+                column = "LabAnalysisReport_Name";
+                table  = "BunkerReport";
+            }
+            else if (reportType != null && reportType.Equals("FreshWaterReport", StringComparison.OrdinalIgnoreCase))
+            {
+                folder = "~/FreshWaterReport/";
+                column = "File_Name";
+                table  = "FreshWaterReport";
+            }
+            else
+            {
+                return null;
+            }
+
+            string fileName = null;
+            try
+            {
+                using (var cmd = new SqlCommand("SELECT " + column + " FROM " + table + " WHERE Id=@Id", ConnectionBulder.con))
+                {
+                    cmd.Parameters.AddWithValue("@Id", reportId.Value);
+                    if (ConnectionBulder.con.State != ConnectionState.Open) ConnectionBulder.con.Open();
+                    var result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) fileName = result.ToString();
+                }
+            }
+            catch { return null; }
+
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+            try { return Server.MapPath(folder + fileName); }
+            catch { return null; }
+        }
+
         private static bool TryParseSyncReportExportFileName(string fileName, out string reportType, out int vesselId, out string datePart, out int? reportId)
         {
             reportType = null;
@@ -3295,6 +3373,17 @@ namespace SIS_Operational_Reports
                                 msg.Body = body;
                                 msg.IsBodyHtml = isHtml;
                                 msg.Attachments.Add(new System.Net.Mail.Attachment(path));
+
+                                // For FreshWater and Bunker reports, also attach the user-uploaded
+                                // file (PDF / DOC / image) so recipients receive both the generated
+                                // Excel summary AND the original supporting document. The body
+                                // additionally renders the file name as a download link to the portal.
+                                string userFilePath = ResolveUserUploadedFilePath(reportType, reportIdFromFile);
+                                if (!string.IsNullOrEmpty(userFilePath) && System.IO.File.Exists(userFilePath))
+                                {
+                                    try { msg.Attachments.Add(new System.Net.Mail.Attachment(userFilePath)); }
+                                    catch { /* ignore — fall back to link-only in the body */ }
+                                }
 
                                 using (var smtp = new SmtpClient(smtpHost))
                                 {
@@ -3900,7 +3989,11 @@ namespace SIS_Operational_Reports
                             }
                         }
                     }
-                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=4 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
+                    // Report_Table_Id=5 matches what BerthingController writes/reads (see
+                    // BerthingController.cs around line 764). Older value 4 belongs to a different
+                    // report type, so it always returned 0 rows — the Excel then rendered blank
+                    // ChartererAccount and 0 Hours for every Non-Routine Event.
+                    using (SqlDataAdapter adp = new SqlDataAdapter("select ChartererAccount, Hours from tblNonRoutineCommon where Report_Table_Id=5 and ReportType_Id=" + id + " and VesselId=" + vesselId + " and IsActive=1 order by Id", ConnectionBulder.con))
                         adp.Fill(dtNonRoutine);
                     using (SqlCommand cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                     {
@@ -4407,16 +4500,30 @@ namespace SIS_Operational_Reports
 
                 try
                 {
-                    // Cargo: fetch all cargoes for the current voyage (cargo accumulates across loading
-                    // reports under the same VoyageId). Old LRId-only filter missed cargoes loaded
-                    // at earlier ports in the same voyage.
+                    // Cargo: filter by LRId AND dedupe by CargoName + LoadingDatetime, taking the row
+                    // with the highest Id (the latest save). LR_Cargo has been observed accumulating
+                    // duplicate rows for the same report from double-submits; without the dedupe an
+                    // older row would show stale values (e.g. Size_of_Manifold_Hoses_by_Vessel = 1
+                    // instead of the updated 12).
                     using (SqlDataAdapter adp = new SqlDataAdapter(
-                        "select * from LR_Cargo where VesselId=" + vesselId + " and (LRId=" + id + " or VoyageId=" + loadingRBind.VoyageId + ")", ConnectionBulder.con))
+                        "select a.* from LR_Cargo a " +
+                        "inner join (select CargoName, LoadingDatetime, max(Id) as MaxId " +
+                        "            from LR_Cargo where VesselId=" + vesselId + " and LRId=" + id +
+                        "            group by CargoName, LoadingDatetime) g on a.Id = g.MaxId " +
+                        "where a.VesselId=" + vesselId + " and a.LRId=" + id + " order by a.Id",
+                        ConnectionBulder.con))
                         adp.Fill(dtCargo);
                     // Stoppage: actual column is `Stoppage` (renamed from `Reason`). Scope to loading
-                    // stoppages (LoadingDischarged=0) to mirror the web form's query.
+                    // stoppages (LoadingDischarged=0) to mirror the web form. Dedupe by
+                    // (Stoppage + DateTimeFrom) taking the row with the highest Id — LR_Stoppage
+                    // has been observed accumulating duplicates from double-submits.
                     using (SqlDataAdapter adp = new SqlDataAdapter(
-                        "select Stoppage as Reason, DateTimeFrom, DateTimeTo from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0", ConnectionBulder.con))
+                        "select a.Stoppage as Reason, a.DateTimeFrom, a.DateTimeTo from LR_Stoppage a " +
+                        "inner join (select Stoppage, DateTimeFrom, max(Id) as MaxId " +
+                        "            from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0 " +
+                        "            group by Stoppage, DateTimeFrom) g on a.Id = g.MaxId " +
+                        "where a.LRId=" + id + " and a.VesselId=" + vesselId + " and a.LoadingDischarged=0 order by a.Id",
+                        ConnectionBulder.con))
                         adp.Fill(dtStoppage);
                     // Pumps: table is `tblPump` (singular) per the Loading controller; `tblPumps` returns no rows.
                     // Dedupe by pump Name (the value the user sees) — picks the latest row (MAX Id) per

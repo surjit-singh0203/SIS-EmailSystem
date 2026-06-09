@@ -178,18 +178,44 @@ namespace SIS_Operational_Reports.Common
                     adp.Fill(dtNonRoutine);
                 try
                 {
-                    using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from AR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.arrivalreport_id=" + id, ConnectionBulder.con))
+                    // Cargo names: try the direct lr_cargo_id FK first; if that's a dead reference
+                    // (LR_Cargo row was deleted/renumbered by a Loading Report re-save), fall back
+                    // to leg-scoped lookup. Cargoes belong to a leg — same convention as
+                    // ArrivalController line 990: LR_Cargo WHERE VoyageId + LegPortId + VesselId.
+                    // Positional pairing uses reverse Id (newest LR_Cargo entry pairs with oldest
+                    // AR_Cargo row) because the original save's MAX(Id) lookup gave newest-first.
+                    string cargoQuery = @"
+WITH ar_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM AR_Cargo
+    WHERE VesselId = " + vesselId + @" AND arrivalreport_id = " + id + @"
+),
+report_ctx AS (
+    SELECT LegPortId, VoyageId
+    FROM ArrivalReport
+    WHERE Id = " + id + @" AND VesselId = " + vesselId + @"
+),
+leg_lr AS (
+    -- Match by LegPortId + VesselId only. VoyageId intentionally NOT in the join because
+    -- data drift has been observed where cargoes from the same Loading Report (same LRId,
+    -- same leg) ended up tagged to different VoyageIds — losing them on a strict join.
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
+    WHERE b.VesselId = " + vesselId + @"
+)
+SELECT a.*,
+       COALESCE(direct.CargoName, leg.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName)  AS PortName
+FROM ar_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+ORDER BY a.Id";
+                    using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                         adp.Fill(dtARCargo);
                 }
-                catch
-                {
-                    try
-                    {
-                        using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from AR_Cargo a inner join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.arrivalreport_id=" + id, ConnectionBulder.con))
-                            adp.Fill(dtARCargo);
-                    }
-                    catch { }
-                }
+                catch { }
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -336,13 +362,27 @@ namespace SIS_Operational_Reports.Common
             string fuelConsFullTable = BuildFuelConsFullTable(vlsfoTotal, mdoTotal, dtFuelCons);
 
             // Cargo rows — single Qty(MT) column, no decimal padding (40476.00 → 40476).
+            // When CargoName is empty (LR_Cargo FK no longer exists), show "Cargo #<lr_cargo_id>"
+            // so the broken FK is visible in the email instead of a misleading "Cargo" placeholder.
             if (dtARCargo != null && dtARCargo.Rows.Count > 0)
             {
                 foreach (DataRow dr in dtARCargo.Rows)
                 {
                     string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
                     string pName = (dr["PortName"]?.ToString() ?? "").Trim();
-                    string cargoLabel = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
+                    string cargoLabel;
+                    if (!string.IsNullOrEmpty(cName))
+                        cargoLabel = cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
+                    else
+                    {
+                        // Try both casings explicitly because some SqlDataAdapter loads preserve column case.
+                        string lrId = "";
+                        if (dr.Table.Columns.Contains("LR_Cargo_Id") && dr["LR_Cargo_Id"] != DBNull.Value)
+                            lrId = dr["LR_Cargo_Id"].ToString();
+                        else if (dr.Table.Columns.Contains("lr_cargo_id") && dr["lr_cargo_id"] != DBNull.Value)
+                            lrId = dr["lr_cargo_id"].ToString();
+                        cargoLabel = string.IsNullOrEmpty(lrId) || lrId == "0" ? "Cargo" : "Cargo #" + lrId;
+                    }
                     string q1 = FormatCargoQty(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null);
                     sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;"">").Append(q1).Append(@"</td></tr>");
                 }
@@ -536,7 +576,19 @@ namespace SIS_Operational_Reports.Common
                 {
                     string cName = (dr["CargoName"]?.ToString() ?? "").Trim();
                     string pName = (dr["PortName"]?.ToString() ?? "").Trim();
-                    string cargoLabel = string.IsNullOrEmpty(cName) ? "Cargo" : cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
+                    string cargoLabel;
+                    if (!string.IsNullOrEmpty(cName))
+                        cargoLabel = cName + (string.IsNullOrEmpty(pName) ? "" : " (" + pName + ")");
+                    else
+                    {
+                        // Try both casings explicitly because some SqlDataAdapter loads preserve column case.
+                        string lrId = "";
+                        if (dr.Table.Columns.Contains("LR_Cargo_Id") && dr["LR_Cargo_Id"] != DBNull.Value)
+                            lrId = dr["LR_Cargo_Id"].ToString();
+                        else if (dr.Table.Columns.Contains("lr_cargo_id") && dr["lr_cargo_id"] != DBNull.Value)
+                            lrId = dr["lr_cargo_id"].ToString();
+                        cargoLabel = string.IsNullOrEmpty(lrId) || lrId == "0" ? "Cargo" : "Cargo #" + lrId;
+                    }
                     sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;"">").Append(cargoLabel).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(FormatCargoQty(dr.Table.Columns.Contains("Qty_Grade1") ? dr["Qty_Grade1"] : null)).Append(@"</td></tr>");
                 }
             }

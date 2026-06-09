@@ -55,16 +55,30 @@ namespace SIS_Operational_Reports.Common
 
             try
             {
-                // Cargo: fetch all cargoes for the current voyage (a single voyage can load at multiple
-                // ports, so cargoes accumulate across loading reports under the same VoyageId).
-                // Earlier LRId-only filter returned only cargoes whose LRId matched this report.
+                // Cargo: filter by LRId AND dedupe by CargoName + LoadingDatetime, taking the row
+                // with the highest Id (the latest save). LR_Cargo has been observed accumulating
+                // duplicate rows for the same report from double-submits; without the dedupe an
+                // older row would show stale values (e.g. Size_of_Manifold_Hoses_by_Vessel = 1
+                // instead of the updated 12).
                 using (var adp = new SqlDataAdapter(
-                    "select * from LR_Cargo where VesselId=" + vesselId + " and (LRId=" + id + " or VoyageId=" + loadingRBind.VoyageId + ")", ConnectionBulder.con))
+                    "select a.* from LR_Cargo a " +
+                    "inner join (select CargoName, LoadingDatetime, max(Id) as MaxId " +
+                    "            from LR_Cargo where VesselId=" + vesselId + " and LRId=" + id +
+                    "            group by CargoName, LoadingDatetime) g on a.Id = g.MaxId " +
+                    "where a.VesselId=" + vesselId + " and a.LRId=" + id + " order by a.Id",
+                    ConnectionBulder.con))
                     adp.Fill(dtCargo);
-                // Stoppage: column is `Stoppage` not `Reason` (renamed in the schema). Also scope to
-                // loading stoppages (LoadingDischarged=0) to mirror the web form's query.
+                // Stoppage: column is `Stoppage` not `Reason` (renamed in the schema). Scope to
+                // loading stoppages (LoadingDischarged=0) to mirror the web form. Dedupe by
+                // (Stoppage + DateTimeFrom) taking the row with the highest Id — LR_Stoppage
+                // has been observed accumulating duplicates from double-submits.
                 using (var adp = new SqlDataAdapter(
-                    "select Stoppage as Reason, DateTimeFrom, DateTimeTo from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0", ConnectionBulder.con))
+                    "select a.Stoppage as Reason, a.DateTimeFrom, a.DateTimeTo from LR_Stoppage a " +
+                    "inner join (select Stoppage, DateTimeFrom, max(Id) as MaxId " +
+                    "            from LR_Stoppage where LRId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=0 " +
+                    "            group by Stoppage, DateTimeFrom) g on a.Id = g.MaxId " +
+                    "where a.LRId=" + id + " and a.VesselId=" + vesselId + " and a.LoadingDischarged=0 order by a.Id",
+                    ConnectionBulder.con))
                     adp.Fill(dtStoppage);
                 // Pumps: the table is `tblPump` (singular) per the Loading controller; `tblPumps` returns no rows.
                 // Dedupe by pump Name (the value the user sees) — picks the latest row (MAX Id) per
