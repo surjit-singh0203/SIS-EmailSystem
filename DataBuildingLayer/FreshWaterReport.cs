@@ -40,6 +40,11 @@ namespace DataBuildingLayer
         public string fileExtension { get; set; }
         public string File_Path { get; set; }
         public List<FreshWaterReport> FWReportList { get; set; }
+        // Audit timestamps from FreshWaterReport table (Created_Date / Modified_Date columns).
+        // The email's "dated X" line uses ModifiedDate when present, falling back to CreatedDate
+        // when the report has never been edited (ModifiedDate null in DB).
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 
 }

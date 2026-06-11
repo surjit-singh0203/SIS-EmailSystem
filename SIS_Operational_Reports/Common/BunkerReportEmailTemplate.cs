@@ -23,8 +23,24 @@ namespace SIS_Operational_Reports.Common
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/BunkerReport.html";
         // Public portal URL used to build clickable BDN-Report download links in emails.
-        // Update if the live portal hostname changes.
-        private const string SiteBaseUrl = "https://sisv.mooringplan.com";
+        // Resolves to the host that is actually generating the email (so the link points
+        // at the same server where SaveAttachmentFilesFromSheet / ExtractAttachmentSheetDirect
+        // just wrote the file). Falls back to the hardcoded production URL when no current
+        // HTTP context is available (e.g. background scheduled run with no incoming request).
+        private static string SiteBaseUrl
+        {
+            get
+            {
+                try
+                {
+                    var ctx = System.Web.HttpContext.Current;
+                    if (ctx != null && ctx.Request != null && ctx.Request.Url != null)
+                        return ctx.Request.Url.GetLeftPart(UriPartial.Authority); // e.g. "https://sisnovastaging.mooringplan.com"
+                }
+                catch { }
+                return "https://sisv.mooringplan.com";
+            }
+        }
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
         private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
@@ -37,12 +53,13 @@ namespace SIS_Operational_Reports.Common
         private static string FileLink(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName)) return "-";
-            string ext = System.IO.Path.GetExtension(fileName) ?? "";
-            string url = SiteBaseUrl + "/Report/Bunker/OpenPDF"
-                       + "?fileName=" + System.Web.HttpUtility.UrlEncode(fileName)
-                       + "&fileExtension=" + System.Web.HttpUtility.UrlEncode(ext);
+            // Direct link to the static file path (~/Bunker_LabAnalysisReport/<fileName>)
+            // so the browser downloads the actual file instead of routing through the
+            // OpenPDF controller action. The `download` attribute hints the browser to
+            // save the file rather than render inline.
+            string url = SiteBaseUrl + "/Bunker_LabAnalysisReport/" + System.Web.HttpUtility.UrlPathEncode(fileName);
             string safeName = System.Web.HttpUtility.HtmlEncode(fileName);
-            return @"<a href=""" + url + @""" style=""color:#1a73e8;text-decoration:underline;"" target=""_blank"" rel=""noopener"">" + safeName + @"</a>";
+            return @"<a href=""" + url + @""" download=""" + safeName + @""" style=""color:#1a73e8;text-decoration:underline;"" rel=""noopener"">" + safeName + @"</a>";
         }
 
         /// <param name="reportId">When set (from export filename R{id}), used to fetch the bunker report by ID.</param>
@@ -62,7 +79,8 @@ namespace SIS_Operational_Reports.Common
                 using (var adp = new SqlDataAdapter(
                     "select PortName, PortName_others, Supplier, BargeName, Remarks, " +
                     "BargeAlongside, BunkerHoseConnected, CommencedBunkering, BunkeringCompleted, " +
-                    "BunkerHosedisconnected, BargeCastOff, FirstName, LastName, LabAnalysisReport_Name " +
+                    "BunkerHosedisconnected, BargeCastOff, FirstName, LastName, LabAnalysisReport_Name, " +
+                    "Created_Date, Modified_Date " +
                     "from BunkerReport where Id=" + id, ConnectionBulder.con))
                 {
                     var dtBackfill = new DataTable();
@@ -84,6 +102,8 @@ namespace SIS_Operational_Reports.Common
                         if (br["FirstName"] != DBNull.Value) bunkerRBind.FirstName = br["FirstName"].ToString();
                         if (br["LastName"] != DBNull.Value) bunkerRBind.LastName = br["LastName"].ToString();
                         if (br["LabAnalysisReport_Name"] != DBNull.Value) bunkerRBind.LabAnalysisReport_Name = br["LabAnalysisReport_Name"].ToString();
+                        if (br["Created_Date"] != DBNull.Value) bunkerRBind.CreatedDate = Convert.ToDateTime(br["Created_Date"]);
+                        if (br["Modified_Date"] != DBNull.Value) bunkerRBind.ModifiedDate = Convert.ToDateTime(br["Modified_Date"]);
                     }
                 }
             }
@@ -108,9 +128,14 @@ namespace SIS_Operational_Reports.Common
             {
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
+                    // Recipient-lookup date: prefer ModifiedDate (last edit) → fall back to
+                    // CreatedDate when the report has never been edited → fall back to
+                    // BargeAlongside (original domain date) so legacy reports without audit
+                    // timestamps still resolve recipients. Email body display is unchanged.
+                    DateTime triggerDate = bunkerRBind.ModifiedDate ?? bunkerRBind.CreatedDate ?? bunkerRBind.BargeAlongside;
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@VoyageId", bunkerRBind.VoyageId);
-                    cmd.Parameters.AddWithValue("@ReportDate", bunkerRBind.BargeAlongside.ToString("yyyy-MM-dd"));
+                    cmd.Parameters.AddWithValue("@ReportDate", triggerDate.ToString("yyyy-MM-dd"));
                     cmd.Parameters.AddWithValue("@VesselId", vesselId);
                     cmd.Parameters.AddWithValue("@Action", "BunkerReport");
                     cmd.Parameters.AddWithValue("@id", id);

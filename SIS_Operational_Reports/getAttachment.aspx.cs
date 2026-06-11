@@ -306,6 +306,28 @@ namespace SIS_Operational_Reports
 
                                 System.IO.File.WriteAllBytes(filePath, attachmentData);
 
+                                // Safety net: also copy the inbound Excel into the Bunker and
+                                // FreshWater attachment folders so the download link in their
+                                // emails (which points to /Bunker_LabAnalysisReport/<name> or
+                                // /FreshWaterReport/<name>) resolves even if the per-row file
+                                // reconstruction from the BunkerReport_Files / FreshWaterReport_Files
+                                // sheet didn't run. Either path may fail (permissions, missing
+                                // folder) — swallow errors so one bad folder doesn't break import.
+                                try
+                                {
+                                    string bunkerFolder = Server.MapPath("~/Bunker_LabAnalysisReport/");
+                                    if (!Directory.Exists(bunkerFolder)) Directory.CreateDirectory(bunkerFolder);
+                                    System.IO.File.WriteAllBytes(Path.Combine(bunkerFolder, fileName), attachmentData);
+                                }
+                                catch { }
+                                try
+                                {
+                                    string freshWaterFolder = Server.MapPath("~/FreshWaterReport/");
+                                    if (!Directory.Exists(freshWaterFolder)) Directory.CreateDirectory(freshWaterFolder);
+                                    System.IO.File.WriteAllBytes(Path.Combine(freshWaterFolder, fileName), attachmentData);
+                                }
+                                catch { }
+
                                 // Call your import data method if needed
                                 ImportData();
                             }
@@ -652,6 +674,26 @@ namespace SIS_Operational_Reports
                             var sheetName = workBook.Worksheet(s).Name;
                             //Create a new DataTable.
                             DataTable dtx = new DataTable();
+
+                            // Attachment-file sheets carry chunked base64 PDFs/Excels for
+                            // Bunker (LabAnalysisReport) and FreshWater (File_Name). Reconstruct
+                            // them HERE so they're saved before any other processing — and
+                            // independent of whether the regular if/else-if chain in
+                            // InsertImportedData processes the same sheet. Reads cells directly
+                            // through ClosedXML so very long base64 strings don't get truncated
+                            // by the generic row-loader below.
+                            if (sheetName.Equals("BunkerReport_Files", StringComparison.OrdinalIgnoreCase))
+                            {
+                                try { ExtractAttachmentSheetDirect(workSheet, Server.MapPath("~/Bunker_LabAnalysisReport/"), "BunkerReport_Files"); }
+                                catch (Exception ex) { LogReportExport("BunkerReport_Files", 0, "", "", "ERROR-Direct: " + ex.Message); }
+                                continue;
+                            }
+                            if (sheetName.Equals("FreshWaterReport_Files", StringComparison.OrdinalIgnoreCase))
+                            {
+                                try { ExtractAttachmentSheetDirect(workSheet, Server.MapPath("~/FreshWaterReport/"), "FreshWaterReport_Files"); }
+                                catch (Exception ex) { LogReportExport("FreshWaterReport_Files", 0, "", "", "ERROR-Direct: " + ex.Message); }
+                                continue;
+                            }
 
                             if (sheetName == "Fuel_Cons_NR")
                             {
@@ -1056,6 +1098,24 @@ namespace SIS_Operational_Reports
                     // runs for it. Trigger the per-row Excel generation here.
                     try { SaveFreshWaterReportExcelToFiles(tbls); }
                     catch (Exception exFreshWater) { }
+                }
+
+                // Attachment-file sheets: each row is a base64-encoded chunk (FileName + PartIndex
+                // + FileData). Reassemble the original PDF / image and write it to the static folder
+                // the email templates link to. Scope is intentionally limited to Bunker + FreshWater
+                // per user request — other reports keep their current behavior. Sheet-name match is
+                // case-insensitive so spelling variants (BunkerReport_files, bunkerreport_files, etc.)
+                // still trigger the reconstruction. Errors are logged (not swallowed) so we can
+                // diagnose why files aren't appearing on disk.
+                else if (sheetName.Equals("BunkerReport_Files", StringComparison.OrdinalIgnoreCase))
+                {
+                    try { SaveAttachmentFilesFromSheet(tbls, Server.MapPath("~/Bunker_LabAnalysisReport/"), "BunkerReport_Files"); }
+                    catch (Exception ex) { LogReportExport("BunkerReport_Files", 0, "", "", "ERROR-Outer: " + ex.Message); }
+                }
+                else if (sheetName.Equals("FreshWaterReport_Files", StringComparison.OrdinalIgnoreCase))
+                {
+                    try { SaveAttachmentFilesFromSheet(tbls, Server.MapPath("~/FreshWaterReport/"), "FreshWaterReport_Files"); }
+                    catch (Exception ex) { LogReportExport("FreshWaterReport_Files", 0, "", "", "ERROR-Outer: " + ex.Message); }
                 }
 
                 else if (sheetName == "tbl_BunkerFuelType")
@@ -2258,8 +2318,24 @@ namespace SIS_Operational_Reports
         private DateTime ReadRowModifiedDate(DataRow row)
         {
             if (row == null) return DateTime.MinValue;
-            string[] candidates = { "ModifiedDate", "ModifyDate" };
-            foreach (string col in candidates)
+            // Try modified-date column names first. Added "Modified_Date" (with underscore)
+            // for Bunker and FreshWater report sheets which use this exact spelling — without
+            // it those reports never emailed because ReadRowModifiedDate returned MinValue and
+            // the LastSent gate always rejected them.
+            string[] modifiedCandidates = { "ModifiedDate", "ModifyDate", "Modified_Date" };
+            foreach (string col in modifiedCandidates)
+            {
+                if (!row.Table.Columns.Contains(col)) continue;
+                if (row[col] == DBNull.Value || row[col] == null) continue;
+                DateTime d;
+                if (DateTime.TryParse(row[col].ToString(), out d)) return d;
+            }
+            // Fall back to created-date when modified is empty/null. Bunker and FreshWater rows
+            // commonly have Modified_Date NULL on the first import (never edited), but always
+            // have Created_Date populated. Using Created_Date as the bookmark date lets these
+            // rows clear the LastSent gate and shoot emails like other reports do.
+            string[] createdCandidates = { "CreatedDate", "CreateDate", "Created_Date" };
+            foreach (string col in createdCandidates)
             {
                 if (!row.Table.Columns.Contains(col)) continue;
                 if (row[col] == DBNull.Value || row[col] == null) continue;
@@ -6204,6 +6280,22 @@ namespace SIS_Operational_Reports
                     if (item.Fuel_type_Id == 2) item.Fuel_type = "MDO";
                 }
 
+                // Trigger date: prefer Modified_Date → fall back to Created_Date → fall back
+                // to BargeAlongside. Matches the FreshWater fallback so both reports shoot
+                // emails on the same logical date even when the domain date is empty.
+                DateTime triggerDt = DateTime.MinValue;
+                if (tbls.Columns.Contains("Modified_Date") && row["Modified_Date"] != DBNull.Value && row["Modified_Date"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["Modified_Date"].ToString(), out d)) triggerDt = d;
+                }
+                if (triggerDt == DateTime.MinValue && tbls.Columns.Contains("Created_Date") && row["Created_Date"] != DBNull.Value && row["Created_Date"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["Created_Date"].ToString(), out d)) triggerDt = d;
+                }
+                if (triggerDt == DateTime.MinValue) triggerDt = bunkerRBind.BargeAlongside;
+
                 // Fetch main details from stored procedure
                 DataTable dtMain = new DataTable();
                 try
@@ -6212,7 +6304,7 @@ namespace SIS_Operational_Reports
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@VoyageId", bunkerRBind.VoyageId);
-                        cmd.Parameters.AddWithValue("@ReportDate", bunkerRBind.BargeAlongside.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@ReportDate", triggerDt.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@VesselId", vesselId);
                         cmd.Parameters.AddWithValue("@Action", "BunkerReport");
                         cmd.Parameters.AddWithValue("@id", rowId);
@@ -6222,7 +6314,7 @@ namespace SIS_Operational_Reports
                 }
                 catch { }
 
-                DateTime rptDt = bunkerRBind.BargeAlongside;
+                DateTime rptDt = triggerDt;
                 string datePart = rptDt.ToString("dd") + "_" + rptDt.ToString("MM") + "_" + rptDt.ToString("yyyy");
                 string reportType = "BunkerReport";
 
@@ -6425,10 +6517,26 @@ namespace SIS_Operational_Reports
                 }
                 catch { }
 
-                DateTime rptDt = fwRBind.Received_Date;
+                // Trigger date: prefer ModifiedDate (last edit) → fall back to CreatedDate
+                // (when report has never been edited) → fall back to Received_Date (the
+                // original domain date) → finally to import-row Received_Date if domain is
+                // empty. Matches the Bunker fallback so both reports shoot emails on the
+                // same logical date.
+                DateTime rptDt = DateTime.MinValue;
+                if (tbls.Columns.Contains("Modified_Date") && row["Modified_Date"] != DBNull.Value && row["Modified_Date"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["Modified_Date"].ToString(), out d)) rptDt = d;
+                }
+                if (rptDt == DateTime.MinValue && tbls.Columns.Contains("Created_Date") && row["Created_Date"] != DBNull.Value && row["Created_Date"] != null)
+                {
+                    DateTime d;
+                    if (DateTime.TryParse(row["Created_Date"].ToString(), out d)) rptDt = d;
+                }
+                if (rptDt == DateTime.MinValue) rptDt = fwRBind.Received_Date;
                 if (rptDt == DateTime.MinValue)
                 {
-                    // fallback to Received_Date from import row
+                    // final fallback to Received_Date from import row
                     if (tbls.Columns.Contains("Received_Date") && row["Received_Date"] != DBNull.Value && row["Received_Date"] != null)
                     {
                         DateTime d;
@@ -6458,6 +6566,198 @@ namespace SIS_Operational_Reports
                 lock (_savedReportFilesForCurrentImport) { _savedReportFilesForCurrentImport.Add(fullPath); }
                 TrackLatestModifiedRowForGroup(reportType, vesselId, ReadRowModifiedDate(row), fullPath);
             }
+        }
+
+        /// <summary>
+        /// Reconstructs attachment files from a BunkerReport_Files or FreshWaterReport_Files
+        /// import sheet and writes them to <paramref name="targetFolderPath"/>. Each row in
+        /// the sheet is a chunk: groups rows by FileName, orders by PartIndex, concatenates
+        /// base64 chunks, decodes, and writes the file to disk. Logs each step to
+        /// ReportExportLog.txt so we can diagnose why files aren't appearing.
+        /// Also tries variant column names (FileName / File_Name / fileName) since column
+        /// spelling has differed across exports.
+        /// </summary>
+        private void SaveAttachmentFilesFromSheet(DataTable tbls, string targetFolderPath, string logSource)
+        {
+            if (tbls == null || tbls.Rows.Count == 0)
+            {
+                LogReportExport(logSource, 0, "", "", "Skipped-EmptySheet");
+                return;
+            }
+
+            // Try variant column names. DataTable column lookup is case-insensitive by default
+            // so "FileName" matches "filename" — but underscored variants (File_Name) need
+            // explicit candidates.
+            string fileNameCol = FindFirstExistingColumn(tbls, "FileName", "File_Name", "Name");
+            string dataCol     = FindFirstExistingColumn(tbls, "FileData", "File_Data", "Data", "Base64");
+            string partCol     = FindFirstExistingColumn(tbls, "PartIndex", "Part_Index", "Part", "ChunkIndex", "Index");
+
+            // Log what columns we found vs what's actually in the sheet so we can debug
+            // mismatched export schemas.
+            string colsActual = string.Join(",", tbls.Columns.Cast<DataColumn>().Select(c => c.ColumnName));
+            LogReportExport(logSource, 0, "", "", $"Enter rows={tbls.Rows.Count} cols=[{colsActual}] resolved fileName={fileNameCol ?? "?"} data={dataCol ?? "?"} part={partCol ?? "?"}");
+
+            if (fileNameCol == null || dataCol == null)
+            {
+                LogReportExport(logSource, 0, "", "", "Skipped-MissingRequiredColumn");
+                return;
+            }
+
+            if (!Directory.Exists(targetFolderPath))
+            {
+                try { Directory.CreateDirectory(targetFolderPath); }
+                catch (Exception exDir)
+                {
+                    LogReportExport(logSource, 0, "", targetFolderPath, "ERROR-CreateDir: " + exDir.Message);
+                    return;
+                }
+            }
+
+            // Group by FileName so multi-part files reassemble in order. Use a SortedDictionary
+            // keyed by PartIndex so chunks concatenate in the correct sequence regardless of the
+            // order the rows arrived in the sheet.
+            var groups = new Dictionary<string, SortedDictionary<int, string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (DataRow row in tbls.Rows)
+            {
+                string fileName = row[fileNameCol]?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(fileName)) continue;
+                if (row[dataCol] == DBNull.Value || row[dataCol] == null) continue;
+                string chunk = row[dataCol].ToString();
+                if (string.IsNullOrEmpty(chunk)) continue;
+
+                int partIndex = 0;
+                if (partCol != null && row[partCol] != DBNull.Value && row[partCol] != null)
+                    int.TryParse(row[partCol].ToString(), out partIndex);
+
+                if (!groups.ContainsKey(fileName)) groups[fileName] = new SortedDictionary<int, string>();
+                groups[fileName][partIndex] = chunk;
+            }
+
+            LogReportExport(logSource, 0, "", "", $"Grouped fileCount={groups.Count}");
+
+            foreach (var kvp in groups)
+            {
+                try
+                {
+                    string fullBase64 = string.Concat(kvp.Value.Values);
+                    byte[] fileBytes = Convert.FromBase64String(fullBase64);
+                    string fullPath = Path.Combine(targetFolderPath, kvp.Key);
+                    File.WriteAllBytes(fullPath, fileBytes);
+                    LogReportExport(logSource, 0, "", kvp.Key, $"Saved bytes={fileBytes.Length} parts={kvp.Value.Count}");
+                }
+                catch (Exception exSave)
+                {
+                    LogReportExport(logSource, 0, "", kvp.Key, "ERROR-Save: " + exSave.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads chunked base64 attachments directly from a ClosedXML worksheet (rather than
+        /// going through the DataTable importer in ImportData, which has been observed to
+        /// truncate very long cell strings). Locates FileName / PartIndex / FileData by header
+        /// row, groups by FileName, sorts chunks by PartIndex, concatenates, base64-decodes,
+        /// and writes to <paramref name="targetFolderPath"/>. Logs every step.
+        /// </summary>
+        private void ExtractAttachmentSheetDirect(IXLWorksheet sheet, string targetFolderPath, string logSource)
+        {
+            if (sheet == null) { LogReportExport(logSource, 0, "", "", "Skipped-NullSheet"); return; }
+
+            int lastRow = sheet.LastRowUsed()?.RowNumber() ?? 0;
+            int lastCol = sheet.LastColumnUsed()?.ColumnNumber() ?? 0;
+            if (lastRow < 2 || lastCol < 2)
+            {
+                LogReportExport(logSource, 0, "", "", $"Skipped-NoData rows={lastRow} cols={lastCol}");
+                return;
+            }
+
+            // Map header row → column index (1-based for ClosedXML).
+            int colFileName = 0, colPartIndex = 0, colFileData = 0;
+            var headerNames = new List<string>();
+            for (int c = 1; c <= lastCol; c++)
+            {
+                string h = sheet.Cell(1, c).GetString()?.Trim() ?? "";
+                headerNames.Add(h);
+                string hLower = h.ToLowerInvariant().Replace("_", "");
+                if (colFileName == 0 && (hLower == "filename" || hLower == "name")) colFileName = c;
+                else if (colPartIndex == 0 && (hLower == "partindex" || hLower == "part" || hLower == "chunkindex" || hLower == "index")) colPartIndex = c;
+                else if (colFileData == 0 && (hLower == "filedata" || hLower == "data" || hLower == "base64")) colFileData = c;
+            }
+
+            LogReportExport(logSource, 0, "", "", $"Direct-Enter rows={lastRow - 1} cols=[{string.Join(",", headerNames)}] fileName@{colFileName} part@{colPartIndex} data@{colFileData}");
+
+            if (colFileName == 0 || colFileData == 0)
+            {
+                LogReportExport(logSource, 0, "", "", "Skipped-MissingRequiredColumn");
+                return;
+            }
+
+            if (!Directory.Exists(targetFolderPath))
+            {
+                try { Directory.CreateDirectory(targetFolderPath); }
+                catch (Exception exDir)
+                {
+                    LogReportExport(logSource, 0, "", targetFolderPath, "ERROR-CreateDir: " + exDir.Message);
+                    return;
+                }
+            }
+
+            // Group rows by FileName, with chunks sorted by PartIndex. Use SortedDictionary
+            // so chunks concatenate in the correct order regardless of row order.
+            var groups = new Dictionary<string, SortedDictionary<int, string>>(StringComparer.OrdinalIgnoreCase);
+            for (int r = 2; r <= lastRow; r++)
+            {
+                string fileName = sheet.Cell(r, colFileName).GetString()?.Trim();
+                if (string.IsNullOrEmpty(fileName)) continue;
+
+                string chunk = sheet.Cell(r, colFileData).GetString();
+                if (string.IsNullOrEmpty(chunk)) continue;
+
+                int partIndex = 0;
+                if (colPartIndex > 0)
+                {
+                    string p = sheet.Cell(r, colPartIndex).GetString();
+                    int.TryParse(p, out partIndex);
+                }
+
+                if (!groups.ContainsKey(fileName)) groups[fileName] = new SortedDictionary<int, string>();
+                groups[fileName][partIndex] = chunk;
+            }
+
+            LogReportExport(logSource, 0, "", "", $"Direct-Grouped fileCount={groups.Count}");
+
+            foreach (var kvp in groups)
+            {
+                try
+                {
+                    // Trim whitespace from each chunk before concatenating — exports sometimes
+                    // include line breaks every N chars that break Convert.FromBase64String.
+                    var sb = new StringBuilder();
+                    foreach (var part in kvp.Value.Values)
+                        sb.Append(part.Replace("\r", "").Replace("\n", "").Replace(" ", ""));
+                    byte[] fileBytes = Convert.FromBase64String(sb.ToString());
+                    string fullPath = Path.Combine(targetFolderPath, kvp.Key);
+                    File.WriteAllBytes(fullPath, fileBytes);
+                    LogReportExport(logSource, 0, "", kvp.Key, $"Direct-Saved bytes={fileBytes.Length} parts={kvp.Value.Count}");
+                }
+                catch (Exception exSave)
+                {
+                    LogReportExport(logSource, 0, "", kvp.Key, "ERROR-Save: " + exSave.Message);
+                }
+            }
+        }
+
+        /// <summary>Returns the first column name in <paramref name="candidates"/> that exists
+        /// in the table (case-insensitive), or null if none match.</summary>
+        private static string FindFirstExistingColumn(DataTable tbl, params string[] candidates)
+        {
+            if (tbl == null || candidates == null) return null;
+            foreach (var c in candidates)
+            {
+                if (string.IsNullOrEmpty(c)) continue;
+                if (tbl.Columns.Contains(c)) return c;
+            }
+            return null;
         }
 
         private void AddFreshWaterDetailsSheet(XLWorkbook wb, FreshWaterReport r)

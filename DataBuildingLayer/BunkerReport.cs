@@ -48,6 +48,11 @@ namespace DataBuildingLayer
         public List<BunkerReport> BunkerReportList { get; set; }
         public List<SelectListItem> VesselList { get; set; }
         public List<VoyageClass> VoyageNumberList { get; set; }
+        // Audit timestamps from BunkerReport table (Created_Date / Modified_Date columns).
+        // The email's "dated X" line uses ModifiedDate when present, falling back to CreatedDate
+        // when the report has never been edited (ModifiedDate null in DB).
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 
     public class BukerFuelList

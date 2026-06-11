@@ -21,8 +21,24 @@ namespace SIS_Operational_Reports.Common
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
         private const string TemplatePath = "~/Templates/FreshWaterReport.html";
         // Public portal URL used to build clickable attachment-download links in emails.
-        // Update if the live portal hostname changes.
-        private const string SiteBaseUrl = "https://sisv.mooringplan.com";
+        // Resolves to the host that is actually generating the email (so the link points
+        // at the same server where SaveAttachmentFilesFromSheet / ExtractAttachmentSheetDirect
+        // just wrote the file). Falls back to the hardcoded production URL when no current
+        // HTTP context is available (e.g. background scheduled run with no incoming request).
+        private static string SiteBaseUrl
+        {
+            get
+            {
+                try
+                {
+                    var ctx = System.Web.HttpContext.Current;
+                    if (ctx != null && ctx.Request != null && ctx.Request.Url != null)
+                        return ctx.Request.Url.GetLeftPart(UriPartial.Authority); // e.g. "https://sisnovastaging.mooringplan.com"
+                }
+                catch { }
+                return "https://sisv.mooringplan.com";
+            }
+        }
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
         private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
@@ -35,12 +51,13 @@ namespace SIS_Operational_Reports.Common
         private static string FileLink(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName)) return "-";
-            string ext = System.IO.Path.GetExtension(fileName) ?? "";
-            string url = SiteBaseUrl + "/Report/FreshWater/OpenPDF"
-                       + "?fileName=" + System.Web.HttpUtility.UrlEncode(fileName)
-                       + "&fileExtension=" + System.Web.HttpUtility.UrlEncode(ext);
+            // Direct link to the static file path (~/FreshWaterReport/<fileName>) so the
+            // browser downloads the actual file instead of routing through the OpenPDF
+            // controller action. The `download` attribute hints the browser to save the
+            // file rather than render inline.
+            string url = SiteBaseUrl + "/FreshWaterReport/" + System.Web.HttpUtility.UrlPathEncode(fileName);
             string safeName = System.Web.HttpUtility.HtmlEncode(fileName);
-            return @"<a href=""" + url + @""" style=""color:#1a73e8;text-decoration:underline;"" target=""_blank"" rel=""noopener"">" + safeName + @"</a>";
+            return @"<a href=""" + url + @""" download=""" + safeName + @""" style=""color:#1a73e8;text-decoration:underline;"" rel=""noopener"">" + safeName + @"</a>";
         }
 
         /// <param name="reportId">When set (from export filename R{id}), used to fetch the fresh water report by ID.</param>
@@ -60,7 +77,8 @@ namespace SIS_Operational_Reports.Common
                 using (var adp = new SqlDataAdapter(
                     "select PortName, PortName_others, Facility_Name, VendorDetails, Received_Date, " +
                     "Intial_Meter_Reading_MT_supplied, Final_Meter_Reading_MT, " +
-                    "Difference_in_Meter_Reading_MT, QTY_supplied_MT, File_Name " +
+                    "Difference_in_Meter_Reading_MT, QTY_supplied_MT, File_Name, " +
+                    "Created_Date, Modified_Date " +
                     "from FreshWaterReport where Id=" + id, ConnectionBulder.con))
                 {
                     var dtBackfill = new DataTable();
@@ -78,6 +96,8 @@ namespace SIS_Operational_Reports.Common
                         if (br["Difference_in_Meter_Reading_MT"] != DBNull.Value) fwRBind.Difference_in_Meter_Reading_MT = Convert.ToDecimal(br["Difference_in_Meter_Reading_MT"]);
                         if (br["QTY_supplied_MT"] != DBNull.Value) fwRBind.QTY_supplied_MT = Convert.ToDecimal(br["QTY_supplied_MT"]);
                         if (br["File_Name"] != DBNull.Value) fwRBind.File_Name = br["File_Name"].ToString();
+                        if (br["Created_Date"] != DBNull.Value) fwRBind.CreatedDate = Convert.ToDateTime(br["Created_Date"]);
+                        if (br["Modified_Date"] != DBNull.Value) fwRBind.ModifiedDate = Convert.ToDateTime(br["Modified_Date"]);
                     }
                 }
             }

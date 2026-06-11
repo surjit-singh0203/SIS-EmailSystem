@@ -1143,8 +1143,37 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
             IList<string> nrc = new List<string>();
             try
             {
-                // using (SqlDataAdapter objCMD = new SqlDataAdapter("select a.*,b.cargoname from BR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id  where  a.VesselId=" + vslid + " and berthingreport_id=" + BerthingReportId + "", ConnectionBulder.con))
-                using (SqlDataAdapter objCMD = new SqlDataAdapter("select a.*,b.cargoname, b.PortName from BR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and b.VesselId=" + vslid + " where  a.VesselId=" + vslid + " and berthingreport_id=" + BerthingReportId + "", ConnectionBulder.con))
+                // Cargo names: try the direct lr_cargo_id FK first; if that's a dead reference
+                // (LR_Cargo row was deleted/renumbered by a Loading Report re-save), fall back to
+                // leg-scoped lookup (match by LegPortId + VesselId). Positional pairing uses
+                // reverse Id — the order LR_Cargo gets re-inserted in matches the reverse of
+                // BR_Cargo save order. Same pattern as the email template's CTE-based query.
+                string cargoQuery = @"
+WITH br_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM BR_Cargo
+    WHERE VesselId = " + vslid + @" AND berthingreport_id = " + BerthingReportId + @"
+),
+report_ctx AS (
+    SELECT LegPortId, VoyageId
+    FROM BerthingReport
+    WHERE Id = " + BerthingReportId + @" AND VesselId = " + vslid + @"
+),
+leg_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
+    WHERE b.VesselId = " + vslid + @"
+)
+SELECT a.*,
+       COALESCE(direct.cargoname, leg.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName)  AS PortName
+FROM br_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+ORDER BY a.Id";
+                using (SqlDataAdapter objCMD = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                 {
                     DataTable dt = new DataTable();
                     objCMD.Fill(dt);
