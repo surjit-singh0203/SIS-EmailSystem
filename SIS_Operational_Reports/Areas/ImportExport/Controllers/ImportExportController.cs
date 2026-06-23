@@ -1465,6 +1465,22 @@ namespace SIS_Operational_Reports.Areas.ImportExport.Controllers
 
                     }
 
+                    // Attachment-file sheets carry the chunked base64 for Bunker LabAnalysis and
+                    // FreshWater attachments. They have no Update_{sheetName} stored proc, so the
+                    // fallback below would throw a SQL exception and the catch would return the
+                    // sheet name as an "error". Handle them inline (reconstruct the file from
+                    // chunks and write to the static folder the email link points at) and return
+                    // "" so the import succeeds silently.
+                    if (sheetName.Equals("BunkerReport_Files", StringComparison.OrdinalIgnoreCase))
+                    {
+                        SaveImportAttachmentSheet(tbls, Server.MapPath("~/Bunker_LabAnalysisReport/"));
+                        return "";
+                    }
+                    if (sheetName.Equals("FreshWaterReport_Files", StringComparison.OrdinalIgnoreCase))
+                    {
+                        SaveImportAttachmentSheet(tbls, Server.MapPath("~/FreshWaterReport/"));
+                        return "";
+                    }
 
                     using (SqlConnection connection = new SqlConnection(connectionString))
                     {
@@ -1486,6 +1502,70 @@ namespace SIS_Operational_Reports.Areas.ImportExport.Controllers
             {
                 //return ex.Message.ToString();
                 return sheetName;
+            }
+        }
+
+        /// <summary>
+        /// Reconstructs chunked attachment files from a BunkerReport_Files or
+        /// FreshWaterReport_Files import sheet and writes them to <paramref name="targetFolderPath"/>.
+        /// Groups rows by FileName, sorts chunks by PartIndex, concatenates base64, decodes,
+        /// writes to disk. Same logic as getAttachment.aspx.cs uses for the email-driven import.
+        /// </summary>
+        private void SaveImportAttachmentSheet(System.Data.DataTable tbls, string targetFolderPath)
+        {
+            if (tbls == null || tbls.Rows.Count == 0) return;
+
+            string fileNameCol = null, dataCol = null, partCol = null;
+            foreach (string c in new[] { "FileName", "File_Name", "Name" })
+                if (tbls.Columns.Contains(c)) { fileNameCol = c; break; }
+            foreach (string c in new[] { "FileData", "File_Data", "Data", "Base64" })
+                if (tbls.Columns.Contains(c)) { dataCol = c; break; }
+            foreach (string c in new[] { "PartIndex", "Part_Index", "Part", "ChunkIndex", "Index" })
+                if (tbls.Columns.Contains(c)) { partCol = c; break; }
+
+            if (fileNameCol == null || dataCol == null) return;
+
+            if (!System.IO.Directory.Exists(targetFolderPath))
+            {
+                try { System.IO.Directory.CreateDirectory(targetFolderPath); }
+                catch { return; }
+            }
+
+            var groups = new System.Collections.Generic.Dictionary<string,
+                System.Collections.Generic.SortedDictionary<int, string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (DataRow row in tbls.Rows)
+            {
+                string fileName = row[fileNameCol]?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(fileName)) continue;
+                if (row[dataCol] == DBNull.Value || row[dataCol] == null) continue;
+                string chunk = row[dataCol].ToString();
+                if (string.IsNullOrEmpty(chunk)) continue;
+
+                int partIndex = 0;
+                if (partCol != null && row[partCol] != DBNull.Value && row[partCol] != null)
+                    int.TryParse(row[partCol].ToString(), out partIndex);
+
+                if (!groups.ContainsKey(fileName))
+                    groups[fileName] = new System.Collections.Generic.SortedDictionary<int, string>();
+                groups[fileName][partIndex] = chunk;
+            }
+
+            foreach (var kvp in groups)
+            {
+                try
+                {
+                    // Strip whitespace/line breaks that some exports insert every N chars,
+                    // which would otherwise break Convert.FromBase64String.
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var part in kvp.Value.Values)
+                        sb.Append(part.Replace("\r", "").Replace("\n", "").Replace(" ", ""));
+
+                    byte[] fileBytes = Convert.FromBase64String(sb.ToString());
+                    string fullPath = System.IO.Path.Combine(targetFolderPath, kvp.Key);
+                    System.IO.File.WriteAllBytes(fullPath, fileBytes);
+                }
+                catch { /* skip this file; continue with others */ }
             }
         }
 

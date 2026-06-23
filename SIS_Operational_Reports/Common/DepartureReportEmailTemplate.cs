@@ -342,18 +342,75 @@ namespace SIS_Operational_Reports.Common
                     adp.Fill(dtNonRoutine);
                 try
                 {
-                    using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, ConnectionBulder.con))
+                    // 4-layer cargo-name cascade with COALESCE priority: direct → leg → vessel → voyage.
+                    //
+                    //   direct   : exact lr_cargo_id FK match (always best when LR_Cargo row exists).
+                    //   leg_lr   : Departure has TWO leg columns — DepLegPortId AND NextLegPortId.
+                    //              Match on either since a departure leg's cargo can be tagged to
+                    //              either side.
+                    //   vessel_lr: most recent LRId for the vessel that has at least as many cargoes
+                    //              as this report. Built-in row-count filter — only fires when there's
+                    //              a complete matching group.
+                    //   voyage_lr: VoyageId match. Last resort because voyage's LR_Cargo set may be
+                    //              partial (some cargoes loaded under a different voyage), which would
+                    //              otherwise mislead COALESCE into picking wrong names for some rows.
+                    //
+                    // VESSEL ordered BEFORE VOYAGE in COALESCE because vessel_lr has the row-count
+                    // guarantee and produces a complete consistent set; voyage_lr can return partial
+                    // data that creates wrong-name mismatches per row.
+                    string cargoQuery = @"
+WITH dr_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM DR_Cargo
+    WHERE VesselId = " + vesselId + @" AND depreport_id = " + id + @"
+),
+report_ctx AS (
+    SELECT DepLegPortId, NextLegPortId, VoyageId
+    FROM DepartureReport
+    WHERE Id = " + id + @" AND VesselId = " + vesselId + @"
+),
+leg_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc
+        ON b.LegPortId = rc.DepLegPortId OR b.LegPortId = rc.NextLegPortId
+    WHERE b.VesselId = " + vesselId + @"
+),
+voyage_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId
+    WHERE b.VesselId = " + vesselId + @"
+),
+vessel_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN (
+        SELECT TOP 1 LRId
+        FROM LR_Cargo
+        WHERE VesselId = " + vesselId + @"
+        GROUP BY LRId
+        HAVING COUNT(*) >= (SELECT COUNT(*) FROM dr_rows)
+        ORDER BY MAX(Id) DESC
+    ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vesselId + @"
+)
+SELECT a.*,
+       COALESCE(direct.CargoName, leg.CargoName, vessel.CargoName, voyage.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName,  vessel.PortName,  voyage.PortName)  AS PortName
+FROM dr_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
+ORDER BY a.Id";
+                    using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                         adp.Fill(dtDRCargo);
                 }
-                catch
-                {
-                    try
-                    {
-                        using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from DR_Cargo a inner join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.depreport_id=" + id, ConnectionBulder.con))
-                            adp.Fill(dtDRCargo);
-                    }
-                    catch { }
-                }
+                catch { }
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;

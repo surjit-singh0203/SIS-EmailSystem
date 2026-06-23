@@ -86,14 +86,67 @@ namespace SIS_Operational_Reports.Common
                     adp.Fill(dtNonRoutine);
                 try
                 {
-                    using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
+                    // 4-layer cascade fallback to resolve cargo names even when the lr_cargo_id
+                    // FK is broken (LR_Cargo rows that have been deleted/renumbered by a Loading
+                    // Report re-save). Same pattern applied to Berthing/Arrival email templates
+                    // and controllers. Picks first non-null from: direct FK → leg match → voyage
+                    // match → vessel-wide positional match.
+                    string cargoQuery = @"
+WITH nr_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM NR_Cargo
+    WHERE VesselId = " + vesselId + @" AND NoonReport_Id = " + id + @"
+),
+report_ctx AS (
+    SELECT LegPortId, VoyageId
+    FROM DailyNoonReport
+    WHERE Id = " + id + @" AND VesselId = " + vesselId + @"
+),
+leg_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
+    WHERE b.VesselId = " + vesselId + @"
+),
+voyage_lr AS (
+    -- Secondary fallback: match by VoyageId. Catches the case where the noon report's
+    -- leg has no LR_Cargo (e.g., reporting at sea between two ports).
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId
+    WHERE b.VesselId = " + vesselId + @"
+),
+vessel_lr AS (
+    -- Final fallback: vessel-only. Pick the most recent LRId for this vessel that has
+    -- at least as many cargo rows as the report, paired positionally.
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN (
+        SELECT TOP 1 LRId
+        FROM LR_Cargo
+        WHERE VesselId = " + vesselId + @"
+        GROUP BY LRId
+        HAVING COUNT(*) >= (SELECT COUNT(*) FROM nr_rows)
+        ORDER BY MAX(Id) DESC
+    ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vesselId + @"
+)
+SELECT a.*,
+       COALESCE(direct.CargoName, leg.CargoName, voyage.CargoName, vessel.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName,  voyage.PortName,  vessel.PortName)  AS PortName
+FROM nr_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
+ORDER BY a.Id";
+                    using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                         adp.Fill(dtNRCargo);
                 }
-                catch
-                {
-                    using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.lr_cargo_id=b.Id where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
-                        adp.Fill(dtNRCargo);
-                }
+                catch { }
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;

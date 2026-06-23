@@ -1141,9 +1141,33 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
             }
             return View();
         }
-        public JsonResult GetARCargoEdit(int ArrivalReportId)
+        public JsonResult GetARCargoEdit(int ArrivalReportId, int? vesselId = null)
         {
-            int vslid = Convert.ToInt32(Session["EditVesselIDArrival"]);
+            // Resolve vessel id with three fallbacks. Session was the original source but it
+            // can be 0 / stale when the user navigates to the Edit page from a deep link, with
+            // a new session, or from a different vessel context — which makes the cargo SQL
+            // filter `VesselId=0`, return zero rows, and the form falls back to its empty
+            // template (one row with 0.000 qty and no cargo name).
+            //  1. URL query parameter ?vesselId=... (most explicit)
+            //  2. Look up ArrivalReport.VesselId by primary key (always correct if report exists)
+            //  3. Session["EditVesselIDArrival"] (legacy behavior)
+            int vslid = vesselId.GetValueOrDefault();
+            if (vslid <= 0)
+            {
+                try
+                {
+                    using (var cmd = new SqlCommand(
+                        "SELECT TOP 1 VesselId FROM ArrivalReport WHERE Id=" + ArrivalReportId,
+                        ConnectionBulder.con))
+                    {
+                        if (ConnectionBulder.con.State != ConnectionState.Open) ConnectionBulder.con.Open();
+                        var o = cmd.ExecuteScalar();
+                        if (o != null && o != DBNull.Value) vslid = Convert.ToInt32(o);
+                    }
+                }
+                catch { }
+            }
+            if (vslid <= 0) vslid = Convert.ToInt32(Session["EditVesselIDArrival"]);
             ArrayList arCargoName = new ArrayList();
 
             IList<string> nrc = new List<string>();
@@ -1171,13 +1195,42 @@ leg_lr AS (
     FROM LR_Cargo b
     INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
     WHERE b.VesselId = " + vslid + @"
+),
+voyage_lr AS (
+    -- Secondary fallback: match by VoyageId. Discharging-only legs won't have
+    -- LR_Cargo for the LegPortId, but the voyage's loading-leg cargoes are still
+    -- associated with the same VoyageId.
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId
+    WHERE b.VesselId = " + vslid + @"
+),
+vessel_lr AS (
+    -- Final fallback: vessel-only. Pick the most recent LRId for this vessel that has
+    -- at least as many cargo rows as the report, and pair positionally (newest LR_Cargo
+    -- with oldest AR_Cargo, matching the original MAX(Id) save order).
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN (
+        SELECT TOP 1 LRId
+        FROM LR_Cargo
+        WHERE VesselId = " + vslid + @"
+        GROUP BY LRId
+        HAVING COUNT(*) >= (SELECT COUNT(*) FROM ar_rows)
+        ORDER BY MAX(Id) DESC
+    ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vslid + @"
 )
 SELECT a.*,
-       COALESCE(direct.cargoname, leg.CargoName) AS CargoName,
-       COALESCE(direct.PortName,  leg.PortName)  AS PortName
+       COALESCE(direct.cargoname, leg.CargoName, voyage.CargoName, vessel.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName,  voyage.PortName,  vessel.PortName)  AS PortName
 FROM ar_rows a
 LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
 LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
 ORDER BY a.Id";
                 using (SqlDataAdapter objCMD = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                 {

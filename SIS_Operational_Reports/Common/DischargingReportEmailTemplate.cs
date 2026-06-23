@@ -97,7 +97,28 @@ namespace SIS_Operational_Reports.Common
                 // DS_Cargo FK to DischargingReport is `LRId` (per spInsertDischargeingCargoList SP
                 // and DischargingController.GetDischargeCargo query). The previous filter `DSId=`
                 // didn't match any rows so dtCargo was empty and every cargo cell rendered as "-".
-                using (var adp = new SqlDataAdapter("select * from DS_Cargo where LRId=" + id + " and VesselId=" + vesselId, ConnectionBulder.con))
+                //
+                // VoyageId filter added to match the web form's controller (GetDischargeCargosEdit
+                // at DischargingController line 627). Without it, the email was picking up stale
+                // DS_Cargo rows that shared LRId+VesselId but belonged to a different voyage —
+                // observed: 5 rows in email vs 3 on the form, because 2 leftover OFF KARWAR rows
+                // from an earlier voyage were being included.
+                //
+                // Dedupe by CargoName + PortName (taking MAX(Id)) eliminates same-voyage double-
+                // submit duplicates — same pattern as SaveLoadingReportExcelToFiles in
+                // getAttachment.aspx.cs which handles LR_Cargo duplicates the same way.
+                string cargoQuery = @"
+SELECT a.*
+FROM DS_Cargo a
+INNER JOIN (
+    SELECT CargoName, PortName, MAX(Id) AS MaxId
+    FROM DS_Cargo
+    WHERE LRId = " + id + @" AND VesselId = " + vesselId + @" AND VoyageId = " + disRBind.VoyageId + @"
+    GROUP BY CargoName, PortName
+) g ON a.Id = g.MaxId
+WHERE a.LRId = " + id + @" AND a.VesselId = " + vesselId + @"
+ORDER BY a.Id";
+                using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                     adp.Fill(dtCargo);
                 using (var adp = new SqlDataAdapter("select * from LR_Stoppage where DCId=" + id + " and VesselId=" + vesselId + " and LoadingDischarged=1", ConnectionBulder.con))
                     adp.Fill(dtStoppage);

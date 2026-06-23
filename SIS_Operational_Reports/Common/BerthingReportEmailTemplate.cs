@@ -116,12 +116,20 @@ namespace SIS_Operational_Reports.Common
             // query (USP, fuel, stoppage) throws. Same join pattern as BerthingController.GetBR_CargoEdit.
             try
             {
-                // Cargo names: try the direct lr_cargo_id FK first; if that's a dead reference
-                // (LR_Cargo row was deleted/renumbered by a Loading Report re-save), fall back
-                // to leg-scoped lookup. Cargoes belong to a leg — same convention as the cargo
-                // dropdown query: LR_Cargo WHERE VoyageId + LegPortId + VesselId. Positional
-                // pairing uses reverse Id (newest LR_Cargo entry pairs with oldest BR_Cargo row)
-                // because the original save's MAX(Id) lookup gave newest-first.
+                // 4-layer cargo-name cascade with COALESCE priority: direct → leg → vessel → voyage.
+                //
+                //   direct   : exact lr_cargo_id FK match (always best when LR_Cargo row exists).
+                //   leg_lr   : LegPortId match. Works when LR_Cargo for this leg is still intact.
+                //   vessel_lr: most recent LRId for the vessel that has at least as many cargoes
+                //              as this report. Built-in row-count filter — only fires when there's
+                //              a complete matching group. Reliable when leg/voyage data is stale.
+                //   voyage_lr: VoyageId match. Last resort because voyage's LR_Cargo set may be
+                //              partial (some cargoes loaded under a different voyage), which would
+                //              otherwise mislead COALESCE into picking wrong names for some rows.
+                //
+                // VESSEL ordered BEFORE VOYAGE in COALESCE because vessel_lr has the row-count
+                // guarantee and produces a complete consistent set, while voyage_lr can return
+                // partial data that creates wrong-name mismatches per row.
                 string cargoQuery = @"
 WITH br_rows AS (
     SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
@@ -134,21 +142,41 @@ report_ctx AS (
     WHERE Id = " + id + @" AND VesselId = " + vesselId + @"
 ),
 leg_lr AS (
-    -- Match by LegPortId + VesselId only. VoyageId intentionally NOT in the join because
-    -- data drift has been observed where cargoes from the same Loading Report (same LRId,
-    -- same leg) ended up tagged to different VoyageIds — losing them on a strict join.
     SELECT b.CargoName, b.PortName,
            ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
     FROM LR_Cargo b
     INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId
     WHERE b.VesselId = " + vesselId + @"
+),
+voyage_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId
+    WHERE b.VesselId = " + vesselId + @"
+),
+vessel_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN (
+        SELECT TOP 1 LRId
+        FROM LR_Cargo
+        WHERE VesselId = " + vesselId + @"
+        GROUP BY LRId
+        HAVING COUNT(*) >= (SELECT COUNT(*) FROM br_rows)
+        ORDER BY MAX(Id) DESC
+    ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vesselId + @"
 )
 SELECT a.*,
-       COALESCE(direct.cargoname, leg.CargoName) AS cargoname,
-       COALESCE(direct.PortName,  leg.PortName)  AS PortName
+       COALESCE(direct.cargoname, leg.CargoName, vessel.CargoName, voyage.CargoName) AS cargoname,
+       COALESCE(direct.PortName,  leg.PortName,  vessel.PortName,  voyage.PortName)  AS PortName
 FROM br_rows a
 LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
 LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
 ORDER BY a.Id";
                 using (var adp = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                     adp.Fill(dtCargo);
