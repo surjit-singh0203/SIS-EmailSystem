@@ -1093,7 +1093,64 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
             IList<string> nrc = new List<string>();
             try
             {
-                using (SqlDataAdapter objCMD = new SqlDataAdapter("select a.*,CONVERT(VARCHAR(20),a.Completion_DateT,120)  CDT,  b.cargoname, b.PortName from DR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id  where  a.VesselId=" + vslid + " and b.VesselId=" + vslid + " and depreport_id=" + DepReportId + "", ConnectionBulder.con))
+                // Cargo names/ports resolved via the SAME 4-layer COALESCE cascade the Departure
+                // email template uses (direct -> leg -> vessel -> voyage LR_Cargo match). The old
+                // query INNER JOINed DR_Cargo to LR_Cargo on a.lr_cargo_id=b.Id, so when a report's
+                // DR_Cargo.lr_cargo_id was 0/NULL or stale the join returned NO rows and the edit
+                // view showed an empty cargo row. dr_rows drives the result, so every saved DR_Cargo
+                // row now loads even when the LR_Cargo link is broken; the name/port fall back
+                // through leg/vessel/voyage matches (positional, ordered like the email builder).
+                string cargoQuery = @"
+WITH dr_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM DR_Cargo
+    WHERE VesselId = " + vslid + @" AND depreport_id = " + DepReportId + @"
+),
+report_ctx AS (
+    SELECT DepLegPortId, NextLegPortId, VoyageId
+    FROM DepartureReport
+    WHERE Id = " + DepReportId + @" AND VesselId = " + vslid + @"
+),
+leg_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc
+        ON b.LegPortId = rc.DepLegPortId OR b.LegPortId = rc.NextLegPortId
+    WHERE b.VesselId = " + vslid + @"
+),
+voyage_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId
+    WHERE b.VesselId = " + vslid + @"
+),
+vessel_lr AS (
+    SELECT b.CargoName, b.PortName,
+           ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN (
+        SELECT TOP 1 LRId
+        FROM LR_Cargo
+        WHERE VesselId = " + vslid + @"
+        GROUP BY LRId
+        HAVING COUNT(*) >= (SELECT COUNT(*) FROM dr_rows)
+        ORDER BY MAX(Id) DESC
+    ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vslid + @"
+)
+SELECT a.*,
+       CONVERT(VARCHAR(20), a.Completion_DateT, 120) AS CDT,
+       COALESCE(direct.CargoName, leg.CargoName, vessel.CargoName, voyage.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName,  vessel.PortName,  voyage.PortName)  AS PortName
+FROM dr_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
+ORDER BY a.Id";
+                using (SqlDataAdapter objCMD = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
                 {
                     DataTable dt = new DataTable();
                     objCMD.Fill(dt);
@@ -1102,7 +1159,7 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
 
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        drCargoName.Add(dt.Rows[i]["CargoName"] + " ( " +
+                        drCargoName.Add((dt.Rows[i]["CargoName"] == DBNull.Value ? "" : dt.Rows[i]["CargoName"].ToString()) + " ( " +
                          (dt.Rows[i]["PortName"] == DBNull.Value ? "" : dt.Rows[i]["PortName"].ToString()) + " ) ");
                         drCargoName.Add(dt.Rows[i]["BL_Qty"]);
                         drCargoName.Add(dt.Rows[i]["LoadPortalActual"]);

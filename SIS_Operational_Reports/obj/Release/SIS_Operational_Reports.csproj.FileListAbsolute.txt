@@ -4728,3 +4728,5 @@ D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\SIS_Operation
 D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\SIS_Oper.57D9155C.Up2Date
 D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\SIS_Operational_Reports.dll
 D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\SIS_Operational_Reports.pdb
+D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\Package\PackageTmp\assetsV\js\plugins\moment.min.js
+D:\sisnova new\SIS-EmailSystem\SIS_Operational_Reports\obj\Release\Package\PackageTmp\js\html2canvas.js

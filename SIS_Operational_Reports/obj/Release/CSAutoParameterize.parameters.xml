@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="SISContext-Web.config Connection String" description="SISContext Connection String used in web.config by the application to access the database." defaultValue="Data Source=35.154.135.137;Initial Catalog=Staging_SISOfficeDB;User Id=sa;Password=synergetic@123; multipleactiveresultsets=True; " tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="D:\\sisnova\ new\\SIS-EmailSystem\\SIS_Operational_Reports\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='SISContext']/@connectionString" />
+  </parameter>
+  <parameter name="SISVesselDBContext-Web.config Connection String" description="SISVesselDBContext Connection String used in web.config by the application to access the database." defaultValue="Data Source=35.154.135.137;Initial Catalog=Staging_SISOperationalDB;User Id=sa;Password=synergetic@123; " tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="D:\\sisnova\ new\\SIS-EmailSystem\\SIS_Operational_Reports\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='SISVesselDBContext']/@connectionString" />
+  </parameter>
+</parameters>

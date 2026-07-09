@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,8 +22,10 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/ArrivalReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        /// <summary>Format decimal: whole numbers (e.g. IDs, bottle counts) stay as-is; fractional values use 0.000.</summary>
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        /// <summary>Show the value exactly as stored in the DB, preserving the column's scale/trailing
+        /// zeros (9.000 -> "9.000", 9.750 -> "9.750", 25.00 -> "25.00"). ArrivalReport decimals are
+        /// mostly decimal(18,3) with a couple decimal(18,2); InvariantCulture reproduces each stored scale.</summary>
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString(CultureInfo.InvariantCulture) : "-";
 
         /// <summary>Strip trailing zeros from a numeric value/string. Use this in tables where the
         /// web view shows the number as-entered (e.g. Fuel ROB EOSP/FWE: 745.200 → 745.2).
@@ -32,7 +35,7 @@ namespace SIS_Operational_Reports.Common
             if (o == null || o == DBNull.Value) return "-";
             string s = o.ToString().Trim();
             if (string.IsNullOrEmpty(s)) return "-";
-            if (decimal.TryParse(s, out decimal d)) return d.ToString("0.##########");
+            if (decimal.TryParse(s, out decimal d)) return d.ToString(CultureInfo.InvariantCulture);
             return s;
         }
 
@@ -626,16 +629,16 @@ ORDER BY a.Id";
         {
             if (v == null || v == DBNull.Value) return "-";
             decimal d;
-            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.00") : V(v);
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString(CultureInfo.InvariantCulture) : V(v);
         }
 
-        /// <summary>Cargo Qty(MT) formatter — strips trailing zeros so the email matches the web view
-        /// (40476.00 → 40476, 40476.5 → 40476.5). Returns "-" for null/empty.</summary>
+        /// <summary>Cargo Qty(MT) formatter — shows the value exactly as stored in the DB, preserving
+        /// trailing zeros (40476.000 stays "40476.000"). Returns "-" for null/empty.</summary>
         private static string FormatCargoQty(object v)
         {
             if (v == null || v == DBNull.Value) return "-";
             decimal d;
-            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.##########") : V(v);
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString(CultureInfo.InvariantCulture) : V(v);
         }
 
         private static decimal GetFuelConsByType(DataTable dt, string fuelType)
@@ -664,7 +667,9 @@ ORDER BY a.Id";
         private const string FC_GRP   = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#e8e8e8;font-weight:700;font-size:11px;letter-spacing:0.03em;";
         private const string FC_TOTAL = "border:1px solid #bbb;padding:5px 9px;text-align:center;font-weight:700;";
 
-        private static string FcFmt(decimal v) => v.ToString("0.##########");
+        // Fuel consumption columns are decimal(18,3); render fixed 3 decimals so stored values and
+        // computed 0 defaults show uniformly (e.g. 5.000, 0.000) — same as the Daily Noon template.
+        private static string FcFmt(decimal v) => v.ToString("0.000", CultureInfo.InvariantCulture);
 
         /// <summary>Engine-style table: group header + Fuel/At Sea/Manoeuv./Anchor-Wait/Berth columns,
         /// optionally a Sub Total column. Used for Main Engine, Aux Engine, Boiler, FRAMO System.</summary>

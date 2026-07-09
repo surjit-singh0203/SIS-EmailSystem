@@ -2,6 +2,7 @@ using DataBuildingLayer;
 using SIS_Operational_Reports.Areas.Report.Controllers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -23,9 +24,11 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/DailyNoonReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        /// <summary>Format decimal: show value exactly as entered with no trailing-zero padding.
-        /// 10 → "10", 20.7 → "20.7", 9.750 → "9.75", 0 → "0", null → "-".</summary>
-        private static string V(decimal? d) => d.HasValue ? d.Value.ToString("0.##########") : "-";
+        /// <summary>Format decimal exactly as stored in the DB, preserving the column's scale
+        /// (trailing zeros). DailyNoonReport decimals are decimal(18,3) or (18,2), so a stored
+        /// 9.750 → "9.750", 10.000 → "10.000", 25.00 → "25.00", null → "-". decimal keeps its
+        /// scale through the data layer, so ToString(invariant) reproduces the stored text.</summary>
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString(CultureInfo.InvariantCulture) : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
@@ -37,7 +40,7 @@ namespace SIS_Operational_Reports.Common
             if (o == null || o == DBNull.Value) return "-";
             string s = o.ToString().Trim();
             if (string.IsNullOrEmpty(s)) return "-";
-            if (decimal.TryParse(s, out decimal d)) return d.ToString("0.##########");
+            if (decimal.TryParse(s, out decimal d)) return d.ToString(CultureInfo.InvariantCulture);
             return s;
         }
 
@@ -147,6 +150,30 @@ ORDER BY a.Id";
                         adp.Fill(dtNRCargo);
                 }
                 catch { }
+                // Robust fallback: if the name-resolution cascade above threw or returned no rows,
+                // load the NR_Cargo rows with the same simple LEFT JOIN the Excel attachment uses
+                // (getAttachment.aspx.cs -> SaveDailyNoonReportExcelToFiles) so the cargo quantities
+                // ALWAYS bind in the email, even when the leg/voyage/vessel CTEs fail. Cargo name/port
+                // still fall back through the direct LR_Cargo link here.
+                if (dtNRCargo == null || dtNRCargo.Rows.Count == 0)
+                {
+                    try
+                    {
+                        dtNRCargo = new DataTable();
+                        using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.LR_Cargo_Id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
+                            adp.Fill(dtNRCargo);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            dtNRCargo = new DataTable();
+                            using (var adp = new SqlDataAdapter("select a.*, b.CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.lr_cargo_id=b.Id where a.VesselId=" + vesselId + " and a.NoonReport_Id=" + id, ConnectionBulder.con))
+                                adp.Fill(dtNRCargo);
+                        }
+                        catch { }
+                    }
+                }
                 using (var cmd = new SqlCommand("USP_GetSyncEmailReportDetailsByID", ConnectionBulder.con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -357,14 +384,9 @@ ORDER BY a.Id";
             string bunkerRows = sb.ToString();
             sb.Clear();
 
-            sb.Append(KvRow("Running Hrs No.1", r.AE_RungHrs_No1)).Append(KvRow("Running Hrs No.2", r.AE_RungHrs_No2)).Append(KvRow("Running Hrs No.3", r.AE_RungHrs_No3)).Append(KvRow("Running Hrs No.4", r.AE_RungHrs_No4)).Append(KvRow("Running Hrs Shaft Gen", r.AE_RungHrs_ShaftGen));
-            sb.Append(KvRow("Load No.1 (KW)", r.AE_Load_No1)).Append(KvRow("Load No.2 (KW)", r.AE_Load_No2)).Append(KvRow("Load No.3 (KW)", r.AE_Load_No3)).Append(KvRow("Load No.4 (KW)", r.AE_Load_No4)).Append(KvRow("Load Shaft Gen (KW)", r.AE_Load_ShaftGen)).Append(KvRow("Extra Run Reason", r.AE_Extra_Run_Reason));
-            string auxEngineRows = sb.ToString();
-            sb.Clear();
+            string auxEngineRows = AuxEngineGrid(r);
 
-            sb.Append(KvRow("Boiler No.1 Running Hrs", r.BR_RungHrs_No1)).Append(KvRow("Boiler No.2 Running Hrs", r.BR_RungHrs_No2)).Append(KvRow("Boiler No.1 Extra Run Reason", r.BR_Extra_Run_Reason1)).Append(KvRow("Boiler No.2 Extra Run Reason", r.BR_Extra_Run_Reason2));
-            string boilerRows = sb.ToString();
-            sb.Clear();
+            string boilerRows = BoilerGrid(r);
 
             // Build full fuel consumption table
             decimal vlsfoTotal = GetFuelConsByType(dtFuelCons, "VLSFO"), mdoTotal = GetFuelConsByType(dtFuelCons, "MDO");
@@ -576,10 +598,7 @@ ORDER BY a.Id";
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Acetylene (Bottles)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_Full)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_InUse)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.OT_ROB_ACYT_Empty)).Append(@"</td></tr>");
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Aux. Engine</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Running Hrs No.1", r.AE_RungHrs_No1)).Append(KvRow("Running Hrs No.2", r.AE_RungHrs_No2)).Append(KvRow("Running Hrs No.3", r.AE_RungHrs_No3)).Append(KvRow("Running Hrs No.4", r.AE_RungHrs_No4)).Append(KvRow("Running Hrs Shaft Gen", r.AE_RungHrs_ShaftGen));
-            sb.Append(KvRow("Load No.1 (KW)", r.AE_Load_No1)).Append(KvRow("Load No.2 (KW)", r.AE_Load_No2)).Append(KvRow("Load No.3 (KW)", r.AE_Load_No3)).Append(KvRow("Load No.4 (KW)", r.AE_Load_No4)).Append(KvRow("Load Shaft Gen (KW)", r.AE_Load_ShaftGen)).Append(KvRow("Extra Run Reason", r.AE_Extra_Run_Reason));
-            sb.Append(@"</table></td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;"">").Append(AuxEngineGrid(r)).Append(@"</td></tr>");
             // LO & HO Consumptions (after Aux. Engine, before Boiler's)
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">LO &amp; HO Consumptions</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:30%;min-width:150px""><col style=""width:30%;min-width:150px"">");
@@ -598,9 +617,7 @@ ORDER BY a.Id";
             sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">ROB (m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.ER_Bilge_ROB)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.ER_Sludge_ROB)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.ER_WasteOil_ROB)).Append(@"</td></tr>");
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Boiler's</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Boiler No.1 Running Hrs", r.BR_RungHrs_No1)).Append(KvRow("Boiler No.2 Running Hrs", r.BR_RungHrs_No2)).Append(KvRow("Boiler No.1 Extra Run Reason", r.BR_Extra_Run_Reason1)).Append(KvRow("Boiler No.2 Extra Run Reason", r.BR_Extra_Run_Reason2));
-            sb.Append(@"</table></td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;"">").Append(BoilerGrid(r)).Append(@"</td></tr>");
             // Fuel Consumption full table (title rendered inside generated table per spec)
             {
                 decimal vlsfoTot = GetFuelConsByType(dtFuelCons, "VLSFO"), mdoTot = GetFuelConsByType(dtFuelCons, "MDO");
@@ -703,7 +720,9 @@ ORDER BY a.Id";
         private const string FC_GRP   = "border:1px solid #bbb;padding:5px 9px;text-align:center;background:#e8e8e8;font-weight:700;font-size:11px;letter-spacing:0.03em;";
         private const string FC_TOTAL = "border:1px solid #bbb;padding:5px 9px;text-align:center;font-weight:700;";
 
-        private static string FcFmt(decimal v) => v.ToString("0.##########");
+        // Fuel consumption columns (Fuel_Cons_NR.Value) are all decimal(18,3); render fixed 3
+        // decimals so stored values and computed 0 defaults show uniformly (e.g. 5.000, 0.000).
+        private static string FcFmt(decimal v) => v.ToString("0.000", CultureInfo.InvariantCulture);
 
         /// <summary>Renders an engine-style table: group header row + Fuel/At Sea/Manoeuv./Anchor-Wait/Berth columns,
         /// optionally a Sub Total column. Used for Main Engine, Aux Engine, Boiler, FRAMO System.</summary>
@@ -802,7 +821,7 @@ ORDER BY a.Id";
             return s.ToString();
         }
 
-        /// <summary>Renders the Total summary table: group header + two rows (VLSFO Total, MDO Total) each with " MT" suffix.</summary>
+        /// <summary>Renders the Total summary table: group header + two rows (VLSFO Total, MDO Total).</summary>
         private static string FuelConsTotalTable(decimal vlsfoTotal, decimal mdoTotal)
         {
             var s = new StringBuilder();
@@ -810,11 +829,11 @@ ORDER BY a.Id";
             s.Append("<tr class=\"grp\"><td colspan=\"2\" style=\"").Append(FC_GRP).Append("\">Total</td></tr>");
             s.Append("<tr>")
               .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">VLSFO TOTAL</td>")
-              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(vlsfoTotal)).Append(" MT</td>")
+              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(vlsfoTotal)).Append("</td>")
               .Append("</tr>");
             s.Append("<tr>")
               .Append("<td class=\"lbl\" style=\"").Append(FC_LBL).Append("\">MDO TOTAL</td>")
-              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(mdoTotal)).Append(" MT</td>")
+              .Append("<td class=\"total\" style=\"").Append(FC_TOTAL).Append("\">").Append(FcFmt(mdoTotal)).Append("</td>")
               .Append("</tr>");
             s.Append("</table>");
             return s.ToString();
@@ -889,13 +908,72 @@ ORDER BY a.Id";
             return sb.ToString();
         }
 
+        /// <summary>Builds the Aux Engine section as a grid matching the web view: columns
+        /// No.1/No.2/No.3/No.4/Shaft Gen, rows Running Hrs, Load (KW), and a full-width Extra Run
+        /// Reason. Returns a self-contained &lt;table&gt;. Values use V() so they show as stored.</summary>
+        private static string AuxEngineGrid(DailyNoonReport r)
+        {
+            const string HD  = "padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;white-space:nowrap;";
+            const string LBL = "padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;";
+            const string DAT = "padding:6px 8px;border:1px solid #ccc;text-align:right;";
+            var s = new StringBuilder();
+            s.Append(@"<table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;table-layout:fixed;font-size:12px;"">");
+            s.Append(@"<col style=""width:20%""><col style=""width:16%""><col style=""width:16%""><col style=""width:16%""><col style=""width:16%""><col style=""width:16%"">");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\"></td>")
+             .Append("<td style=\"").Append(HD).Append("\">No. 1</td>")
+             .Append("<td style=\"").Append(HD).Append("\">No. 2</td>")
+             .Append("<td style=\"").Append(HD).Append("\">No. 3</td>")
+             .Append("<td style=\"").Append(HD).Append("\">No. 4</td>")
+             .Append("<td style=\"").Append(HD).Append("\">Shaft Gen</td></tr>");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\">Running Hrs</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_RungHrs_No1)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_RungHrs_No2)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_RungHrs_No3)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_RungHrs_No4)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_RungHrs_ShaftGen)).Append("</td></tr>");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\">Load (KW)</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_Load_No1)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_Load_No2)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_Load_No3)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_Load_No4)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.AE_Load_ShaftGen)).Append("</td></tr>");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\">Extra Run Reason</td>")
+             .Append("<td colspan=\"5\" style=\"padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;\">").Append(V(r.AE_Extra_Run_Reason)).Append("</td></tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
+        /// <summary>Builds the Boiler's section as a grid matching the web view: columns
+        /// Boiler No. 1 / Boiler No. 2, rows Running Hrs and Extra Run Reason. Self-contained &lt;table&gt;.</summary>
+        private static string BoilerGrid(DailyNoonReport r)
+        {
+            const string HD  = "padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;white-space:nowrap;";
+            const string LBL = "padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;white-space:nowrap;";
+            const string DAT = "padding:6px 8px;border:1px solid #ccc;text-align:right;";
+            const string TXT = "padding:6px 8px;border:1px solid #ccc;vertical-align:middle;text-align:right;";
+            var s = new StringBuilder();
+            s.Append(@"<table class=""data-table"" style=""width:100%;border-collapse:collapse;border:none;table-layout:fixed;font-size:12px;"">");
+            s.Append(@"<col style=""width:34%""><col style=""width:33%""><col style=""width:33%"">");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\"></td>")
+             .Append("<td style=\"").Append(HD).Append("\">Boiler No. 1</td>")
+             .Append("<td style=\"").Append(HD).Append("\">Boiler No. 2</td></tr>");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\">Running Hrs</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.BR_RungHrs_No1)).Append("</td>")
+             .Append("<td style=\"").Append(DAT).Append("\">").Append(V(r.BR_RungHrs_No2)).Append("</td></tr>");
+            s.Append("<tr><td style=\"").Append(LBL).Append("\">Extra Run Reason</td>")
+             .Append("<td style=\"").Append(TXT).Append("\">").Append(V(r.BR_Extra_Run_Reason1)).Append("</td>")
+             .Append("<td style=\"").Append(TXT).Append("\">").Append(V(r.BR_Extra_Run_Reason2)).Append("</td></tr>");
+            s.Append("</table>");
+            return s.ToString();
+        }
+
         private static string FormatCargo(DataRow dr, string col)
         {
             if (!dr.Table.Columns.Contains(col)) return "-";
             var v = dr[col];
             if (v == null || v == DBNull.Value) return "-";
             decimal d;
-            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.##########") : V(v);
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString(CultureInfo.InvariantCulture) : V(v);
         }
 
         private static decimal GetFuelConsByType(DataTable dt, string fuelType)

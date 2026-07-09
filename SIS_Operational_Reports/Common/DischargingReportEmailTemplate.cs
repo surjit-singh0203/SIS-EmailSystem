@@ -132,10 +132,14 @@ ORDER BY a.Id";
                 // so a pump can only appear in Ballast if tblPump itself classifies it as ballast.
                 // Mirrors DischargingController.GetPumpsINUse exactly; prevents COP entries that
                 // were mistakenly saved with PumpUseId=2 from leaking into this section. Inner
-                // dedup subquery keeps the result to one row per pump Name.
+                // dedup subquery keeps one row per pump Name, preferring the row with a NON-ZERO Rate:
+                // LR_DCR_PumpsUse accumulates duplicate rows on re-save (a real-rate row plus a later
+                // 0.000 row at a higher Id), so the old max(Id) picked the 0.000 duplicate and the
+                // email showed Rate 0.000 for pumps that actually have a rate. ROW_NUMBER prefers a
+                // non-zero Rate, then the latest Id.
                 using (var adp = new SqlDataAdapter(
                     "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
-                    "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=2 group by bb.Name) g on a.Id=g.Id " +
+                    "inner join (select aa.Id, ROW_NUMBER() over (partition by bb.Name order by (case when aa.Rate <> 0 then 1 else 0 end) desc, aa.Id desc) as rn from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=2) g on a.Id=g.Id and g.rn=1 " +
                     "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
                     "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=2", ConnectionBulder.con))
                     adp.Fill(dtBallastPumps);
@@ -143,7 +147,7 @@ ORDER BY a.Id";
                 // (e.g. B/P# 1) mis-saved with PumpUseId=1 won't appear in the Cargo Pumps pivot.
                 using (var adp = new SqlDataAdapter(
                     "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
-                    "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=1 group by bb.Name) g on a.Id=g.Id " +
+                    "inner join (select aa.Id, ROW_NUMBER() over (partition by bb.Name order by (case when aa.Rate <> 0 then 1 else 0 end) desc, aa.Id desc) as rn from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=1) g on a.Id=g.Id and g.rn=1 " +
                     "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
                     "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=1", ConnectionBulder.con))
                     adp.Fill(dtCargoPumpsInUse);

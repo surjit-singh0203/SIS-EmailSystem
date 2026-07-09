@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,9 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/DepartureReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        // Show the value exactly as stored in the DB, preserving the column's scale/trailing zeros
+        // (e.g. 9.000 -> "9.000", 9.750 -> "9.750"). DepartureReport decimals are decimal(18,3).
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString(CultureInfo.InvariantCulture) : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
@@ -34,7 +37,7 @@ namespace SIS_Operational_Reports.Common
             if (o == null || o == DBNull.Value) return "-";
             string s = o.ToString().Trim();
             if (string.IsNullOrEmpty(s)) return "-";
-            if (decimal.TryParse(s, out decimal d)) return d.ToString("0.##########");
+            if (decimal.TryParse(s, out decimal d)) return d.ToString(CultureInfo.InvariantCulture);
             return s;
         }
 
@@ -490,8 +493,9 @@ ORDER BY a.Id";
 
             // Manoeuvring section — only Hours (2 decimals) and Distance, matching the web view.
             // SBE/RFA date fields are intentionally NOT rendered here.
-            string mhrs = r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.00") : "-";
-            sb.Append(KvRow("Manoeuvring Hours", mhrs)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance));
+            string mhrs = r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString() : "-";
+            string mdist = r.Manoeuvring_Distance.HasValue ? r.Manoeuvring_Distance.Value.ToString() : "-";
+            sb.Append(KvRow("Manoeuvring Hours", mhrs)).Append(KvRow("Manoeuvring Distance", mdist));
             string manoeuvringRows = sb.ToString();
             sb.Clear();
 
@@ -664,9 +668,14 @@ ORDER BY a.Id";
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Manoeuvring</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            // Manoeuvring Hours: 2 decimal places per spec. Distance keeps the default V() format.
-            string mhrsInline = r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.00") : "-";
-            sb.Append(KvRow("Manoeuvring Hours", mhrsInline)).Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance));
+            // Manoeuvring Hours: show the value exactly as stored, matching the web edit form
+            // (which binds Manoeuvring_Hrs with no format string). No forced decimals — the stored
+            // decimal's own representation is used as-is (3 -> "3", 3.5 -> "3.5", 3.50 -> "3.50").
+            string mhrsInline = r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString() : "-";
+            // Manoeuvring Distance: show exactly as stored too (passed as a string so KvRow's
+            // 3-decimal V(decimal?) formatter is bypassed). 3 -> "3", 3.5 -> "3.5", 3.50 -> "3.50".
+            string mdistInline = r.Manoeuvring_Distance.HasValue ? r.Manoeuvring_Distance.Value.ToString() : "-";
+            sb.Append(KvRow("Manoeuvring Hours", mhrsInline)).Append(KvRow("Manoeuvring Distance", mdistInline));
             sb.Append(@"</table></td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Non-Routine Events</td></tr>");
             string[] nreLabels = { "Stoppage at Sea", "Deviation", "Slow Steaming", "Bad Weather", "COT Preparation", "Cargo Heating", "BW Exchange" };
@@ -773,6 +782,22 @@ ORDER BY a.Id";
             }
             sb.Append(@"</table></td></tr>");
 
+            // Bunker Received in MT — ALWAYS render VLSFO and MDO rows to mirror the web view's
+            // "Bunker Received in MT" table (shown beside Fuel ROB in MT), which lists both fuel
+            // types as fixed rows. Each row's Received value is looked up from dtBunker
+            // (tbl_BunkerLReceipt, ReportType_Id=3) by fuel type; a fuel type with no saved row
+            // shows "0.000", matching the view's default. Formatted with V3 (3 decimals) to match
+            // the adjacent Fuel ROB in MT / LO & HO Received cells.
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Bunker Received in MT</td></tr>");
+            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:60%"">");
+            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Received</td></tr>");
+            foreach (string ft in new[] { "VLSFO", "MDO" })
+            {
+                string rec = BunkerReceiptFor(dtBunker, ft);
+                sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">").Append(ft).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(rec).Append(@"</td></tr>");
+            }
+            sb.Append(@"</table></td></tr>");
+
             // Table 8: Fuel Consumption in MT — full 7-block layout
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;"">").Append(BuildFuelConsFullTable(dtFuelCons)).Append(@"</td></tr>");
             // Cargo — 6-col table matching the web view:
@@ -801,12 +826,9 @@ ORDER BY a.Id";
                 }
             }
             sb.Append(@"</table></td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Slops Disposed / ROB</td></tr>");
-            sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:40%;min-width:200px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px""><col style=""width:20%;min-width:100px"">");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;""></td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Oil</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Water</td><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;text-align:center;"">Total</td></tr>");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">Disposed (m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsDisposed_Oil)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsDisposed_Water)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsDisposed_Total)).Append(@"</td></tr>");
-            sb.Append(@"<tr><td style=""padding:6px 8px;border:1px solid #ccc;font-weight:bold;background:#f5f5f5;"">ROB (m3)</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsROB_Oil)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsROB_Water)).Append(@"</td><td style=""padding:6px 8px;border:1px solid #ccc;text-align:right;"">").Append(V(r.SlopsROB_Total)).Append(@"</td></tr>");
-            sb.Append(@"</table></td></tr>");
+            // NOTE: The "Slops Disposed / ROB" table that used to render here (after Cargo) was
+            // removed per stakeholder request — it duplicated the Slops rows already shown in the
+            // "Slops / Bilge Disposed & ROB" table in the Engine section above.
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Ballast</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
             sb.Append(KvRow("ROB", V3(r.Ballast_ROB)));
@@ -822,6 +844,22 @@ ORDER BY a.Id";
             return sb.ToString();
         }
 
+        /// <summary>Received (MT) value for a fuel type from the bunker receipt table (dtBunker),
+        /// or "0.000" when that fuel type has no row — mirrors the web view, which always shows
+        /// VLSFO and MDO with a numeric value. Match is case-insensitive on FuelType.</summary>
+        private static string BunkerReceiptFor(DataTable dtBunker, string fuelType)
+        {
+            if (dtBunker != null && dtBunker.Columns.Contains("FuelType") && dtBunker.Columns.Contains("Receipt"))
+            {
+                foreach (DataRow dr in dtBunker.Rows)
+                {
+                    if ((dr["FuelType"]?.ToString() ?? "").Trim().Equals(fuelType, StringComparison.OrdinalIgnoreCase))
+                        return dr["Receipt"] == DBNull.Value ? "0.000" : V3(dr["Receipt"]);
+                }
+            }
+            return "0.000";
+        }
+
         private static string KvRow(string label, object value)
         {
             string v = (value is decimal || value is decimal?) ? V((decimal?)value) : (value is DateTime || value is DateTime?) ? V((DateTime?)value) : V(value);
@@ -832,7 +870,7 @@ ORDER BY a.Id";
         {
             if (v == null || v == DBNull.Value) return "-";
             decimal d;
-            return decimal.TryParse(v.ToString(), out d) ? d.ToString("0.00") : V(v);
+            return decimal.TryParse(v.ToString(), out d) ? d.ToString(CultureInfo.InvariantCulture) : V(v);
         }
     }
 }

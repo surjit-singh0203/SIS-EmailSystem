@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,18 +23,20 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/BerthingReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        // Show the value exactly as stored in the DB, preserving the column's scale/trailing zeros
+        // (9.000 -> "9.000", 9.750 -> "9.750"). BerthingReport decimals are decimal(18,3).
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString(CultureInfo.InvariantCulture) : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
         // Always-3-decimal formatter (e.g. 45 → "45.000") for Engine RPM/BHP and LO/HO cells.
         private static string V3(decimal? d) => d.HasValue ? d.Value.ToString("0.000") : "-";
 
-        // Strip trailing zeros (e.g. 745.200 → "745.2", 745.000 → "745") for Fuel ROB SBE/FWE per webpage.
+        // Show the value exactly as stored in the DB, preserving trailing zeros (Fuel ROB SBE/FWE).
         private static string VTrim(object o)
         {
             if (o == null || o == DBNull.Value) return "-";
-            if (decimal.TryParse(o.ToString(), out decimal d)) return d.ToString("0.###############");
+            if (decimal.TryParse(o.ToString(), out decimal d)) return d.ToString(CultureInfo.InvariantCulture);
             return o.ToString();
         }
 
@@ -331,7 +334,7 @@ ORDER BY a.Id";
 
             // Manoeuvring — webpage shows ONLY Hours (2 decimals) and Distance (3 decimals).
             // SBE/FWE Date & Time and SBE/FWE ROB removed per webpage parity.
-            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.00") : "-"));
+            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.000") : "-"));
             sb.Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance.HasValue ? r.Manoeuvring_Distance.Value.ToString("0.000") : "-"));
             string manoeuvringRows = sb.ToString();
             sb.Clear();
@@ -594,7 +597,7 @@ ORDER BY a.Id";
             // Manoeuvring — webpage shows ONLY Hours (2 decimals) and Distance (3 decimals).
             sb.Append(@"<tr><td colspan=""8"" style=""padding:10px 8px;background:#555;color:#fff;font-weight:bold;text-align:center;"">Manoeuvring</td></tr>");
             sb.Append(@"<tr><td colspan=""8"" style=""padding:0;""><table style=""width:100%;border-collapse:collapse;table-layout:fixed;""><col style=""width:45%;min-width:280px""><col style=""width:55%"">");
-            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.00") : "-"));
+            sb.Append(KvRow("Manoeuvring Hours", r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString("0.000") : "-"));
             sb.Append(KvRow("Manoeuvring Distance", r.Manoeuvring_Distance.HasValue ? r.Manoeuvring_Distance.Value.ToString("0.000") : "-"));
             sb.Append(@"</table></td></tr>");
 

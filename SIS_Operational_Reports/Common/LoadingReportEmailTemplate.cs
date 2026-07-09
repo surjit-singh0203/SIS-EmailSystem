@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,9 @@ namespace SIS_Operational_Reports.Common
         private const string TemplatePath = "~/Templates/LoadingReport.html";
 
         private static string V(object o) => o == null || o == DBNull.Value || string.IsNullOrWhiteSpace(o.ToString()) ? "-" : o.ToString().Trim();
-        private static string V(decimal? d) => d.HasValue ? (d.Value == Math.Truncate(d.Value) ? d.Value.ToString("0") : d.Value.ToString("0.000")) : "-";
+        // Show the value exactly as stored in the DB, preserving the column's scale/trailing zeros
+        // (9.000 -> "9.000", 9.750 -> "9.750"). LoadingReport decimals are decimal(18,3).
+        private static string V(decimal? d) => d.HasValue ? d.Value.ToString(CultureInfo.InvariantCulture) : "-";
         private static string V(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateFormat) : "-";
         private static string Vdt(DateTime? dt) => dt.HasValue ? dt.Value.ToString(DateTimeFormat) : "-";
 
@@ -272,8 +275,14 @@ namespace SIS_Operational_Reports.Common
                 foreach (DataRow dr in dtCargo.Rows)
                 {
                     sb.Append(@"<tr>");
-                    sb.Append(Td(dr, "CargoName"))
-                      .Append(TdDt(dr, "LoadingDatetime"))
+                    // Cargo Grades — webpage shows "CargoName ( PortName )" (e.g. "MS BS-VI ( Doha )").
+                    // LR_Cargo has both CargoName and PortName columns directly (the `select a.*`
+                    // above pulls them), so no JOIN needed. Mirrors the Discharging email template.
+                    string cName = dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "";
+                    string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
+                    string cargoLabel = string.IsNullOrEmpty(cName) ? "-" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                    sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(cargoLabel).Append(@"</td>");
+                    sb.Append(TdDt(dr, "LoadingDatetime"))
                       .Append(TdDec(dr, "TerminalLoadingRate"))
                       .Append(TdDec(dr, "LoadingRateAccepted"))
                       .Append(TdDec(dr, "AverageAchievedLoadingRate"))
@@ -350,8 +359,12 @@ namespace SIS_Operational_Reports.Common
             foreach (DataRow dr in dtCargo.Rows)
             {
                 sb.Append(@"<tr>");
-                sb.Append(Td(dr, "CargoName"))
-                  .Append(TdDt(dr, "LoadingDatetime"))
+                // Cargo Grades — "CargoName ( PortName )" to match the webpage and Excel export.
+                string cName = dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "";
+                string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
+                string cargoLabel = string.IsNullOrEmpty(cName) ? "-" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
+                sb.Append(@"<td style=""padding:6px 8px;border:1px solid #ccc;vertical-align:middle;"">").Append(cargoLabel).Append(@"</td>");
+                sb.Append(TdDt(dr, "LoadingDatetime"))
                   .Append(TdDec(dr, "TerminalLoadingRate"))
                   .Append(TdDec(dr, "LoadingRateAccepted"))
                   .Append(TdDec(dr, "AverageAchievedLoadingRate"))
@@ -412,7 +425,7 @@ namespace SIS_Operational_Reports.Common
             {
                 decimal d;
                 if (decimal.TryParse(dr[col].ToString(), out d))
-                    val = d == Math.Truncate(d) ? d.ToString("0") : d.ToString("0.000");
+                    val = d.ToString(CultureInfo.InvariantCulture);
                 else
                     val = dr[col].ToString();
             }

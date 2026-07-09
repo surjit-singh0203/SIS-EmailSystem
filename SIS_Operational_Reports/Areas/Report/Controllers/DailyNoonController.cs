@@ -1146,28 +1146,80 @@ namespace SIS_Operational_Reports.Areas.Report.Controllers
             IList<string> nrc = new List<string>();
             try
             {
-                using (SqlDataAdapter objCMD = new SqlDataAdapter("select a.*,b.cargoname, b.PortName from NR_Cargo a inner join LR_Cargo b on a.lr_cargo_id=b.Id  where  a.VesselId=" + vslid + " and b.VesselId=" + vslid + "  and noonreport_id=" + NoonReportId + "", ConnectionBulder.con))
+                DataTable dt = new DataTable();
+                // NR_Cargo.lr_cargo_id can be stale/broken (LR_Cargo rows deleted or renumbered by a
+                // Loading Report re-save). The old INNER JOIN dropped every row in that case, so the
+                // Cargo tab rendered a single empty 0.000 line even though rows were saved. Load rows
+                // with the same 4-layer name-resolution cascade the Daily Noon email template and the
+                // Departure/Berthing controllers use, so every saved NR_Cargo row binds and the cargo
+                // name falls back through leg -> voyage -> vessel matches when the direct FK is broken.
+                try
                 {
-                    DataTable dt = new DataTable();
-                    objCMD.Fill(dt);
-
-                    ViewBag.CountNRCargo = dt.Rows.Count;
-
-                    for (int i = 0; i < dt.Rows.Count; i++)
+                    string cargoQuery = @"
+WITH nr_rows AS (
+    SELECT *, ROW_NUMBER() OVER (ORDER BY Id ASC) AS _pos
+    FROM NR_Cargo
+    WHERE VesselId = " + vslid + @" AND NoonReport_Id = " + NoonReportId + @"
+),
+report_ctx AS (
+    SELECT LegPortId, VoyageId FROM DailyNoonReport WHERE Id = " + NoonReportId + @" AND VesselId = " + vslid + @"
+),
+leg_lr AS (
+    SELECT b.CargoName, b.PortName, ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b INNER JOIN report_ctx rc ON b.LegPortId = rc.LegPortId WHERE b.VesselId = " + vslid + @"
+),
+voyage_lr AS (
+    SELECT b.CargoName, b.PortName, ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b INNER JOIN report_ctx rc ON b.VoyageId = rc.VoyageId WHERE b.VesselId = " + vslid + @"
+),
+vessel_lr AS (
+    SELECT b.CargoName, b.PortName, ROW_NUMBER() OVER (ORDER BY b.Id DESC) AS _pos
+    FROM LR_Cargo b
+    INNER JOIN ( SELECT TOP 1 LRId FROM LR_Cargo WHERE VesselId = " + vslid + @" GROUP BY LRId HAVING COUNT(*) >= (SELECT COUNT(*) FROM nr_rows) ORDER BY MAX(Id) DESC ) recent ON b.LRId = recent.LRId
+    WHERE b.VesselId = " + vslid + @"
+)
+SELECT a.*,
+       COALESCE(direct.CargoName, leg.CargoName, voyage.CargoName, vessel.CargoName) AS CargoName,
+       COALESCE(direct.PortName,  leg.PortName,  voyage.PortName,  vessel.PortName)  AS PortName
+FROM nr_rows a
+LEFT JOIN LR_Cargo direct ON a.lr_cargo_id = direct.Id AND a.VesselId = direct.VesselId
+LEFT JOIN leg_lr leg      ON leg._pos = a._pos
+LEFT JOIN voyage_lr voyage ON voyage._pos = a._pos
+LEFT JOIN vessel_lr vessel ON vessel._pos = a._pos
+ORDER BY a.Id";
+                    using (SqlDataAdapter objCMD = new SqlDataAdapter(cargoQuery, ConnectionBulder.con))
+                        objCMD.Fill(dt);
+                }
+                catch { }
+                // Fallback: if the cascade threw or returned nothing, load rows with a simple LEFT JOIN
+                // so quantities still bind (name/port may be blank when the direct FK is broken).
+                if (dt.Rows.Count == 0)
+                {
+                    try
                     {
-                        nrCargoName.Add(dt.Rows[i]["CargoName"] + " ( " +
-                         (dt.Rows[i]["PortName"] == DBNull.Value ? "" : dt.Rows[i]["PortName"].ToString()) + " ) " );
-                        nrCargoName.Add(dt.Rows[i]["BL_Qty"]);
-                        nrCargoName.Add(dt.Rows[i]["LoadPortalActual"]);
-                        nrCargoName.Add(dt.Rows[i]["TodaysActual"]);
-                        nrCargoName.Add(dt.Rows[i]["Qty_Diff"]);
-                        nrCargoName.Add(dt.Rows[i]["Reasonfor_Qty_Diff"]);
-                        nrCargoName.Add(dt.Rows[i]["Cargo_Temp"]);
-                        nrCargoName.Add(dt.Rows[i]["LR_Cargo_Id"]);
+                        dt = new DataTable();
+                        using (SqlDataAdapter objCMD = new SqlDataAdapter("select a.*, b.cargoname as CargoName, b.PortName from NR_Cargo a left join LR_Cargo b on a.lr_cargo_id=b.Id and a.VesselId=b.VesselId where a.VesselId=" + vslid + " and a.noonreport_id=" + NoonReportId, ConnectionBulder.con))
+                            objCMD.Fill(dt);
                     }
+                    catch { }
+                }
 
-                    ViewBag.NRCargoList = nrCargoName;
-                };
+                ViewBag.CountNRCargo = dt.Rows.Count;
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    nrCargoName.Add((dt.Rows[i]["CargoName"] == DBNull.Value ? "" : dt.Rows[i]["CargoName"].ToString()) + " ( " +
+                     (dt.Rows[i]["PortName"] == DBNull.Value ? "" : dt.Rows[i]["PortName"].ToString()) + " ) ");
+                    nrCargoName.Add(dt.Rows[i]["BL_Qty"]);
+                    nrCargoName.Add(dt.Rows[i]["LoadPortalActual"]);
+                    nrCargoName.Add(dt.Rows[i]["TodaysActual"]);
+                    nrCargoName.Add(dt.Rows[i]["Qty_Diff"]);
+                    nrCargoName.Add(dt.Rows[i]["Reasonfor_Qty_Diff"]);
+                    nrCargoName.Add(dt.Rows[i]["Cargo_Temp"]);
+                    nrCargoName.Add(dt.Rows[i]["LR_Cargo_Id"]);
+                }
+
+                ViewBag.NRCargoList = nrCargoName;
 
 
 

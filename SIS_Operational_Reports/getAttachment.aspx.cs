@@ -1733,21 +1733,43 @@ namespace SIS_Operational_Reports
             row++;
 
             ws.Cell(row, 1).Value = "Aux. Engine";
-            ApplyLightGrayTitle(ws, row, 1, 3);
+            ApplyLightGrayTitle(ws, row, 1, 6);
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Running Hrs No.1", r.AE_RungHrs_No1);
-                AddKeyValueRow(ws, ref row, "Running Hrs No.2", r.AE_RungHrs_No2);
-                AddKeyValueRow(ws, ref row, "Running Hrs No.3", r.AE_RungHrs_No3);
-                AddKeyValueRow(ws, ref row, "Running Hrs No.4", r.AE_RungHrs_No4);
-                AddKeyValueRow(ws, ref row, "Running Hrs Shaft Gen", r.AE_RungHrs_ShaftGen);
-                AddKeyValueRow(ws, ref row, "Load No.1 (KW)", r.AE_Load_No1);
-                AddKeyValueRow(ws, ref row, "Load No.2 (KW)", r.AE_Load_No2);
-                AddKeyValueRow(ws, ref row, "Load No.3 (KW)", r.AE_Load_No3);
-                AddKeyValueRow(ws, ref row, "Load No.4 (KW)", r.AE_Load_No4);
-                AddKeyValueRow(ws, ref row, "Load Shaft Gen (KW)", r.AE_Load_ShaftGen);
-                AddKeyValueRow(ws, ref row, "Extra Run Reason", r.AE_Extra_Run_Reason);
+                // Grid: columns No.1/No.2/No.3/No.4/Shaft Gen; rows Running Hrs, Load (KW), Extra Run
+                // Reason. Mirrors the Daily Noon email + web view. Running Hrs are decimal(18,2) -> "0.00";
+                // Load (KW) are decimal(18,3) -> "0.000" (shown as stored).
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "No. 1";
+                ws.Cell(row, 3).Value = "No. 2";
+                ws.Cell(row, 4).Value = "No. 3";
+                ws.Cell(row, 5).Value = "No. 4";
+                ws.Cell(row, 6).Value = "Shaft Gen";
+                ws.Range(row, 1, row, 6).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "Running Hrs";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.AE_RungHrs_No1, "0.00");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.AE_RungHrs_No2, "0.00");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.AE_RungHrs_No3, "0.00");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), r.AE_RungHrs_No4, "0.00");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), r.AE_RungHrs_ShaftGen, "0.00");
+                row++;
+                ws.Cell(row, 1).Value = "Load (KW)";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.AE_Load_No1, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.AE_Load_No2, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 4), r.AE_Load_No3, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 5), r.AE_Load_No4, "0.000");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 6), r.AE_Load_ShaftGen, "0.000");
+                row++;
+                ws.Cell(row, 1).Value = "Extra Run Reason";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.AE_Extra_Run_Reason);
+                ws.Range(row, 2, row, 6).Merge();
+                ws.Cell(row, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                row++;
             }
             row++;
 
@@ -1812,10 +1834,24 @@ namespace SIS_Operational_Reports
             row++;
             if (r != null)
             {
-                AddKeyValueRow(ws, ref row, "Boiler No.1 Running Hrs", r.BR_RungHrs_No1);
-                AddKeyValueRow(ws, ref row, "Boiler No.2 Running Hrs", r.BR_RungHrs_No2);
-                AddKeyValueRow(ws, ref row, "Boiler No.1 Extra Run Reason", r.BR_Extra_Run_Reason1);
-                AddKeyValueRow(ws, ref row, "Boiler No.2 Extra Run Reason", r.BR_Extra_Run_Reason2);
+                // Grid: columns Boiler No. 1 / Boiler No. 2; rows Running Hrs (decimal(18,2) -> "0.00",
+                // shown as stored) and Extra Run Reason. Mirrors the Daily Noon email + web view.
+                ws.Cell(row, 1).Value = "";
+                ws.Cell(row, 2).Value = "Boiler No. 1";
+                ws.Cell(row, 3).Value = "Boiler No. 2";
+                ws.Range(row, 1, row, 3).Style.Font.Bold = true;
+                row++;
+                ws.Cell(row, 1).Value = "Running Hrs";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.BR_RungHrs_No1, "0.00");
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.BR_RungHrs_No2, "0.00");
+                row++;
+                ws.Cell(row, 1).Value = "Extra Run Reason";
+                ws.Cell(row, 1).Style.Font.Bold = true;
+                SetCellValueWithDecimalFormat(ws.Cell(row, 2), r.BR_Extra_Run_Reason1);
+                SetCellValueWithDecimalFormat(ws.Cell(row, 3), r.BR_Extra_Run_Reason2);
+                ws.Range(row, 2, row, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                row++;
             }
             row++;
 
@@ -2784,8 +2820,11 @@ namespace SIS_Operational_Reports
             row++;
             if (r != null)
             {
-                AddKeyValueRowWithFormat(ws, ref row, "Manoeuvring Hours", r.Manoeuvring_Hrs, "0.00");
-                AddKeyValueRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance);
+                // Show Manoeuvring Hours / Distance exactly as stored, matching the email (which
+                // uses the raw decimal ToString()). Written as text so the stored scale is preserved
+                // verbatim: 3 -> "3", 3.5 -> "3.5", 3.50 -> "3.50" (no forced or trimmed decimals).
+                AddKeyValueTextRow(ws, ref row, "Manoeuvring Hours", r.Manoeuvring_Hrs.HasValue ? r.Manoeuvring_Hrs.Value.ToString() : "-");
+                AddKeyValueTextRow(ws, ref row, "Manoeuvring Distance", r.Manoeuvring_Distance.HasValue ? r.Manoeuvring_Distance.Value.ToString() : "-");
             }
             row++;
 
@@ -4760,7 +4799,11 @@ namespace SIS_Operational_Reports
 
                 foreach (DataRow dr in dtCargo.Rows)
                 {
-                    ws.Cell(row, 1).Value = dr.Table.Columns.Contains("CargoName") ? (dr["CargoName"]?.ToString() ?? "") : "";
+                    // Cargo Grades — webpage shows "CargoName ( PortName )" (e.g. "MS BS-VI ( Doha )").
+                    // LR_Cargo has both CargoName and PortName columns directly. Mirrors the Discharging Excel.
+                    string cName = dr.Table.Columns.Contains("CargoName") && dr["CargoName"] != DBNull.Value ? dr["CargoName"].ToString().Trim() : "";
+                    string pName = dr.Table.Columns.Contains("PortName") && dr["PortName"] != DBNull.Value ? dr["PortName"].ToString().Trim() : "";
+                    ws.Cell(row, 1).Value = string.IsNullOrEmpty(cName) ? "" : cName + (string.IsNullOrEmpty(pName) ? "" : " ( " + pName + " )");
                     AddDateTextCell(ws.Cell(row, 2), dr, "LoadingDatetime");
                     SetCellValueWithDecimalFormat(ws.Cell(row, 3),  dr.Table.Columns.Contains("TerminalLoadingRate") ? dr["TerminalLoadingRate"] : null);
                     SetCellValueWithDecimalFormat(ws.Cell(row, 4),  dr.Table.Columns.Contains("LoadingRateAccepted") ? dr["LoadingRateAccepted"] : null);
@@ -4939,7 +4982,10 @@ namespace SIS_Operational_Reports
                     // wrong PumpUseId from leaking into this section.
                     using (SqlDataAdapter adp = new SqlDataAdapter(
                         "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
-                        "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=2 group by bb.Name) g on a.Id=g.Id " +
+                        // ROW_NUMBER prefers a NON-ZERO Rate then latest Id — LR_DCR_PumpsUse accumulates
+                        // duplicate rows on re-save (real-rate row + a later 0.000 row), so the old
+                        // max(Id) picked the 0.000 duplicate. Mirrors the discharging email template.
+                        "inner join (select aa.Id, ROW_NUMBER() over (partition by bb.Name order by (case when aa.Rate <> 0 then 1 else 0 end) desc, aa.Id desc) as rn from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=2) g on a.Id=g.Id and g.rn=1 " +
                         "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
                         "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=2", ConnectionBulder.con))
                         adp.Fill(dtBallastPumps);
@@ -4947,7 +4993,7 @@ namespace SIS_Operational_Reports
                     // mis-saved with PumpUseId=1 won't appear in the Cargo Pumps pivot.
                     using (SqlDataAdapter adp = new SqlDataAdapter(
                         "select a.*, b.Name as PumpName from LR_DCR_PumpsUse a " +
-                        "inner join (select bb.Name as Name, max(aa.Id) as Id from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=1 group by bb.Name) g on a.Id=g.Id " +
+                        "inner join (select aa.Id, ROW_NUMBER() over (partition by bb.Name order by (case when aa.Rate <> 0 then 1 else 0 end) desc, aa.Id desc) as rn from LR_DCR_PumpsUse aa inner join tblPump bb on aa.PumpId=bb.Id and aa.PumpUseId=bb.PumpUseId where aa.DCRId=" + id + " and aa.VesselId=" + vesselId + " and aa.PumpUseId=1) g on a.Id=g.Id and g.rn=1 " +
                         "inner join tblPump b on a.PumpId=b.Id and a.PumpUseId=b.PumpUseId " +
                         "where a.DCRId=" + id + " and a.VesselId=" + vesselId + " and a.PumpUseId=1", ConnectionBulder.con))
                         adp.Fill(dtCargoPumpsInUse);
